@@ -1,0 +1,21 @@
+# Cloudflare Workers static assets reads this file from the build's client directory.
+# Pages are rendered by the Worker; these rules cover the static files.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Content-Security-Policy: frame-ancestors 'self'
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# scripts/image-variants.mjs names each file by a hash of its source and settings.
+/variants/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Unhashed media: a day fresh, then served stale while revalidating for a week.
+/assets/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+# scripts/og-cards.tsx keeps each page's card at a stable name: a day fresh, then stale while revalidating.
+/og/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800

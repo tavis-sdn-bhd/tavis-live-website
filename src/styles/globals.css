@@ -1,0 +1,514 @@
+@import "tailwindcss";
+
+/* A laptop-sized window, tall enough for the design picker to fit on one screen. */
+@custom-variant fit (@media (min-width: 64rem) and (min-height: 40rem));
+
+/* ── Tokens ─────────────────────────────────────────────────────────────
+   See DESIGN.md. Names are semantic; raw hex lives only here. */
+
+@theme {
+  /* Ink */
+  --color-forest-deep: #242424;
+  --color-forest: #363636;
+  --color-forest-soft: #484848;
+  --color-ink: #363636;
+  --color-muted: #595959;
+  --color-on-forest: #fdfdfd;
+  --color-on-forest-muted: #c3c3c3;
+
+  /* Brand green */
+  --color-brand-soft: #a1e0ac;
+  --color-brand: #65cd7d;
+  --color-brand-ledge: #3d9c56;
+  --color-brand-ink: #269a4b;
+  /* brand-ink passes contrast only at display sizes; small green text uses this. */
+  --color-brand-text: #1d7a3d;
+  --color-brand-hover: #73d488;
+  /* Between brand and sun in the Shout gradient (v2/ui.tsx) */
+  --color-brand-lime: #9ef07a;
+
+  /* Paper */
+  --color-paper: #ffffff;
+  --color-cream: #f5f5f5;
+  --color-mint: #ecf8ed;
+  --color-mint-deep: #d0edd4;
+  --color-line: #e7e7e7;
+  --color-line-strong: #d9d9d9;
+  /* Borders that identify a control (fields, unchecked boxes, an off switch): 3:1 on paper, cream and mint. */
+  --color-line-control: #858585;
+
+  /* The Tavis app's own ink, used inside the phone mock-up */
+  --color-app-ink: #1d2a25;
+  --color-app-muted: #5b6a63;
+  /* App leaderboard field (deeper than the app's #3f8a50 to pass 3:1 against the step text) */
+  --color-app-leaderboard: #2f6b3d;
+
+  /* Feedback */
+  --color-correct: #248a43;
+  --color-correct-soft: #e4f6e7;
+  --color-wrong: #d6453d;
+  --color-wrong-soft: #fdeceb;
+  /* Text on the soft feedback fills; the base colours are for icons and borders. */
+  --color-correct-ink: #1c6e36;
+  --color-wrong-ink: #a8322b;
+  --color-wrong-ledge: #7f241f;
+  --color-wrong-fill: #c62f28;
+  --color-sun: #f6c445;
+  --color-sun-ledge: #d69e1a;
+  /* The portal's "needs action" fill (late, outstanding, needs help). Same hue as points; never used for text. */
+  --color-attention: var(--color-sun);
+  --color-coral: #ff8aa6;
+
+  /* Subjects: one dot colour each. Never used as a fill. */
+  --color-sci: #2bb3a3;
+  --color-math: #4c8df6;
+  --color-bm: #f0705a;
+  --color-en: #9b7bf0;
+  --color-hist: #f2b233;
+  --color-acc: #e2679b;
+  --color-acc-ink: #b23a6c;
+
+  /* Variant B (/v2) only, the Duolingo blue role. Bright sky is decoration; anything carrying text sits on sky-ink. */
+  --color-sky: #1cb0f6;
+  --color-sky-ink: #1a6fbf;
+  --color-sky-ledge: #145797;
+  --color-sky-soft: #ddf4ff;
+  /* Variant B's dark band: the logo hue at its deepest, where Duolingo uses navy. */
+  --color-night: #072911;
+  /* The deep green of a hero accent, 5.0:1 on the brand field. */
+  --color-brand-deep: #0f4d27;
+
+  /* Type */
+  --font-display: var(--font-cal), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-paper), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-sans: var(--font-cal), ui-sans-serif, system-ui, sans-serif;
+
+  --text-display: clamp(2.75rem, 1.125rem + 8.125vw, 4.375rem);
+  --text-display--line-height: 0.96;
+  --text-display--letter-spacing: -0.02em;
+  --text-headline: clamp(2.25rem, 0.75rem + 7.5vw, 3.75rem);
+  --text-headline--line-height: 1;
+  --text-headline--letter-spacing: -0.015em;
+  --text-title: clamp(1.5rem, 0.875rem + 3.125vw, 2.125rem);
+  --text-title--line-height: 1.08;
+  --text-title--letter-spacing: -0.01em;
+  --text-lede: clamp(1.0625rem, 0.875rem + 0.9375vw, 1.25rem);
+  --text-lede--line-height: 1.5;
+  /* Reading sizes. No line-height of their own: they take the surrounding leading. */
+  --text-body-lg: 1.0625rem;
+  --text-body-sm: 0.9375rem;
+  --text-small: 0.875rem;
+  --text-caption: 0.8125rem;
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.2;
+  --text-label--letter-spacing: 0.08em;
+
+  /* Shape */
+  --radius-control: 0.875rem;
+  --radius-card: 1.5rem;
+  --radius-sheet: 2.25rem;
+
+  /* Depth. Ledges are the tactile press; the rest is lift. */
+  --shadow-ledge-brand: 0 4px 0 var(--color-brand-ledge);
+  --shadow-ledge-dark: 0 4px 0 #161616;
+  --shadow-ledge-paper: 0 3px 0 var(--color-line-strong);
+  --shadow-ledge-sun: 0 3px 0 var(--color-sun-ledge);
+  --shadow-float: 0 1px 2px rgb(54 54 54 / 0.06), 0 8px 24px -6px rgb(54 54 54 / 0.14);
+  --shadow-lift: 0 2px 4px rgb(54 54 54 / 0.05), 0 24px 48px -16px rgb(54 54 54 / 0.28);
+  --shadow-sheet: 0 1px 0 rgb(54 54 54 / 0.04), 0 30px 60px -30px rgb(54 54 54 / 0.35);
+  --shadow-device: 0 1px 0 rgb(255 255 255 / 0.08) inset, 0 50px 100px -30px rgb(36 36 36 / 0.55),
+    0 30px 60px -40px rgb(36 36 36 / 0.6);
+
+  /* Motion */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+
+  --animate-float: float 7s var(--ease-in-out-quint) infinite alternate;
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-spin-slow: spin 24s linear infinite;
+}
+
+@keyframes float {
+  from { transform: translate3d(0, 0, 0) rotate(0deg); }
+  to { transform: translate3d(0, -12px, 0) rotate(-2deg); }
+}
+
+@keyframes marquee {
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+/* Intro choreography runs in CSS so it plays before hydration. */
+@keyframes rise {
+  from { transform: translate3d(0, 105%, 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes device-in {
+  from { opacity: 0; transform: translate3d(0, 48px, 0) rotate(4deg) scale(0.96); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+}
+
+@keyframes pop {
+  0% { opacity: 0; transform: scale(0.6); }
+  60% { opacity: 1; transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@utility intro-rise {
+  animation: rise 1s var(--ease-out-expo) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+@utility intro-fade {
+  animation: fade-up 0.9s var(--ease-out-expo) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+@utility intro-device {
+  animation: device-in 1.2s var(--ease-out-expo) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+@utility intro-pop {
+  animation: pop 0.7s var(--ease-out-quart) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+@utility intro-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 0.9s var(--ease-out-quart) forwards;
+  animation-delay: var(--delay, 0ms);
+}
+
+/* Reveal on scroll (`Reveal`, `Stagger` in motion.tsx). Only JS hides a block
+   (`armed`), and only one that is off screen, so server HTML is always readable. */
+@layer components {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    [data-reveal="self"][data-reveal-state="armed"] {
+      opacity: 0;
+      transform: translate3d(0, var(--reveal-y, 24px), 0);
+    }
+    [data-reveal="group"][data-reveal-state="armed"] [data-reveal-item] {
+      opacity: 0;
+      transform: translate3d(0, 20px, 0);
+    }
+  }
+  [data-reveal="self"][data-reveal-state="shown"] {
+    transition:
+      opacity 0.9s var(--ease-out-expo) var(--reveal-delay, 0s),
+      transform 0.9s var(--ease-out-expo) var(--reveal-delay, 0s);
+  }
+  [data-reveal="group"][data-reveal-state="shown"] [data-reveal-item] {
+    transition:
+      opacity 0.8s var(--ease-out-expo) var(--reveal-delay, 0s),
+      transform 0.8s var(--ease-out-expo) var(--reveal-delay, 0s);
+  }
+}
+
+/* Endless CSS loops stop when the visitor pauses animations (motion-pause.tsx);
+   decorative ones also rest while the visitor is idle. */
+html[data-motion="paused"] :is(.animate-float, .animate-marquee, .animate-spin-slow, .animate-ping, .animate-pulse, .animate-bounce),
+html[data-visitor="idle"] :is(.animate-float, .animate-spin-slow, .animate-bounce, .animate-ping, .animate-pulse) {
+  animation-play-state: paused;
+}
+
+/* ── Layout ── */
+
+@utility shell {
+  --gutter: clamp(1rem, 0.4rem + 2.6vw, 2.5rem);
+  width: 100%;
+  max-width: 78rem;
+  margin-inline: auto;
+  /* Landscape phones: keep content clear of the notch and rounded corners. */
+  padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
+}
+
+@utility section-y {
+  padding-block: clamp(5rem, 3rem + 8vw, 9.5rem);
+}
+
+/* ── Surfaces ── */
+
+/* The one card: white, 2px border, a thicker bottom edge. Flat, no shadow. */
+@utility card {
+  background: var(--color-paper);
+  border: 2px solid var(--color-line);
+  border-bottom-width: 4px;
+  border-radius: var(--radius-card);
+}
+
+/* Voucher ticket: two semicircle notches punched on the perforation line. */
+@utility ticket {
+  --notch: 9px;
+  --notch-y: calc(100% - 2.5rem);
+  mask:
+    radial-gradient(circle var(--notch) at 0 var(--notch-y), transparent 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle var(--notch) at 100% var(--notch-y), transparent 98%, #000) right / 51% 100% no-repeat;
+}
+
+/* ── Type helpers ── */
+
+@utility label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  line-height: var(--text-label--line-height);
+  letter-spacing: var(--text-label--letter-spacing);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Numbers are always Paper Mono, tabular. */
+@utility nums {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+/* ── Tactile press: element sits on its ledge, drops onto it when pressed. ── */
+
+@utility press {
+  transition:
+    transform 140ms var(--ease-out-quart),
+    box-shadow 140ms var(--ease-out-quart),
+    background-color 200ms var(--ease-out-quart);
+  /* Touch has no hover; a tap would leave the lift stuck on. */
+  @media (hover: hover) and (pointer: fine) {
+    &:not(:disabled):hover { transform: translateY(-1px); }
+  }
+  /* Drops only the ledge layer, so a ring or focus halo stays through the press. */
+  &:not(:disabled):active { transform: translateY(3px); --tw-shadow: 0 0 #0000; }
+}
+
+/* Duolingo's ledge, for B's buttons: the fill sits on a 4px lip (the box-shadow) and pressing drops it onto the lip.
+   Hover brightens by --ledge-hover, only where a pointer can hover. */
+@utility ledge {
+  transition:
+    transform 100ms var(--ease-out-quart),
+    box-shadow 100ms var(--ease-out-quart),
+    filter 200ms var(--ease-out-quart);
+  @media (hover: hover) and (pointer: fine) {
+    &:not(:disabled):hover { filter: brightness(var(--ledge-hover, 1.1)); }
+  }
+  /* Drops only the lip, so a ring or focus halo stays through the press. */
+  &:not(:disabled):active { transform: translateY(4px); --tw-shadow: 0 0 #0000; }
+}
+
+/* Press feedback for text links: dims under the finger, the way a native link does, since the tap flash is off. */
+@utility link-press {
+  transition:
+    opacity 120ms var(--ease-out-quart),
+    color 200ms var(--ease-out-quart);
+  &:active { opacity: 0.55; }
+}
+
+/* Press feedback for small controls with no ledge: shrinks under the finger, on press not release. */
+@utility tap {
+  transition:
+    transform 120ms var(--ease-out-quart),
+    background-color 200ms var(--ease-out-quart),
+    color 200ms var(--ease-out-quart);
+  &:not(:disabled):active { transform: scale(0.94); }
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    /* Cal Sans ships one weight; never let the browser fake a bold. */
+    font-synthesis: none;
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(5.5rem + env(safe-area-inset-top, 0px));
+    /* Keeps focused controls clear of the chat button at the bottom. */
+    scroll-padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    /* Locking scroll for the menu must not shift the page sideways. */
+    scrollbar-gutter: stable;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Framed in the phone preview (/preview): a phone shows no scrollbar. */
+  html[data-framed] {
+    scrollbar-width: none;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.55;
+    /* Cal Sans is drawn tight for display; open it slightly for reading sizes. */
+    letter-spacing: 0.012em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    color: var(--color-forest);
+  }
+
+  button, input, select { font: inherit; letter-spacing: inherit; }
+
+  /* Controls fire on tap with no double-tap-zoom wait, and a long press never selects a label. */
+  a, button, label, summary, [role="button"], [role="tab"] {
+    touch-action: manipulation;
+  }
+  button, [role="button"], [role="tab"] {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  p { text-wrap: pretty; }
+
+  ::selection {
+    background: var(--color-brand);
+    color: var(--color-forest);
+  }
+
+  /* Dark ring with a white halo: visible on white, mint, brand green and forest alike.
+     Shadow and ring utilities rebuild box-shadow from Tailwind's --tw-* layers, so the
+     halo rides in the ring-offset layer to survive them; plain elements use box-shadow. */
+  :focus-visible {
+    outline: 2px solid var(--color-forest);
+    outline-offset: 2px;
+    --tw-ring-offset-shadow: 0 0 0 5px var(--color-paper);
+    box-shadow: var(--tw-ring-offset-shadow);
+    border-radius: 10px;
+  }
+
+  img {
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+
+}
+
+/* ── Variant B (/v2): one rounded family at heavy weights, Duolingo-style. Shared
+   components that ask for display, sans or mono type get it too, so they fit in. ── */
+@layer base {
+  /* Nunito Variable comes from @fontsource-variable/nunito, imported by layouts/Ba.astro. */
+  .v2 {
+    --font-round: "Nunito Variable", ui-rounded, ui-sans-serif, system-ui, sans-serif;
+    --font-display: var(--font-round);
+    --font-sans: var(--font-round);
+    --font-mono: var(--font-round);
+    font-family: var(--font-round);
+    letter-spacing: 0;
+  }
+  .v2 :is(h1, h2, h3, h4) {
+    font-weight: 900;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer utilities {
+  .v2 .font-display { font-weight: 800; }
+  /* Duolingo's promo display: heavy caps leaning forward, slanted rather than a second italic font file. */
+  .v2 .shout { font-weight: 900; text-transform: uppercase; letter-spacing: -0.02em; transform: skewX(-8deg); }
+  .v2 :is(.label, .nums) { font-weight: 800; }
+}
+
+/* ── Variant B hero: the Tavis app phone wobbles, tips onto its back, and the
+   cast bursts out of it (Duolingo's opening). CSS so it plays before
+   hydration; with reduced motion every piece lands on its final frame. ── */
+@keyframes phone-open {
+  0% { opacity: 0; transform: scale(0.6) rotate(-10deg); }
+  10% { opacity: 1; transform: scale(1.05) rotate(-10deg); }
+  16% { transform: scale(1) rotate(-10deg); }
+  28% { transform: rotate(7deg); }
+  40% { transform: rotate(-6deg); }
+  50% { transform: rotate(4deg); }
+  60% { transform: rotate(-3deg); }
+  100% { opacity: 1; transform: translate(-6cqw, 25cqh) perspective(800px) rotateX(58deg) rotateZ(-28deg) scale(0.95); }
+}
+
+@keyframes icon-away {
+  0%, 55% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.2); }
+}
+
+/* Each piece starts on the phone's screen (--fx, --fy, in container units) and springs to its spot. */
+@keyframes burst {
+  0% { opacity: 0; transform: translate(calc(var(--fx) * 1cqw), calc(var(--fy) * 1cqh)) scale(0.1) rotate(-25deg); }
+  35% { opacity: 1; }
+  100% { opacity: 1; transform: none; }
+}
+
+@utility phone-open {
+  animation: phone-open 1.9s var(--ease-out-quart) both;
+}
+
+@utility icon-away {
+  animation: icon-away 1.9s ease-in both;
+}
+
+@utility burst {
+  animation: burst 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+/* ── Scenes (v2/scene.tsx): each plays its intro once, armed on its first frame until it comes into view. With no
+   data-scene state of "armed" or "play" the pieces simply rest on their last frame. ── */
+@keyframes grow-up {
+  from { transform: scaleY(0); }
+}
+
+@keyframes drop-in {
+  0% { opacity: 0; transform: translate3d(0, -45%, 0); }
+  40% { opacity: 1; }
+  100% { opacity: 1; transform: none; }
+}
+
+:is([data-scene="armed"], [data-scene="play"]) :is(.scene-burst, .scene-pop, .scene-grow, .scene-drop) {
+  animation-duration: 0.7s;
+  animation-delay: var(--delay, 0ms);
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+:is([data-scene="armed"], [data-scene="play"]) .scene-burst { animation-name: burst; }
+:is([data-scene="armed"], [data-scene="play"]) .scene-pop { animation-name: pop; animation-timing-function: var(--ease-out-quart); }
+:is([data-scene="armed"], [data-scene="play"]) .scene-grow { animation-name: grow-up; transform-origin: bottom; }
+:is([data-scene="armed"], [data-scene="play"]) .scene-drop { animation-name: drop-in; }
+[data-scene="armed"] :is(.scene-burst, .scene-pop, .scene-grow, .scene-drop) { animation-play-state: paused; }
+
+/* A scene's loops rest while it is off screen. */
+[data-scene][data-offscreen] :is(.animate-float, .animate-bounce, .animate-pulse, .animate-ping, .animate-spin-slow) {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Two white bands back to back would stack both paddings into a gap of up to 190px on a phone; the second one
+   halves its top there. Unlayered, so it wins over the band's own padding utility. */
+@media (width < 48rem) {
+  .v2 [data-band="white"] + [data-band="white"] {
+    padding-top: clamp(2.5rem, 1.5rem + 3.5vw, 4.5rem);
+  }
+}

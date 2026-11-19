@@ -1,0 +1,10 @@
+{
+  "$schema": "https://emdashcms.com/seed.schema.json",
+  "version": "1",
+  "meta": { "name": "Tavis", "description": "The Tavis marketing site", "author": "Cynco" },
+  "settings": {
+    "title": "Tavis",
+    "tagline": "Free practice and online tuition for Form 1–5 students in Malaysia"
+  },
+  "collections": []
+}

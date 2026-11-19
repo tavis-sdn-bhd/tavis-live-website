@@ -1,0 +1,13 @@
+---
+import Layout from "@/layouts/Ba.astro";
+import { detectPlatform, storeFor } from "@/lib/use-store-link";
+import Page from "@/views/get";
+
+// A phone that scanned the QR code goes straight to its store.
+const platform = detectPlatform(Astro.request.headers.get("user-agent") ?? "", 0);
+if (platform) return Astro.redirect(storeFor[platform], 302);
+---
+
+<Layout path="/get">
+  <Page client:idle path={Astro.url.pathname} />
+</Layout>
