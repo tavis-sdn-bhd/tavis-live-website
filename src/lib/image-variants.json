@@ -1,0 +1,233 @@
+{
+  "/assets/badge-class-achiever-transparent.webp": {
+    "base": "/variants/badge-class-achiever-transparent.888b5d88",
+    "widths": [
+      256
+    ],
+    "full": 311
+  },
+  "/assets/badge-royal-tavisian-transparent.webp": {
+    "base": "/variants/badge-royal-tavisian-transparent.9b3a9cfd",
+    "widths": [
+      256
+    ],
+    "full": 320
+  },
+  "/assets/badge-star-seeker-transparent.webp": {
+    "base": "/variants/badge-star-seeker-transparent.806a8262",
+    "widths": [
+      256
+    ],
+    "full": 320
+  },
+  "/assets/dr-suhada.webp": {
+    "base": "/variants/dr-suhada.58add4ff",
+    "widths": [
+      256,
+      384,
+      512
+    ],
+    "full": 534
+  },
+  "/assets/journey-2022.webp": {
+    "base": "/variants/journey-2022.b49b2ccb",
+    "widths": [
+      256,
+      384
+    ],
+    "full": 412
+  },
+  "/assets/journey-2023.webp": {
+    "base": "/variants/journey-2023.5401c76f",
+    "widths": [
+      256,
+      384,
+      512,
+      640,
+      828
+    ],
+    "full": 1000
+  },
+  "/assets/journey-2024.webp": {
+    "base": "/variants/journey-2024.a14ba07b",
+    "widths": [
+      256,
+      384,
+      512,
+      640,
+      828
+    ],
+    "full": 1000
+  },
+  "/assets/journey-2025.webp": {
+    "base": "/variants/journey-2025.dd6a9934",
+    "widths": [
+      256,
+      384,
+      512,
+      640,
+      828
+    ],
+    "full": 1000
+  },
+  "/assets/logo.webp": {
+    "base": "/variants/logo.a0974ccd",
+    "widths": [
+      256
+    ],
+    "full": 384
+  },
+  "/assets/media-ceritera.webp": {
+    "base": "/variants/media-ceritera.3d92da33",
+    "widths": [
+      256
+    ],
+    "full": 322
+  },
+  "/assets/media-citizens-journal.webp": {
+    "base": "/variants/media-citizens-journal.c704dc4b",
+    "widths": [],
+    "full": 136
+  },
+  "/assets/media-lumi.webp": {
+    "base": "/variants/media-lumi.05c50050",
+    "widths": [],
+    "full": 141
+  },
+  "/assets/media-malaysiagazette.webp": {
+    "base": "/variants/media-malaysiagazette.86b8e00b",
+    "widths": [
+      256
+    ],
+    "full": 298
+  },
+  "/assets/tavis-timetable-2027.png": {
+    "base": "/variants/tavis-timetable-2027.a18e7dd9",
+    "widths": [
+      256,
+      384,
+      512,
+      640,
+      828
+    ],
+    "full": 1080
+  },
+  "/assets/tuition-team-sm.webp": {
+    "base": "/variants/tuition-team-sm.19e18acb",
+    "widths": [
+      256,
+      384
+    ],
+    "full": 480
+  },
+  "/assets/tuition-team.webp": {
+    "base": "/variants/tuition-team.d22fc07b",
+    "widths": [
+      256,
+      384,
+      512,
+      640,
+      828
+    ],
+    "full": 1059
+  },
+  "/assets/tutor-aida.webp": {
+    "base": "/variants/tutor-aida.cb76d578",
+    "widths": [
+      256,
+      384
+    ],
+    "full": 426
+  },
+  "/assets/tutor-ameer.webp": {
+    "base": "/variants/tutor-ameer.eff3bef1",
+    "widths": [
+      256,
+      384
+    ],
+    "full": 500
+  },
+  "/assets/tutor-azri.webp": {
+    "base": "/variants/tutor-azri.e1c295ae",
+    "widths": [
+      256,
+      384
+    ],
+    "full": 478
+  },
+  "/assets/tutor-farid.webp": {
+    "base": "/variants/tutor-farid.26d34f9e",
+    "widths": [
+      256,
+      384
+    ],
+    "full": 500
+  },
+  "/assets/tutor-fathirah.webp": {
+    "base": "/variants/tutor-fathirah.e25a5696",
+    "widths": [
+      256,
+      384
+    ],
+    "full": 386
+  },
+  "/assets/tutor-izaat.webp": {
+    "base": "/variants/tutor-izaat.34227794",
+    "widths": [
+      256,
+      384
+    ],
+    "full": 445
+  },
+  "/assets/tutor-kamal.webp": {
+    "base": "/variants/tutor-kamal.ad508f28",
+    "widths": [
+      256,
+      384
+    ],
+    "full": 464
+  },
+  "/assets/tutor-mira.webp": {
+    "base": "/variants/tutor-mira.6c4d3c20",
+    "widths": [
+      256,
+      384
+    ],
+    "full": 433
+  },
+  "/assets/tutor-shwarrna.webp": {
+    "base": "/variants/tutor-shwarrna.ee58e483",
+    "widths": [
+      256,
+      384
+    ],
+    "full": 404
+  },
+  "/assets/tutor-sue-dino.webp": {
+    "base": "/variants/tutor-sue-dino.d7b254e9",
+    "widths": [
+      256,
+      384
+    ],
+    "full": 450
+  },
+  "/assets/tutor-syamim.webp": {
+    "base": "/variants/tutor-syamim.ee93acf5",
+    "widths": [
+      256,
+      384
+    ],
+    "full": 474
+  },
+  "/assets/tutors.webp": {
+    "base": "/variants/tutors.30464940",
+    "widths": [
+      256,
+      384,
+      512,
+      640,
+      828
+    ],
+    "full": 982
+  }
+}

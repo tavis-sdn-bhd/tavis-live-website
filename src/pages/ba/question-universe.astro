@@ -1,0 +1,8 @@
+---
+import Layout from "@/layouts/Ba.astro";
+import Page from "@/views/ba/question-universe";
+---
+
+<Layout path="/question-universe">
+  <Page client:idle path={Astro.url.pathname} />
+</Layout>

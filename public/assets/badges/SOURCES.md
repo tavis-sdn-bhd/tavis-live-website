@@ -1,0 +1,4 @@
+| Badge | File | Source URL | Fetched | Note |
+| --- | --- | --- | --- | --- |
+| Download on the App Store, black, English (US/UK) | app-store-black-en.svg | https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83&releaseDate=1262304000 | 2026-11-18 | Apple's Marketing Resources badge, artwork unaltered, only whitespace and the XML declaration stripped. Apple's guidelines: do not alter, 40px minimum height, clear space of a quarter of the badge height. |
+| Get it on Google Play, English | google-play-en.png | https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png | 2026-11-18 | Google's generic badge, 646x250, unaltered. Google Play and the Google Play logo are trademarks of Google LLC. The PNG carries the required clear space. |

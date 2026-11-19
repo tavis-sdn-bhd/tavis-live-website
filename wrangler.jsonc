@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tavis-live-website",
+  "main": "./src/worker.ts",
+  "compatibility_date": "2026-11-18",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [{ "binding": "DB", "database_name": "tavis-live-website" }],
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "tavis-live-media" }],
+  // Co-editing rooms, one Durable Object per entry being edited.
+  "durable_objects": { "bindings": [{ "name": "EMDASH_ROOMS", "class_name": "EmDashRoom" }] },
+  "exports": { "EmDashRoom": { "type": "durable-object", "storage": "sqlite" } },
+  // Contact form submissions, per visitor and across the site (src/middleware.ts). Periods can only be 10 or 60 seconds.
+  "ratelimits": [
+    { "name": "ENQUIRIES_PER_VISITOR", "namespace_id": "1001", "simple": { "limit": 3, "period": 60 } },
+    { "name": "ENQUIRIES_SITE_WIDE", "namespace_id": "1002", "simple": { "limit": 20, "period": 60 } }
+  ],
+  // EmDash's maintenance cron.
+  "triggers": { "crons": ["* * * * *"] }
+}

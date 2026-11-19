@@ -1,0 +1,10 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["src", "scripts", ".astro/types.d.ts", "emdash-env.d.ts", "worker-configuration.d.ts"]
+}
