@@ -13,7 +13,9 @@ Built by [Cynco](https://cynco.io). The repository moves to Tavis at handover.
 
 ## Status
 
-Design BA is ported from the proposal site and served at `/ba`. The root redirects there until the client chooses a design. Every page sends `noindex` until launch.
+Design BA is ported from the proposal site and served at `/ba`. The root redirects there until the client chooses a design (`public/_redirects`). Every page sends `noindex` until launch.
+
+BA's pages, `/get` and the 404 page are pre-rendered (`export const prerender = true`): built once at deploy and served as static files, so they never wake the Worker and cost no CPU. Their copy only changes with a deploy, as it already did. The Worker renders only what has to be live: the blog, EmDash's admin and API, and the contact form's submissions. On Workers' free plan a Worker request may use 10 ms of CPU and EmDash's start-up alone takes more, so those routes can fail there; the paid plan lifts the limit.
 
 `/get` is the footer QR code's target. Phones are redirected to their app store, and other devices see the store badges.
 
@@ -49,8 +51,9 @@ The first visit to `/_emdash/admin` runs EmDash's setup. Locally, the dev server
 | `src/lib/site.ts` | Pages, titles, and the prefix each design lives under |
 | `src/og/cards.ts` | Each page's Open Graph card: its words and its art |
 | `src/middleware.ts` | Contact form rate limits and checks, security and `noindex` headers |
+| `public/_headers`, `public/_redirects` | The same headers for static files and pre-rendered pages, and the root redirect, applied by Cloudflare before the Worker |
 
-When a design is chosen, set its prefix in `src/lib/site.ts` to `""`, move its routes to `src/pages/`, and drop the root redirect and the `noindex` header.
+When a design is chosen, set its prefix in `src/lib/site.ts` to `""`, move its routes to `src/pages/`, and drop the root redirect (`public/_redirects`) and the `noindex` header (`src/middleware.ts` and `public/_headers`).
 
 ## Blog
 

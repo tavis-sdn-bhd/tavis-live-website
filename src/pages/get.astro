@@ -1,13 +1,19 @@
 ---
 import Layout from "@/layouts/Ba.astro";
-import { detectPlatform, storeFor } from "@/lib/use-store-link";
 import Page from "@/views/get";
 
-// A phone that scanned the QR code goes straight to its store.
-const platform = detectPlatform(Astro.request.headers.get("user-agent") ?? "", 0);
-if (platform) return Astro.redirect(storeFor[platform], 302);
+// Static, so a scan never waits on the Worker; a phone is sent to its store by the script below as the page loads.
+export const prerender = true;
 ---
 
 <Layout path="/get">
   <Page client:idle path={Astro.url.pathname} />
 </Layout>
+
+<script>
+  // A phone that scanned the QR code goes straight to its store, before the page's island hydrates.
+  import { detectPlatform, storeFor } from "@/lib/use-store-link";
+
+  const platform = detectPlatform(navigator.userAgent, navigator.maxTouchPoints);
+  if (platform) window.location.replace(storeFor[platform]);
+</script>

@@ -1,0 +1,3 @@
+# Cloudflare Workers static assets applies these before the Worker runs, so they cost no CPU.
+# The client is still choosing a design; until one moves to /, the root opens design BA (src/lib/site.ts, defaultDesign).
+/  /ba  302

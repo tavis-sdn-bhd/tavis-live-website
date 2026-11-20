@@ -1,6 +1,0 @@
----
-import { defaultDesign, hrefIn } from "@/lib/site";
-
-// The client is still choosing a design; until one moves to /, the root opens the default one.
-return Astro.redirect(hrefIn(defaultDesign, "/"), 302);
----
