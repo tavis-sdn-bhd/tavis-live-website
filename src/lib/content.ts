@@ -30,7 +30,8 @@ export function formRange(from: number, to?: number) {
 
 /** "Bite-sized" that never breaks at its hyphen, which would leave "bite-" hanging at the end of a line. */
 export function biteSized(capital = false) {
-  return `${capital ? "B" : "b"}ite\u2060-\u2060sized`;
+  const word = "bite\u2060-\u2060sized";
+  return capital ? word.charAt(0).toUpperCase() + word.slice(1) : word;
 }
 
 /** Every form Tavis teaches. */

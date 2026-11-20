@@ -1,9 +1,10 @@
 ---
 export const prerender = true;
+import { routePath } from "@/lib/pathname";
 import Layout from "@/layouts/Ba.astro";
 import Page from "@/views/ba/not-found";
 ---
 
 <Layout notFound>
-  <Page client:idle path={Astro.url.pathname} />
+  <Page client:idle path={routePath(Astro.url)} />
 </Layout>

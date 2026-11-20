@@ -33,7 +33,10 @@ async function guardSubmission(request: Request): Promise<Response | null> {
     env.ENQUIRIES_SITE_WIDE.limit({ key: "all" }),
   ]);
   if (!perVisitor.success || !siteWide.success) {
-    return rejected(429, [{ field: "", message: "Too many messages just now. Try again in a minute, or use WhatsApp." }]);
+    // The form posts from a page; a Malay page's visitor gets the answer in Malay.
+    const malay = /^https?:\/\/[^/]+\/ms(?:[/?#]|$)/.test(request.headers.get("referer") ?? "");
+    const message = malay ? "Terlalu banyak mesej buat masa ini. Cuba lagi dalam seminit, atau guna WhatsApp." : "Too many messages just now. Try again in a minute, or use WhatsApp.";
+    return rejected(429, [{ field: "", message }]);
   }
 
   const body: unknown = await request.clone().json().catch(() => null);

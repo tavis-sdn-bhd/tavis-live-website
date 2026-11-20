@@ -1,4 +1,5 @@
 ---
+import { routePath } from "@/lib/pathname";
 import Layout from "@/layouts/Ba.astro";
 import Page from "@/views/get";
 
@@ -7,7 +8,7 @@ export const prerender = true;
 ---
 
 <Layout path="/get">
-  <Page client:idle path={Astro.url.pathname} />
+  <Page client:idle path={routePath(Astro.url)} />
 </Layout>
 
 <script>

@@ -1,3 +1,5 @@
+import { isEnglishOnly, locale, localePrefix } from "./locale";
+
 export const siteUrl = "https://www.tavis.live";
 export const siteName = "Tavis";
 
@@ -67,9 +69,13 @@ export type PagePath = keyof typeof pages;
 export type DesignId = "ba";
 export type DeckPage = { href: PagePath; label: string; description: string };
 
-/* Each design's URL prefix. BA was chosen and is the site at /, so its prefix is empty; the old /ba URLs redirect
-   (public/_redirects). */
-const prefixes: Record<DesignId, string> = { ba: "" };
+/** Whether the header lists the pages inline from xl. Malay labels run about half again as long as English ones and
+    don't fit beside the actions in the 78rem shell, so the Malay header keeps them in its menu at every width. */
+export const inlineNav = locale === "en";
+
+/* Each design's URL prefix. BA was chosen and is the site at /, so its prefix is the language's: none in English,
+   /ms in Malay. The old /ba URLs redirect (public/_redirects). */
+const prefixes: Record<DesignId, string> = { ba: localePrefix[locale] };
 
 /** The design the root opens, and the one pages outside every design (/get, a 404) link into. */
 export const defaultDesign: DesignId = "ba";
@@ -90,7 +96,7 @@ export function navOf(design: DesignId): DeckPage[] {
 
 /** A deck path in a design, under its prefix. BA has none, so its paths are unchanged. */
 export function hrefIn(design: DesignId, path: string) {
-  if (!path.startsWith("/")) return path;
+  if (!path.startsWith("/") || isEnglishOnly(path)) return path;
   const prefix = prefixes[design];
   if (!prefix) return path;
   return prefix + (/^\/(?:[#?]|$)/.test(path) ? path.slice(1) : path);

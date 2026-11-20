@@ -1,6 +1,7 @@
 import { hero } from "@/lib/content";
 import { aboutPage, parentsPage, questionUniverse, rewardsPage, tuitionPage, tutorsPage } from "@/lib/pages";
 import type { PagePath } from "@/lib/site";
+import { type Locale, locale } from "@/lib/locale";
 import type { Mood } from "@/components/mascot";
 import type { Outfit } from "@/components/mascot-outfits";
 
@@ -41,7 +42,10 @@ export const ogCards: Record<PagePath, OgCard> = {
 export const ogSlug = (path: PagePath) => (path === "/" ? "home" : path.slice(1));
 
 /** Where a page's card is served, from the site root. */
-export const ogImagePath = (path: PagePath) => `/og/ba/${ogSlug(path)}.png`;
+export const ogImagePath = (path: PagePath) => `/og/${ogFolder[locale]}/${ogSlug(path)}.png`;
+
+/** Each language's cards, in public/og. English kept the folder it had when designs were named by letter. */
+const ogFolder: Record<Locale, string> = { en: "ba", ms: "ms" };
 
 /** Satori draws a word joiner as a gap and lays out each line itself, so the copy's no-break characters go. */
 export const plain = (line: string) => line.replace(/\u2060/g, "").replace(/\u00a0/g, " ");

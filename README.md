@@ -23,6 +23,21 @@ Any unknown path returns a 404 page in BA's style, with a link to every page.
 
 Page copy still lives in `src/lib/content.ts` and `src/lib/pages.ts`. It moves into EmDash collections next.
 
+## Languages
+
+The site is in English at `/` and Malay at `/ms`. The header links each page to its twin, and each page names both in `hreflang` tags. The blog and `/get` are English-only, so both languages link to them unchanged (`src/lib/locale.ts`).
+
+English is the source. `scripts/i18n/generate.ts` writes the Malay site as a twin of `src` under `src/ms`, plus its pages under `src/pages/ms`. It swaps every string the dictionary `i18n/ms.json` has word for word. Both folders are generated and gitignored, and `pnpm dev` and `pnpm build` regenerate them first.
+
+- **Change English copy** in `src` as usual, then add the new Malay line to `i18n/ms.json`.
+- **Check coverage** with `pnpm i18n:check`. It lists every English string with no Malay and every dictionary entry nothing uses, and exits 1 on either.
+- **`translations`** maps English to Malay for every file. A template literal's key is its source between the backticks, `${…}` included. The Malay must use the same `${…}` expressions, in any order.
+- **`keep`** lists English that stays English in Malay: names, brands, subjects, and the students' quotes.
+- **`files`** holds a per-file entry, for a string that needs a different Malay in one place.
+- **Untranslated on purpose:** the coded app screens (`phone-app`, `stageshow`, `app-demos`, the practice question), which show the real app's own UI.
+
+The Malay header keeps the pages in its menu at every width (`inlineNav` in `src/lib/site.ts`), because Malay labels don't fit beside the actions. Five FAQ answers use Tavis's own Malay wording from the brief.
+
 ## Develop
 
 ```bash

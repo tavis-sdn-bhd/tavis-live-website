@@ -1,10 +1,12 @@
 ---
+import { routePath } from "@/lib/pathname";
 import "@fontsource-variable/nunito";
 import "@/styles/globals.css";
 import { StructuredData } from "@/components/structured-data";
 import { links } from "@/lib/content";
 import { ogAlt, ogImagePath, ogSize } from "@/og/cards";
-import { type PagePath, pageMeta, siteName } from "@/lib/site";
+import { type PagePath, pageMeta, siteName, siteUrl } from "@/lib/site";
+import { htmlLang, isEnglishOnly, locale, ogLocale, pathIn } from "@/lib/locale";
 import { BaChat, BaFooter, BaHeader } from "@/views/ba/chrome";
 
 /** What a page with its own content (a blog post) says about itself, in place of its deck page's title and card. */
@@ -28,10 +30,12 @@ const ogImage = new URL(own?.image?.url ?? ogImagePath(page), Astro.url).href;
 const ogImageMeta = own?.image ?? { ...ogSize, alt: ogAlt(page), type: "image/png" };
 const appStoreId = "1580342756";
 const androidPackage = "com.tavis.tavisapp.v26";
+// A page with a twin in the other language names both, so search engines show each reader theirs.
+const twins = Astro.props.notFound || isEnglishOnly(page) ? null : { en: siteUrl + pathIn("en", routePath(Astro.url)), ms: siteUrl + pathIn("ms", routePath(Astro.url)) };
 ---
 
 <!doctype html>
-<html lang="en-MY">
+<html lang={htmlLang[locale]}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -42,7 +46,8 @@ const androidPackage = "com.tavis.tavisapp.v26";
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:site_name" content={siteName} />
-    <meta property="og:locale" content="en_MY" />
+    <meta property="og:locale" content={ogLocale[locale]} />
+    {twins && <meta property="og:locale:alternate" content={ogLocale[locale === "en" ? "ms" : "en"]} />}
     <meta property="og:type" content={own?.article ? "article" : "website"} />
     {own?.article && <meta property="article:published_time" content={own.article.publishedTime} />}
     <meta property="og:image" content={ogImage} />
@@ -60,6 +65,9 @@ const androidPackage = "com.tavis.tavisapp.v26";
     <meta property="al:ios:app_name" content={siteName} />
     <meta property="al:android:package" content={androidPackage} />
     <meta property="al:android:app_name" content={siteName} />
+    {twins && <link rel="alternate" hreflang="en-MY" href={twins.en} />}
+    {twins && <link rel="alternate" hreflang="ms-MY" href={twins.ms} />}
+    {twins && <link rel="alternate" hreflang="x-default" href={twins.en} />}
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" href="/icon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-icon.png" />
@@ -74,9 +82,9 @@ const androidPackage = "com.tavis.tavisapp.v26";
     >
       Skip to content
     </a>
-    <BaHeader client:load path={Astro.url.pathname} />
+    <BaHeader client:load path={routePath(Astro.url)} />
     <main id="main"><slot /></main>
-    <BaFooter client:visible path={Astro.url.pathname} />
-    <BaChat client:idle path={Astro.url.pathname} />
+    <BaFooter client:visible path={routePath(Astro.url)} />
+    <BaChat client:idle path={routePath(Astro.url)} />
   </body>
 </html>

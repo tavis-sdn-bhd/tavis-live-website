@@ -25,3 +25,7 @@ data.db-*
 /public/og/
 # cf CLI build output, local state and generated types
 .cloudflare/
+
+# Written by scripts/i18n/generate.ts from src and i18n/ms.json.
+src/ms/
+src/pages/ms/
