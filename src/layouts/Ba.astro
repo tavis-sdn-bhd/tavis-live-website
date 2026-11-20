@@ -19,8 +19,9 @@ export type OwnMeta = {
 };
 
 /** A page of the site, or the 404, which shares the home page's card. A page under a deck page (a post under /blog)
-    names that page as `path` and brings its own `meta`. */
-type Props = ({ path: PagePath; notFound?: never } | { notFound: true; path?: never }) & { meta?: OwnMeta };
+    names that page as `path` and brings its own `meta`. `address` is the page's own path where the URL's path alone
+    doesn't say it: an index page's "?page=". */
+type Props = ({ path: PagePath; notFound?: never } | { notFound: true; path?: never }) & { meta?: OwnMeta; address?: string };
 
 const page: PagePath = Astro.props.path ?? "/";
 const own = Astro.props.meta;
@@ -32,6 +33,8 @@ const appStoreId = "1580342756";
 const androidPackage = "com.tavis.tavisapp.v26";
 const route = routePath(Astro.url);
 // A page with a twin in the other language names both, so search engines show each reader theirs.
+// The one address search engines should keep for this page, whichever host or old path it was reached by.
+const canonical = Astro.props.notFound ? null : siteUrl + (Astro.props.address ?? route);
 const twins = Astro.props.notFound || !hasTwin(page) ? null : { en: siteUrl + pathIn("en", route), ms: siteUrl + pathIn("ms", route) };
 ---
 
@@ -43,6 +46,8 @@ const twins = Astro.props.notFound || !hasTwin(page) ? null : { en: siteUrl + pa
     <meta name="theme-color" content="#ffffff" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    {canonical && <meta property="og:url" content={canonical} />}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:site_name" content={siteName} />
