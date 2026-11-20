@@ -47,13 +47,12 @@ async function guardSubmission(request: Request): Promise<Response | null> {
   return errors.length ? rejected(400, errors) : null;
 }
 
-/** A copy of the response with the security headers, and `noindex` until a design goes live at /. A copy because a
+/** A copy of the response with the security headers. A copy because a
     redirect or a fetched response has immutable headers. A WebSocket upgrade (co-editing) passes as it is. */
 function secured(response: Response): Response {
   if (response.status === 101) return response;
   const copy = new Response(response.body, response);
   for (const [name, value] of Object.entries(securityHeaders)) if (!copy.headers.has(name)) copy.headers.set(name, value);
-  copy.headers.set("X-Robots-Tag", "noindex, nofollow");
   return copy;
 }
 

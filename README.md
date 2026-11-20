@@ -13,7 +13,7 @@ Built by [Cynco](https://cynco.io). The repository moves to Tavis at handover.
 
 ## Status
 
-Design BA is ported from the proposal site and served at `/`. The old `/ba` addresses redirect there, and so do tavis.live's old addresses (`public/_redirects`). Every page sends `noindex` until launch.
+Design BA is ported from the proposal site and served at `/`. The old `/ba` addresses redirect there, and so do tavis.live's old addresses (`public/_redirects`).
 
 BA's pages, `/get` and the 404 page are pre-rendered (`export const prerender = true`): built once at deploy and served as static files, so they never wake the Worker and cost no CPU. Their copy only changes with a deploy, as it already did. The Worker renders only what has to be live: the blog, EmDash's admin and API, and the contact form's submissions. On Workers' free plan a Worker request may use 10 ms of CPU and EmDash's start-up alone takes more, so those routes can fail there; the paid plan lifts the limit.
 
@@ -65,7 +65,7 @@ The first visit to `/_emdash/admin` runs EmDash's setup. Locally, the dev server
 | `src/components/` | The React components the pages share |
 | `src/lib/site.ts` | Pages, titles, and each language's path prefix |
 | `src/og/cards.ts` | Each page's Open Graph card: its words and its art |
-| `src/middleware.ts` | Contact form rate limits and checks, security and `noindex` headers |
+| `src/middleware.ts` | Contact form rate limits and checks, and security headers |
 | `public/_headers`, `public/_redirects` | The same headers for static files and pre-rendered pages, and the redirects from old addresses, applied by Cloudflare before the Worker |
 
 ## Blog
@@ -148,8 +148,7 @@ The adapter also binds `SESSION` (KV) and `IMAGES` (Cloudflare Images); `cf depl
 
 ## Launch
 
-When `tavis.live` points at this Worker:
+The site no longer sends `noindex`, so deploy this only once `tavis.live` points at this Worker. Then:
 
-1. Remove `X-Robots-Tag` from `public/_headers` and `src/middleware.ts`, and the `robots` meta from `src/layouts/Ba.astro`.
-2. Submit both sitemaps in Google Search Console: `/sitemap.xml` (EmDash's, the blog's posts) and `/sitemap-pages.xml` (the site's pages in both languages). EmDash serves `/robots.txt` and names only its own. To name both, add `Sitemap: https://www.tavis.live/sitemap-pages.xml` under the admin's SEO settings, and EmDash appends its own line.
-3. Set up form emails (Contact form, above).
+1. Submit both sitemaps in Google Search Console: `/sitemap.xml` (EmDash's, the blog's posts) and `/sitemap-pages.xml` (the site's pages in both languages). EmDash serves `/robots.txt` and names only its own. To name both, add `Sitemap: https://www.tavis.live/sitemap-pages.xml` under the admin's SEO settings, and EmDash appends its own line.
+2. Set up form emails (Contact form, above).
