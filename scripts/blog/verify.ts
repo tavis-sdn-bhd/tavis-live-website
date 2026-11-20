@@ -2,7 +2,8 @@
 //   node scripts/blog/verify.ts [--url http://localhost:4321]
 // For every inventoried post: its old tavis.live path redirects to its page, the page answers 200 with the post's
 // title and its whole body (word for word, as the inventory has it), and its cover image loads. It also counts the
-// posts the index lists across its pages, and follows every link on the index and post pages that stays on the site.
+// posts the index lists across its pages, follows every link on the index and post pages that stays on the site, and
+// asks for a post that doesn't exist, which must be the 404 page.
 // Exits 1 on any failure, naming it.
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -102,6 +103,10 @@ async function main() {
       await image.arrayBuffer();
     }
   }
+
+  const unknown = `${blog}/no-such-post`;
+  const missing = await get(unknown);
+  if (missing.response.status !== 404 || !missing.html.includes("<h1")) fail(`${unknown}: HTTP ${missing.response.status}, ${missing.html.length} bytes`);
 
   for (const link of links) {
     const { response } = await get(link, "manual");
