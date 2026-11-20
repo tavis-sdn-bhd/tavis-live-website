@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { type ComponentType, type RefObject, type SVGProps, useEffect, useId, useRef, useState } from "react";
 import { hero as home, links } from "@/lib/content";
 import { type DesignId, type PagePath, navOf } from "@/lib/site";
-import { BookOpen, Brain, CaretRight, Check, Gift, PlayCircle, SealCheck, Student } from "../icons";
+import { BookOpen, Brain, CaretRight, Check, Gift, Newspaper, PlayCircle, SealCheck, Student } from "../icons";
 import { easeOutExpo, exitAfter } from "../motion";
 import { NewTab, cx } from "../ui";
 import { GetButton } from "./get-button";
@@ -31,13 +31,15 @@ function usePastHero(header: RefObject<HTMLElement | null>, pathname: string) {
   return past;
 }
 
-/** Each page's tile in the menu: its icon on one of the brand fills, the way the feature tiles are drawn. */
-const pageTiles: Partial<Record<PagePath, { icon: ComponentType<SVGProps<SVGSVGElement>>; fill: string }>> = {
+/** Each page's tile in the menu: its icon on one of the brand fills, the way the feature tiles are drawn. Keyed by path
+    rather than PagePath, so a page only the Astro port has (its blog) can have a tile in this shared file. */
+const pageTiles: Partial<Record<PagePath | "/blog", { icon: ComponentType<SVGProps<SVGSVGElement>>; fill: string }>> = {
   "/question-universe": { icon: Brain, fill: "bg-sky-ink text-white" },
   "/rewards": { icon: Gift, fill: "bg-sun text-forest" },
   "/online-tuition": { icon: PlayCircle, fill: "bg-brand text-forest" },
   "/tutors": { icon: Student, fill: "bg-sky-ink text-white" },
   "/parents": { icon: SealCheck, fill: "bg-sun text-forest" },
+  "/blog": { icon: Newspaper, fill: "bg-sky-ink text-white" },
   "/about": { icon: BookOpen, fill: "bg-brand text-forest" },
 };
 

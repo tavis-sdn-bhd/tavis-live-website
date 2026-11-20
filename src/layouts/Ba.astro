@@ -49,7 +49,7 @@ const androidPackage = "com.tavis.tavisapp.v26";
     {"type" in ogImageMeta && <meta property="og:image:type" content={ogImageMeta.type} />}
     <meta property="og:image:width" content={String(ogImageMeta.width)} />
     <meta property="og:image:height" content={String(ogImageMeta.height)} />
-    <meta property="og:image:alt" content={ogImageMeta.alt} />
+    {ogImageMeta.alt && <meta property="og:image:alt" content={ogImageMeta.alt} />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImage} />
     <meta name="twitter:title" content={title} />

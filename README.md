@@ -59,7 +59,7 @@ The blog is at `/ba/blog`, a post at `/ba/blog/<slug>`. Posts live in EmDash's `
 The 56 posts from the old tavis.live (Webflow) were brought over in three steps, each a script you can rerun:
 
 1. `pnpm blog:inventory` reads tavis.live's sitemap, `/blog` and every post, and writes `seed/blog-inventory.json`: each post's text as served, its body as Portable Text, its SEO fields, and what the source lacks. It downloads every image a post shows into `seed/blog/media/`, so nothing later needs the old site. It stops on markup it does not know rather than drop it.
-2. `pnpm blog:import [--url <site>]` uploads the images to EmDash's media library and creates or updates each post, matched by slug, then publishes it. A rerun changes nothing that is current: EmDash knows an image it already holds by its hash, and an unchanged post is skipped. Locally it signs in through the dev bypass; anywhere else it needs `EMDASH_TOKEN`.
+2. `pnpm blog:import [--url <site>]` uploads the images to EmDash's media library and creates or updates each post, matched by slug, then publishes it. A rerun changes nothing that is current: EmDash knows an image it already holds by its hash, and an unchanged post is skipped. Locally it signs in through the dev bypass; anywhere else it needs `EMDASH_TOKEN`. The inventory wins: a rerun puts back any imported post edited in the admin since, so once posts are edited there, stop rerunning it.
 3. `pnpm blog:verify [--url <site>]` checks every inventoried post on a running site: listed on the index, its old URL redirecting to it, its title and whole body word for word, its cover image, and every link on those pages.
 
 No post on tavis.live shows a date or an author. The date each post shows is the creation time in its Webflow page id, which follows the old index's order; `seed/blog-inventory.json` lists that and everything else missing at the source.
@@ -72,8 +72,8 @@ At launch, besides the steps under Status: delete `src/pages/blog.astro` (the bl
 
 R2 must be enabled on the Cloudflare account and the `tavis-live-media` bucket created before EmDash can store the images. Then:
 
-1. Deploy and run setup at `/_emdash/admin`. Setup applies `seed/seed.json`, which creates the `posts` collection.
-2. As an admin, create an API token under Settings › API tokens with the content and media read and write scopes. Writing a post's date needs an admin's or editor's token.
+1. Check the `IMAGES` (Cloudflare Images) binding the adapter adds: the blog's responsive images are resized through it, and without it every phone gets the full-size originals. Deploy and run setup at `/_emdash/admin`. Setup applies `seed/seed.json`, which creates the `posts` collection.
+2. As an admin, create an API token under Settings › API tokens with the scopes `content:read`, `content:write`, `media:read`, `media:write` and `schema:read`. Writing a post's date needs an admin's or editor's token.
 3. Run the import against the deployed site, then the check:
 
 ```bash

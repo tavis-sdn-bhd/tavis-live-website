@@ -18,6 +18,10 @@ export default defineConfig({
       plugins: [formsPlugin({ defaultSpamProtection: "honeypot" })],
     }),
   ],
+  // EmDash builds srcsets for media-library images (the blog's) through Astro's image service, which only resizes URLs on
+  // hosts listed here; anything else is served at full size. localhost covers `astro preview`. A preview on
+  // workers.dev serves full-size images unless its host is added.
+  image: { domains: ["www.tavis.live", "tavis.live", "localhost"] },
   vite: { plugins: [tailwindcss()] },
   devToolbar: { enabled: false },
 });

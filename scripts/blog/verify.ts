@@ -7,11 +7,14 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { parseArgs } from "node:util";
+import { defaultDesign, hrefIn } from "../../src/lib/site.ts";
 import { type BlogInventory, inventoryPath, oldPostPath } from "./shared.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const { values: args } = parseArgs({ options: { url: { type: "string" } } });
 const base = new URL(args.url ?? process.env.EMDASH_URL ?? "http://localhost:4321");
+/** The blog's paths in the design the site opens: /ba/blog until it moves to /. */
+const blog = hrefIn(defaultDesign, "/blog");
 
 const failures: string[] = [];
 const fail = (message: string) => {
@@ -52,14 +55,14 @@ async function main() {
   // The index, page by page, until it runs out.
   const listed: string[] = [];
   for (let page = 1; ; page++) {
-    const { response, html } = await get(page === 1 ? "/ba/blog" : `/ba/blog?page=${page}`);
+    const { response, html } = await get(page === 1 ? blog : `${blog}?page=${page}`);
     if (response.status === 404 && page > 1) break;
     if (response.status !== 200) {
       fail(`index page ${page}: HTTP ${response.status}`);
       break;
     }
     collectLinks(html);
-    for (const [, slug] of html.matchAll(/<article\b[\s\S]*?href="\/ba\/blog\/([^"?#]+)"/g)) listed.push(slug!);
+    for (const [, slug] of html.matchAll(new RegExp(`<article\\b[\\s\\S]*?href="${blog}/([^"?#]+)"`, "g"))) listed.push(slug!);
   }
   const unlisted = [...slugs].filter((slug) => !listed.includes(slug));
   if (unlisted.length) fail(`index omits ${unlisted.join(", ")}`);
@@ -67,7 +70,7 @@ async function main() {
 
   let bodiesMatch = 0;
   for (const post of inventory.posts) {
-    const page = `/ba/blog/${post.slug}`;
+    const page = `${blog}/${post.slug}`;
 
     const old = await get(oldPostPath(post.slug), "manual");
     const location = old.response.headers.get("location");

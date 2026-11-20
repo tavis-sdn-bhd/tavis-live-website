@@ -46,9 +46,9 @@ export type IndexPage =
   | { kind: "out-of-range"; pages: number }
   | { kind: "error" };
 
-/** One page of the index, newest first. */
+/** One page of the index, newest first. A failed read, returned or thrown, is an `error` page. */
 export async function indexPage(page: number): Promise<IndexPage> {
-  const { entries, error } = await getEmDashCollection("posts", { status: "published", orderBy: newestFirst, limit: 1000 });
+  const { entries, error } = await getEmDashCollection("posts", { status: "published", orderBy: newestFirst, limit: 1000 }).catch((thrown: unknown) => ({ entries: [], error: thrown }));
   if (error) {
     console.error("blog index:", error);
     return { kind: "error" };
@@ -66,16 +66,17 @@ export type PostPage =
 
 /** A published post, with the posts either side of it by date. */
 export async function postPage(slug: string): Promise<PostPage> {
-  const { entry, error } = await getEmDashEntry("posts", slug);
+  const { entry, error } = await getEmDashEntry("posts", slug).catch((thrown: unknown) => ({ entry: null, error: thrown }));
   if (error) {
     console.error(`blog post ${slug}:`, error);
     return { kind: "error" };
   }
   if (!entry || entry.data.status !== "published" || !entry.data.publishedAt) return { kind: "missing" };
   const at = entry.data.publishedAt.toISOString();
+  const none = { entries: [] };
   const [newer, older] = await Promise.all([
-    getEmDashCollection("posts", { status: "published", where: { published_at: { gt: at } }, orderBy: { published_at: "asc" }, limit: 1 }),
-    getEmDashCollection("posts", { status: "published", where: { published_at: { lt: at } }, orderBy: newestFirst, limit: 1 }),
+    getEmDashCollection("posts", { status: "published", where: { published_at: { gt: at } }, orderBy: { published_at: "asc" }, limit: 1 }).catch(() => none),
+    getEmDashCollection("posts", { status: "published", where: { published_at: { lt: at } }, orderBy: newestFirst, limit: 1 }).catch(() => none),
   ]);
   return { kind: "post", post: entry, newer: newer.entries[0] ?? null, older: older.entries[0] ?? null };
 }
