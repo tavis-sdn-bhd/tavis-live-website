@@ -13,7 +13,7 @@ Built by [Cynco](https://cynco.io). The repository moves to Tavis at handover.
 
 ## Status
 
-Design BA is ported from the proposal site and served at `/ba`. The root redirects there until the client chooses a design (`public/_redirects`). Every page sends `noindex` until launch.
+Design BA is ported from the proposal site and served at `/`. The old `/ba` addresses redirect there, and so do tavis.live's old addresses (`public/_redirects`). Every page sends `noindex` until launch.
 
 BA's pages, `/get` and the 404 page are pre-rendered (`export const prerender = true`): built once at deploy and served as static files, so they never wake the Worker and cost no CPU. Their copy only changes with a deploy, as it already did. The Worker renders only what has to be live: the blog, EmDash's admin and API, and the contact form's submissions. On Workers' free plan a Worker request may use 10 ms of CPU and EmDash's start-up alone takes more, so those routes can fail there; the paid plan lifts the limit.
 
@@ -95,7 +95,19 @@ The footer form posts to EmDash's forms plugin. Submissions appear in the admin 
 - Fields: `name` (text, required), `email` (email, required), `phone` (tel), `message` (textarea, required), `page` (hidden)
 - Spam protection: honeypot
 
-Add the addresses that should hear about new messages under the form's notification settings.
+Add the addresses that should hear about new messages under the form's notification settings. Those emails need an email provider: EmDash sends through Cloudflare Email Sending, which only works once `tavis.live` is a zone on the Tavis account. Until then submissions are stored in the admin and sent to Google Sheets, but no email goes out. At launch, onboard `tavis.live` for Email Sending, add `cloudflareEmail({ from: "…@tavis.live" })` from `@emdash-cms/cloudflare` to the `plugins` in `astro.config.mjs`, and add a `send_email` binding named `EMAIL` to `cloudflare.config.ts`.
+
+### Leads in Google Sheets
+
+The form's **Webhook URL** setting posts every submission as JSON. `scripts/google-sheets-leads.gs` receives it and adds a row to a Google Sheet.
+
+1. Create a Google Sheet in Tavis's Google account. Open **Extensions › Apps Script**.
+2. Replace the editor's contents with `scripts/google-sheets-leads.gs`, and save.
+3. Select **Deploy › New deployment**, type **Web app**. Set **Execute as** to *Me* and **Who has access** to *Anyone*. Deploy, allow access, and copy the web app URL.
+4. In the EmDash admin, open **Forms › contact › Settings** and paste the URL into **Webhook URL**.
+5. Send a test message from the site's footer. A row appears in the sheet within a few seconds.
+
+The URL is the only key to the sheet, so keep it out of the repository. To be emailed about each new row, use the sheet's **Tools › Notification settings**.
 
 Before a submission reaches the plugin, `src/middleware.ts` applies two Cloudflare rate limits from `cloudflare.config.ts`: 3 a minute per visitor and 20 a minute across the site. It also checks the contact form's fields against the limits in `src/lib/enquiry.ts`, which the form's inputs use too.
 
