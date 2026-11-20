@@ -94,22 +94,24 @@ The footer form posts to EmDash's forms plugin. Submissions appear in the admin 
 
 Add the addresses that should hear about new messages under the form's notification settings.
 
-Before a submission reaches the plugin, `src/middleware.ts` applies two Cloudflare rate limits from `wrangler.jsonc`: 3 a minute per visitor and 20 a minute across the site. It also checks the contact form's fields against the limits in `src/lib/enquiry.ts`, which the form's inputs use too.
+Before a submission reaches the plugin, `src/middleware.ts` applies two Cloudflare rate limits from `cloudflare.config.ts`: 3 a minute per visitor and 20 a minute across the site. It also checks the contact form's fields against the limits in `src/lib/enquiry.ts`, which the form's inputs use too.
 
 ## Deploy
 
-Deploy from a Cloudflare account Tavis owns. Before the first deploy, create the database and bucket that `wrangler.jsonc` names, then add the database's `database_id` to `wrangler.jsonc`:
+Deploys run through Cloudflare's `cf` CLI, configured by `cloudflare.config.ts`, which pins the Tavis-owned account (`Admin@tavis.live`). `cf` must be signed in to it: `cf auth whoami`. The Astro adapter (15, which builds with Cloudflare's Vite plugin v2) writes the Worker to `.cloudflare/output`, and `pnpm run deploy` builds and then uploads it with `cf deploy --prebuilt`. `pnpm types` regenerates the bindings' types in `.cloudflare/types`; `pnpm typecheck` runs it first. Locally, `pnpm dev` keeps D1 and R2 in `.cloudflare/state`.
+
+Before the first deploy, turn on R2 for the account in the dashboard, then create the database and bucket the config names:
 
 ```bash
-pnpm exec wrangler d1 create tavis-live-website
+cf d1 create --name tavis-live-website
 ```
 
 ```bash
-pnpm exec wrangler r2 bucket create tavis-live-media
+cf r2 buckets create --name tavis-live-media
 ```
 
 ```bash
-pnpm deploy
+pnpm run deploy
 ```
 
-The Astro Cloudflare adapter also binds `SESSION` (KV) and `IMAGES` (Cloudflare Images), which `wrangler.jsonc` doesn't list. Check them on the first deploy. The site is served on `*.workers.dev` until `tavis.live` moves to that account.
+The adapter also binds `SESSION` (KV) and `IMAGES` (Cloudflare Images); `cf deploy --prebuilt --dry-run` lists every binding the Worker will get. The site is served on `*.workers.dev` until `tavis.live` moves to that account.

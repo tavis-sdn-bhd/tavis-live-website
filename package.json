@@ -13,9 +13,9 @@
     "prebuild": "pnpm assets",
     "build": "astro build",
     "preview": "astro preview",
-    "deploy": "pnpm build && wrangler deploy",
-    "typecheck": "astro check",
-    "cf-types": "wrangler types",
+    "deploy": "pnpm build && cf deploy --prebuilt",
+    "typecheck": "cf workers types && astro check",
+    "types": "cf workers types",
     "og": "node --import tsx scripts/og-cards.tsx",
     "assets": "pnpm images && pnpm og",
     "blog:inventory": "node scripts/blog/inventory.ts",
@@ -36,18 +36,19 @@
   },
   "devDependencies": {
     "@astrojs/check": "0.9.12",
+    "@cloudflare/vite-plugin": "2.0.0-rc.2",
     "@cloudflare/workers-types": "5.20261118.1",
     "@fontsource/nunito": "5.3.0",
     "@resvg/resvg-js": "2.6.2",
     "@tailwindcss/vite": "4.3.5",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "cf": "1.0.0-rc.2",
     "satori": "0.63.2",
     "sharp": "0.35.5",
     "tailwindcss": "4.3.5",
     "tsx": "4.23.15",
-    "typescript": "6.0.3",
-    "wrangler": "4.165.0"
+    "typescript": "6.0.3"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
