@@ -56,23 +56,21 @@ The first visit to `/_emdash/admin` runs EmDash's setup. Locally, the dev server
 
 | Path | What |
 |---|---|
-| `src/pages/ba/` | One Astro route per BA page |
+| `src/pages/` | One Astro route per page. `src/pages/ms/` is generated (Languages, above) |
 | `src/layouts/Ba.astro` | The `<head>`, and BA's header, footer and WhatsApp button as islands |
 | `src/views/ba/` | Each page's body, a React island; the blog's views are Astro components in `src/views/ba/blog/` |
 | `src/lib/blog.ts` | The blog's queries, paths, dates and reading time |
 | `scripts/blog/` | The blog's inventory, import and check |
 | `seed/` | EmDash's seed, the blog inventory and the posts' original images |
 | `src/components/` | The React components the pages share |
-| `src/lib/site.ts` | Pages, titles, and the prefix each design lives under |
+| `src/lib/site.ts` | Pages, titles, and each language's path prefix |
 | `src/og/cards.ts` | Each page's Open Graph card: its words and its art |
 | `src/middleware.ts` | Contact form rate limits and checks, security and `noindex` headers |
-| `public/_headers`, `public/_redirects` | The same headers for static files and pre-rendered pages, and the root redirect, applied by Cloudflare before the Worker |
-
-When a design is chosen, set its prefix in `src/lib/site.ts` to `""`, move its routes to `src/pages/`, and drop the root redirect (`public/_redirects`) and the `noindex` header (`src/middleware.ts` and `public/_headers`).
+| `public/_headers`, `public/_redirects` | The same headers for static files and pre-rendered pages, and the redirects from old addresses, applied by Cloudflare before the Worker |
 
 ## Blog
 
-The blog is at `/ba/blog`, a post at `/ba/blog/<slug>`. Posts live in EmDash's `posts` collection, which `seed/seed.json` defines; EmDash applies it at setup. The index and post pages read the collection on the server and send no script of their own.
+The blog is at `/blog`, a post at `/blog/<slug>`. Posts live in EmDash's `posts` collection, which `seed/seed.json` defines; EmDash applies it at setup. The index and post pages read the collection on the server and send no script of their own.
 
 The 56 posts from the old tavis.live (Webflow) were brought over in three steps, each a script you can rerun:
 
@@ -82,9 +80,9 @@ The 56 posts from the old tavis.live (Webflow) were brought over in three steps,
 
 No post on tavis.live shows a date or an author. The date each post shows is the creation time in its Webflow page id, which follows the old index's order; `seed/blog-inventory.json` lists that and everything else missing at the source.
 
-Old links keep working: `/tavis-blog/<slug>` redirects to the post and `/blog` to the index (`src/pages/tavis-blog/`, `src/pages/blog.astro`). The post redirect is a 302 while the design waits under `/ba`, and becomes a 301 by itself once the prefix is `""`.
+Old links keep working: `/tavis-blog/<slug>` redirects to its post with a 301 (`src/pages/tavis-blog/[slug].astro`), and the index is at `/blog`, as it was.
 
-At launch, besides the steps under Status: delete `src/pages/blog.astro` (the blog's own route takes `/blog`), and in the admin change the collection's URL pattern from `/ba/blog/{slug}` to `/blog/{slug}`.
+A post or an index page that doesn't exist answers 404 with the site's 404 page. The routes return an empty 404 and Astro fills it with the pre-rendered page. `Astro.rewrite("/404")` fails there, because a pre-rendered page has no component in the Worker.
 
 ### Importing into production
 

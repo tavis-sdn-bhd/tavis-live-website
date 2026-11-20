@@ -9,7 +9,7 @@ import emdash from "emdash/astro";
 export default defineConfig({
   site: "https://www.tavis.live",
   output: "server",
-  // Pre-rendered pages are written as /ba/rewards.html, so Cloudflare serves /ba/rewards directly, without a
+  // Pre-rendered pages are written as /rewards.html, so Cloudflare serves /rewards directly, without a
   // trailing-slash redirect.
   build: { format: "file" },
   adapter: cloudflare(),
