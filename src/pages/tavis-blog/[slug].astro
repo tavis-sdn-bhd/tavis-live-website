@@ -1,7 +1,0 @@
----
-import { postHref } from "@/lib/blog";
-import { defaultDesign } from "@/lib/site";
-
-// tavis.live served each post at /tavis-blog/<slug>; the slugs are unchanged, so each old link lands on its post.
-return Astro.redirect(postHref(defaultDesign, Astro.params.slug ?? ""), 301);
----

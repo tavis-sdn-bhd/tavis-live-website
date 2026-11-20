@@ -1,9 +1,11 @@
 # Cloudflare Workers static assets applies these before the Worker runs, so they cost no CPU.
-# Old tavis.live posts (/tavis-blog/<slug>) redirect in src/pages/tavis-blog/[slug].astro, which looks up the post.
 
 # Design BA sat under /ba while the client chose it; the preview links they were sent still point there.
 /ba  /  301
 /ba/*  /:splat  301
+
+# tavis.live served each post at /tavis-blog/<slug>; the slugs are unchanged, so each old link lands on its post.
+/tavis-blog/*  /blog/:splat  301
 
 # tavis.live's other addresses, from its sitemap.xml (November 2026).
 /tutor-profile/*  /tutors  301

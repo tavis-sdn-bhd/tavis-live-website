@@ -7,7 +7,7 @@ export const sourceSite = "https://www.tavis.live";
 export const inventoryPath = "seed/blog-inventory.json";
 export const mediaDir = "seed/blog/media";
 
-/** Where tavis.live served a post. src/pages/tavis-blog/[slug].astro redirects it to the post's new page. */
+/** Where tavis.live served a post. public/_redirects sends it to the post's new page. */
 export const oldPostPath = (slug: string) => `/tavis-blog/${slug}`;
 
 /** A downloaded image: the original file in `mediaDir`, byte for byte. */
