@@ -7,8 +7,8 @@ export const links = {
   /** Scanned from the desktop QR code; sends each phone to its own store. */
   get: "https://www.tavis.live/get",
   whatsapp: "https://wa.me/60106536780?text=%28GA%29HiTavis",
-  email: "mailto:tavis@admin.live",
-  emailLabel: "tavis@admin.live",
+  email: "mailto:admin@tavis.live",
+  emailLabel: "admin@tavis.live",
   facebook: "https://www.facebook.com/tavislive/",
   instagram: "https://www.instagram.com/tavislive/",
   tiktok: "https://www.tiktok.com/@tavislive",
