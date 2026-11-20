@@ -64,11 +64,12 @@ const pages = {
 } as const satisfies Record<string, { label: string; title: string; description: string; designs?: readonly DesignId[] }>;
 
 export type PagePath = keyof typeof pages;
-export type DesignId = "ab" | "ba";
+export type DesignId = "ba";
 export type DeckPage = { href: PagePath; label: string; description: string };
 
-/* The designs the client is choosing between, each under its own prefix. The chosen one moves to "" at launch. */
-const prefixes: Record<DesignId, string> = { ab: "/ab", ba: "/ba" };
+/* Each design's URL prefix. BA was chosen and is the site at /, so its prefix is empty; the old /ba URLs redirect
+   (public/_redirects). */
+const prefixes: Record<DesignId, string> = { ba: "" };
 
 /** The design the root opens, and the one pages outside every design (/get, a 404) link into. */
 export const defaultDesign: DesignId = "ba";
@@ -87,7 +88,7 @@ export function navOf(design: DesignId): DeckPage[] {
   return deckOf(design).filter((page) => page.href !== "/");
 }
 
-/** A deck path in a design: "/rewards#earn" in BA is "/ba/rewards#earn", "/" is "/ba" and "/#download" is "/ba#download". */
+/** A deck path in a design, under its prefix. BA has none, so its paths are unchanged. */
 export function hrefIn(design: DesignId, path: string) {
   if (!path.startsWith("/")) return path;
   const prefix = prefixes[design];
@@ -95,7 +96,7 @@ export function hrefIn(design: DesignId, path: string) {
   return prefix + (/^\/(?:[#?]|$)/.test(path) ? path.slice(1) : path);
 }
 
-/** The design a URL path belongs to, or null outside every design. */
+/** The design a URL path belongs to, or null outside every prefixed design (every path, now BA is at /). */
 export function designOf(pathname: string): DesignId | null {
   const ids = Object.keys(prefixes) as DesignId[];
   return ids.find((id) => prefixes[id] && (pathname === prefixes[id] || pathname.startsWith(`${prefixes[id]}/`))) ?? null;

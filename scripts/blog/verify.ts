@@ -13,7 +13,7 @@ import { type BlogInventory, inventoryPath, oldPostPath } from "./shared.ts";
 const root = path.resolve(import.meta.dirname, "../..");
 const { values: args } = parseArgs({ options: { url: { type: "string" } } });
 const base = new URL(args.url ?? process.env.EMDASH_URL ?? "http://localhost:4321");
-/** The blog's paths in the design the site opens: /ba/blog until it moves to /. */
+/** The blog's path in the design the site renders. */
 const blog = hrefIn(defaultDesign, "/blog");
 
 const failures: string[] = [];

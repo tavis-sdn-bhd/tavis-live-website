@@ -1,3 +1,26 @@
 # Cloudflare Workers static assets applies these before the Worker runs, so they cost no CPU.
-# The client is still choosing a design; until one moves to /, the root opens design BA (src/lib/site.ts, defaultDesign).
-/  /ba  302
+# Old tavis.live posts (/tavis-blog/<slug>) redirect in src/pages/tavis-blog/[slug].astro, which looks up the post.
+
+# Design BA sat under /ba while the client chose it; the preview links they were sent still point there.
+/ba  /  301
+/ba/*  /:splat  301
+
+# tavis.live's other addresses, from its sitemap.xml (November 2026).
+/tutor-profile/*  /tutors  301
+/pricing/*  /online-tuition#pricing  301
+/product/*  /online-tuition#pricing  301
+/checkout  /online-tuition#pricing  301
+/paypal-checkout  /online-tuition#pricing  301
+/order-confirmation  /online-tuition#pricing  301
+/apps-page  /get  301
+/log-in  https://app.tavis.live/  301
+/sign-up  https://app.tavis.live/  301
+/user-account  https://app.tavis.live/  301
+/reset-password  https://app.tavis.live/  301
+/update-password  https://app.tavis.live/  301
+/access-denied  https://app.tavis.live/  301
+
+# Pages the new site has no counterpart for. Temporary until Tavis says whether they still run.
+/ged  /  302
+/language-class  /  302
+/teach-with-us  /  302

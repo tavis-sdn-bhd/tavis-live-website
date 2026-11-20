@@ -11,7 +11,7 @@ const gridSize = 12;
 /** The posts page `page` of the index shows, as [start, end) of the newest-first list. */
 const pageSpan = (page: number): [number, number] => (page === 1 ? [0, gridSize + 1] : [gridSize + 1 + (page - 2) * gridSize, gridSize + 1 + (page - 1) * gridSize]);
 
-/** A post's page in a design: "/ba/blog/<slug>" while BA has its prefix. */
+/** A post's page in a design: "/blog/<slug>". */
 export const postHref = (design: DesignId, slug: string) => hrefIn(design, `/blog/${slug}`);
 
 /** An index page's URL; page 1 is the index itself. */

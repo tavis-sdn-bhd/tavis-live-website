@@ -24,7 +24,7 @@
         "search",
         "seo"
       ],
-      "urlPattern": "/ba/blog/{slug}",
+      "urlPattern": "/blog/{slug}",
       "dateField": "publishedAt",
       "fields": [
         {
