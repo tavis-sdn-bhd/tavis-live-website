@@ -36,7 +36,7 @@ English is the source. `scripts/i18n/generate.ts` writes the Malay site as a twi
 - **`files`** holds a per-file entry, for a string that needs a different Malay in one place.
 - **Untranslated on purpose:** the coded app screens (`phone-app`, `stageshow`, `app-demos`, the practice question), which show the real app's own UI.
 
-The Malay header keeps the pages in its menu at every width (`inlineNav` in `src/lib/site.ts`), because Malay labels don't fit beside the actions. Five FAQ answers use Tavis's own Malay wording from the brief.
+Both languages share one header. Its Get Tavis label drops its last word on narrow bars, later for a long label like the Malay one (`header.tsx`). Five FAQ answers use Tavis's own Malay wording from the brief.
 
 ## Develop
 

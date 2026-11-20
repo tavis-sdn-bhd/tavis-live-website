@@ -5,7 +5,7 @@ import { usePathname } from "@/lib/pathname";
 import { AnimatePresence, motion } from "motion/react";
 import { type ComponentType, type RefObject, type SVGProps, useEffect, useId, useRef, useState } from "react";
 import { hero as home, links } from "@/lib/content";
-import { type DesignId, type PagePath, inlineNav, navOf } from "@/lib/site";
+import { type DesignId, type PagePath, navOf } from "@/lib/site";
 import { BookOpen, Brain, CaretRight, Check, Gift, Newspaper, PlayCircle, SealCheck, Student } from "../icons";
 import { easeOutExpo, exitAfter } from "../motion";
 import { NewTab, cx } from "../ui";
@@ -44,9 +44,15 @@ const pageTiles: Partial<Record<PagePath | "/blog", { icon: ComponentType<SVGPro
   "/about": { icon: BookOpen, fill: "bg-brand text-forest" },
 };
 
-/** The header's Get Tavis label, split before its last word so a narrow bar can drop "free". */
+/** The pages the bar lists on wide screens: the student's way in, and the parents'. The rest (tutors, the blog, about)
+    are a step away: in the menu, the footer and the pages that lead to them. */
+const barPages: readonly PagePath[] = ["/question-universe", "/rewards", "/online-tuition", "/parents"];
+
+/** The header's Get Tavis label, split before its last word so a narrow bar can drop it ("free"). A label longer than
+    English's ("Muat turun percuma") needs a wider bar before its last word fits. */
 const ctaCut = home.cta.lastIndexOf(" ");
 const [ctaLead, ctaLast] = ctaCut > 0 ? [home.cta.slice(0, ctaCut), home.cta.slice(ctaCut)] : [home.cta, ""];
+const ctaLastHidden = home.cta.length > 16 ? "max-md:hidden" : "max-[359px]:hidden";
 
 /** Three bars that fold into a cross: the middle one fades while the outer two turn onto it. */
 function MenuGlyph() {
@@ -60,8 +66,8 @@ function MenuGlyph() {
   );
 }
 
-/** Duolingo's bar: white and borderless over the hero, a 2px hairline fading in once the hero is gone. Below xl, or at
-    every width where `inlineNav` is off, the pages move into a menu: a sheet under the bar with every page as a chunky row, and the two actions (get the app,
+/** Duolingo's bar: white and borderless over the hero, a 2px hairline fading in once the hero is gone. From xl it lists
+    the main pages beside the logo; below xl the pages move into a menu: a sheet under the bar with every page as a chunky row, and the two actions (get the app,
     sign in) pinned at its foot. The page behind leaves the tab order while it is open. */
 export function Header({ design }: { design: DesignId }) {
   const pathname = usePathname();
@@ -74,8 +80,9 @@ export function Header({ design }: { design: DesignId }) {
   const pastHero = usePastHero(ref, pathname);
   const items = navOf(design).map((item) => {
     const href = inDesign(item.href);
-    return { ...item, tile: pageTiles[item.href], href, current: pathname === href };
+    return { ...item, page: item.href, tile: pageTiles[item.href], href, current: pathname === href };
   });
+  const barItems = items.filter((item) => barPages.includes(item.page));
 
   // A link in the sheet changes the page; the sheet goes with the old one.
   useEffect(() => setOpen(false), [pathname]);
@@ -94,7 +101,7 @@ export function Header({ design }: { design: DesignId }) {
       toggle.current?.focus();
     };
     const wide = matchMedia("(min-width: 80rem)");
-    const onWide = () => inlineNav && wide.matches && setOpen(false);
+    const onWide = () => wide.matches && setOpen(false);
     addEventListener("keydown", onKey);
     wide.addEventListener("change", onWide);
     return () => {
@@ -118,16 +125,16 @@ export function Header({ design }: { design: DesignId }) {
           <a href={inDesign("/")} className="tap flex min-h-11 shrink-0 items-center rounded-lg" aria-label="Tavis home">
             <Image src="/assets/tavis-logo.svg" alt="" width={749} height={194} unoptimized priority className="h-7 w-auto sm:h-8" />
           </a>
-          <nav aria-label="Primary" className={cx("mx-auto hidden", inlineNav && "xl:block")}>
+          <nav aria-label="Primary" className="ml-6 hidden xl:block">
             <ul className="flex items-center gap-1">
-              {items.map((item) => (
+              {barItems.map((item) => (
                 <li key={item.href}>
                   <a
                     href={item.href}
                     aria-current={item.current ? "page" : undefined}
                     className={cx(
-                      "tap inline-flex h-10 items-center whitespace-nowrap rounded-xl px-2 font-display text-caption uppercase tracking-[0.06em] transition-colors",
-                      item.current ? "bg-sky/10 text-sky-ink ring-2 ring-inset ring-sky/40" : "text-muted hover:bg-cream hover:text-forest",
+                      "tap inline-flex h-10 items-center whitespace-nowrap rounded-xl px-3 font-display text-body-sm font-bold transition-colors",
+                      item.current ? "bg-cream text-forest" : "text-muted hover:bg-cream hover:text-forest",
                     )}
                   >
                     {item.label}
@@ -136,21 +143,23 @@ export function Header({ design }: { design: DesignId }) {
               ))}
             </ul>
           </nav>
-          <div className={cx("ml-auto flex shrink-0 items-center gap-2 whitespace-nowrap sm:gap-3", inlineNav && "xl:ml-0")}>
+          <div className="ml-auto flex shrink-0 items-center gap-2 whitespace-nowrap sm:gap-3">
             {/* In the bar from 640px; on a phone the bar has no room, so the menu carries it. */}
             <LanguageSwitch className="max-sm:hidden" />
-            {/* Where the pages stay in the menu, sign in does too: the menu carries it at its foot. */}
-            {inlineNav && (
-              <Button href={links.signIn} tone="white" size="sm" target="_blank" rel="noopener noreferrer" className="max-sm:hidden xl:min-h-[3.125rem] xl:px-5 xl:text-body-sm">
-                Sign in
-                <NewTab />
-              </Button>
-            )}
-            {/* The full label from 360px (640px where the labels run long); narrower, the bar only has room for it without its last word. */}
+            <a
+              href={links.signIn}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="tap inline-flex h-10 items-center rounded-xl px-3 font-display text-body-sm font-bold text-sky-ink transition-colors hover:bg-cream max-sm:hidden"
+            >
+              Sign in
+              <NewTab />
+            </a>
+            {/* The full label from 360px (768px for a long one); narrower, the bar only has room for it without its last word. */}
             <GetButton size="sm" className="xl:min-h-[3.125rem] xl:px-5 xl:text-body-sm">
               <span>
                 {ctaLead}
-                <span className={inlineNav ? "max-[359px]:hidden" : "max-sm:hidden"}>{ctaLast}</span>
+                <span className={ctaLastHidden}>{ctaLast}</span>
               </span>
             </GetButton>
             <button
@@ -160,10 +169,7 @@ export function Header({ design }: { design: DesignId }) {
               aria-controls={menuId}
               aria-label="Menu"
               onClick={() => setOpen((v) => !v)}
-              className={cx(
-                "ledge group relative grid size-10 place-items-center rounded-xl bg-paper text-forest shadow-[0_4px_0_var(--color-line-strong)] ring-2 ring-inset ring-line-strong [--ledge-hover:0.95] before:absolute before:-inset-1 before:content-[''] aria-expanded:bg-cream",
-                inlineNav && "xl:hidden",
-              )}
+              className="ledge group relative grid size-10 place-items-center rounded-xl bg-paper text-forest shadow-[0_4px_0_var(--color-line-strong)] ring-2 ring-inset ring-line-strong [--ledge-hover:0.95] before:absolute before:-inset-1 before:content-[''] aria-expanded:bg-cream xl:hidden"
             >
               <MenuGlyph />
             </button>
@@ -184,10 +190,7 @@ export function Header({ design }: { design: DesignId }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8, transition: exitAfter(0.35) }}
             transition={{ duration: 0.35, ease: easeOutExpo }}
-            className={cx(
-              "fixed inset-x-0 bottom-0 top-[calc(4rem+2px+env(safe-area-inset-top))] z-50 flex flex-col overflow-y-auto overscroll-contain bg-paper sm:top-[calc(4.5rem+2px+env(safe-area-inset-top))]",
-              inlineNav && "xl:hidden",
-            )}
+            className="fixed inset-x-0 bottom-0 top-[calc(4rem+2px+env(safe-area-inset-top))] z-50 flex flex-col overflow-y-auto overscroll-contain bg-paper sm:top-[calc(4.5rem+2px+env(safe-area-inset-top))] xl:hidden"
           >
             <nav aria-label="Pages" className="shell w-full flex-1 py-5">
               <LanguageSwitch labelled className="mx-auto mb-4 max-w-[36rem] sm:hidden" />

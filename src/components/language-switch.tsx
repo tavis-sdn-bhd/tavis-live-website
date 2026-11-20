@@ -7,7 +7,7 @@ const languages: ReadonlyArray<{ id: Locale; short: string; name: string }> = [
   { id: "ms", short: "BM", name: "Bahasa Melayu" },
 ];
 
-const chip = "tap inline-flex h-10 min-w-11 items-center justify-center rounded-xl px-2.5 font-display text-caption uppercase tracking-[0.06em] transition-colors";
+const chip = "tap inline-flex h-10 min-w-11 items-center justify-center rounded-xl px-2.5 font-display text-body-sm font-bold transition-colors";
 
 /** In the bar, one link to this page in the other language: the bar has no room for both. In the menu (`labelled`),
     both languages under a "Language" caption, the one being read marked. */
@@ -21,7 +21,7 @@ export function LanguageSwitch({ className, labelled = false }: { className?: st
 
   if (!labelled) {
     const other = languages.find((l) => l.id !== locale) ?? languages[0];
-    return <div className={className}>{link(other, "text-forest ring-2 ring-inset ring-line-strong hover:bg-cream")}</div>;
+    return <div className={className}>{link(other, "text-muted hover:bg-cream hover:text-forest")}</div>;
   }
   return (
     <div className={cx("flex items-center justify-between gap-4", className)}>
