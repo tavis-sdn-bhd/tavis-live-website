@@ -1,6 +1,8 @@
 import { env } from "cloudflare:workers";
 import { defineMiddleware } from "astro:middleware";
-import { type EnquiryError, enquiryErrors } from "@/lib/enquiry";
+import { type EnquiryError, enquiryErrors, tooManyMessages } from "@/lib/enquiry";
+// The Malay site's copy of the same module (scripts/i18n/generate.ts), so the Malay comes from i18n/ms.json.
+import { tooManyMessages as tooManyMessagesMalay } from "@/ms/lib/enquiry";
 
 /** The forms plugin's public endpoint, which the contact form posts to. */
 const submitPath = "/_emdash/api/plugins/emdash-forms/submit";
@@ -35,8 +37,7 @@ async function guardSubmission(request: Request): Promise<Response | null> {
   if (!perVisitor.success || !siteWide.success) {
     // The form posts from a page; a Malay page's visitor gets the answer in Malay.
     const malay = /^https?:\/\/[^/]+\/ms(?:[/?#]|$)/.test(request.headers.get("referer") ?? "");
-    const message = malay ? "Terlalu banyak mesej buat masa ini. Cuba lagi dalam seminit, atau guna WhatsApp." : "Too many messages just now. Try again in a minute, or use WhatsApp.";
-    return rejected(429, [{ field: "", message }]);
+    return rejected(429, [{ field: "", message: malay ? tooManyMessagesMalay : tooManyMessages }]);
   }
 
   const body: unknown = await request.clone().json().catch(() => null);

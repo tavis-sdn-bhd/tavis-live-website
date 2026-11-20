@@ -6,7 +6,7 @@ import type { Mood } from "@/components/mascot";
 import type { Outfit } from "@/components/mascot-outfits";
 
 /** The button every card shows: the site's own "Get Tavis free", in the card's language. */
-export const ogCta = hero.cta;
+export const ogCta: string = hero.cta;
 
 /** The card size every network expects. Kept here, not in card.tsx, so pages can import it without the renderer. */
 export const ogSize = { width: 1200, height: 630 } as const;

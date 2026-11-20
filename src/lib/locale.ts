@@ -8,11 +8,15 @@ export const locale: Locale = "en";
 /** Where each language's pages live. */
 export const localePrefix: Record<Locale, string> = { en: "", ms: "/ms" };
 
-/** Pages that exist in English only (the blog, and /get, which sends phones to their store). Both languages link to them
-    as they are. */
-export const englishOnly = ["/blog", "/get"] as const;
+/** The pages with a Malay twin, which scripts/i18n/generate.ts writes under src/pages/ms. Every other path is
+    English-only: the blog, /get (which sends phones to their store) and the 404. */
+export const twinned = ["/", "/question-universe", "/rewards", "/online-tuition", "/tutors", "/parents", "/about"] as const;
 
-export const isEnglishOnly = (path: string) => englishOnly.some((p) => path === p || path.startsWith(`${p}/`) || path.startsWith(`${p}?`) || path.startsWith(`${p}#`));
+/** Whether a path ("/rewards#earn", "/ms/rewards") is one of the pages with a Malay twin. */
+export function hasTwin(path: string) {
+  const page = unprefixed(path.replace(/[?#].*$/, ""));
+  return twinned.some((p) => p === page);
+}
 
 /** A path without its language prefix: "/ms/rewards" → "/rewards", "/ms" → "/". */
 export function unprefixed(pathname: string) {
@@ -21,11 +25,11 @@ export function unprefixed(pathname: string) {
   return pathname.startsWith(`${prefix}/`) ? pathname.slice(prefix.length) : pathname;
 }
 
-/** The same page in `target`. An English-only page has no Malay twin, so its switch goes to the Malay home page. */
+/** The same page in `target`. An English-only page has no Malay twin, so its Malay link goes to the Malay home page. */
 export function pathIn(target: Locale, pathname: string) {
   const path = unprefixed(pathname);
   if (target === "en") return path;
-  if (isEnglishOnly(path)) return localePrefix.ms;
+  if (!hasTwin(path)) return localePrefix.ms;
   return path === "/" ? localePrefix.ms : localePrefix.ms + path;
 }
 

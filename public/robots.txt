@@ -1,7 +1,0 @@
-# A static file, so it is served before EmDash's own /robots.txt route, which names only the posts' sitemap.
-User-agent: *
-Allow: /
-Disallow: /_emdash/
-
-Sitemap: https://www.tavis.live/sitemap.xml
-Sitemap: https://www.tavis.live/sitemap-pages.xml

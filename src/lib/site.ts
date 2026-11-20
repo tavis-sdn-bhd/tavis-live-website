@@ -1,4 +1,4 @@
-import { isEnglishOnly, locale, localePrefix } from "./locale";
+import { hasTwin, locale, localePrefix } from "./locale";
 
 export const siteUrl = "https://www.tavis.live";
 export const siteName = "Tavis";
@@ -96,7 +96,7 @@ export function navOf(design: DesignId): DeckPage[] {
 
 /** A deck path in a design, under its prefix. BA has none, so its paths are unchanged. */
 export function hrefIn(design: DesignId, path: string) {
-  if (!path.startsWith("/") || isEnglishOnly(path)) return path;
+  if (!path.startsWith("/") || !hasTwin(path)) return path;
   const prefix = prefixes[design];
   if (!prefix) return path;
   return prefix + (/^\/(?:[#?]|$)/.test(path) ? path.slice(1) : path);

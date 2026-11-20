@@ -1,6 +1,9 @@
 /** The contact form's field limits, shared by the form's inputs and the server's check (src/middleware.ts). */
 export const enquiryLimits = { name: 100, email: 254, phone: 30, message: 2000, page: 200 } as const;
 
+/** The answer when a visitor or the whole site sends too many messages at once (src/middleware.ts). */
+export const tooManyMessages = "Too many messages just now. Try again in a minute, or use WhatsApp.";
+
 /** One problem with a submission, in the forms plugin's error shape, which the contact form reads. */
 export type EnquiryError = { field: string; message: string };
 

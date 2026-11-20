@@ -3,7 +3,8 @@
  *
  * EmDash's forms plugin POSTs every submission to the `contact` form's Webhook URL as JSON:
  *   { event: "form.submission", formId: "contact", submissionId, submittedAt, data: { name, email, phone, message, page } }
- * Setup is in README.md, "Leads in Google Sheets".
+ * Setup is in README.md, "Leads in Google Sheets". A web app always answers HTTP 200, so the reply only says what
+ * happened, for anyone testing the URL by hand.
  */
 
 const HEADERS = ["Received", "Name", "Email", "Phone", "Message", "Page", "Submission ID"];
@@ -13,9 +14,9 @@ function doPost(e) {
   try {
     payload = JSON.parse(e.postData.contents);
   } catch (err) {
-    return reply(400, "Body is not JSON");
+    return reply("Body is not JSON");
   }
-  if (payload.event !== "form.submission" || payload.formId !== "contact") return reply(200, "Ignored");
+  if (payload.event !== "form.submission" || payload.formId !== "contact") return reply("Ignored");
 
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
@@ -40,9 +41,9 @@ function doPost(e) {
   } finally {
     lock.releaseLock();
   }
-  return reply(200, "Saved");
+  return reply("Saved");
 }
 
-function reply(status, message) {
-  return ContentService.createTextOutput(JSON.stringify({ status, message })).setMimeType(ContentService.MimeType.JSON);
+function reply(message) {
+  return ContentService.createTextOutput(JSON.stringify({ message })).setMimeType(ContentService.MimeType.JSON);
 }

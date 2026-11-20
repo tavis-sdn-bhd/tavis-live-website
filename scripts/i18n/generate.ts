@@ -7,6 +7,7 @@ import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statS
 import path from "node:path";
 import { parseArgs } from "node:util";
 import ts from "typescript";
+import { twinned } from "../../src/lib/locale.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const src = path.join(root, "src");
@@ -22,8 +23,32 @@ type Dictionary = {
   /** Per-file English → Malay, for a string that needs a different Malay there. Keys are paths from src. */
   files: Record<string, Record<string, string>>;
 };
-const dictionary: Dictionary = JSON.parse(readFileSync(path.join(root, "i18n", "ms.json"), "utf8"));
+const raw: unknown = JSON.parse(readFileSync(path.join(root, "i18n", "ms.json"), "utf8"));
+const dictionary = parseDictionary(raw);
 const keep = new Set(dictionary.keep);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isStringRecord(value: unknown): value is Record<string, string> {
+  return isRecord(value) && Object.values(value).every((v) => typeof v === "string");
+}
+
+/** i18n/ms.json, checked: it is edited by hand, and a wrong shape should fail here, by name. */
+function parseDictionary(value: unknown): Dictionary {
+  if (!isRecord(value)) throw new Error("i18n/ms.json: expected an object");
+  const { translations, keep, files } = value;
+  if (!isStringRecord(translations)) throw new Error("i18n/ms.json: translations must map English strings to Malay strings");
+  if (!Array.isArray(keep) || !keep.every((k): k is string => typeof k === "string")) throw new Error("i18n/ms.json: keep must be a list of strings");
+  if (!isRecord(files)) throw new Error("i18n/ms.json: files must be an object");
+  const perFile: Record<string, Record<string, string>> = {};
+  for (const [file, entries] of Object.entries(files)) {
+    if (!isStringRecord(entries)) throw new Error(`i18n/ms.json: files["${file}"] must map English strings to Malay strings`);
+    perFile[file] = entries;
+  }
+  return { translations, keep, files: perFile };
+}
 
 /** src paths mirrored as they are, untranslated: the coded app's own screens, which show the real app's UI. */
 const untranslated = [
@@ -39,8 +64,8 @@ const untranslated = [
 ];
 /** src paths the Malay site doesn't get its own copy of. Pages are written separately, below. */
 const notMirrored = ["ms/", "pages/", "styles/", "middleware.ts", "worker.ts", "live.config.ts"];
-/** The pages with a Malay twin, by file under src/pages. The blog, /get and the 404 stay English-only. */
-const localizedPages = ["index.astro", "about.astro", "online-tuition.astro", "parents.astro", "question-universe.astro", "rewards.astro", "tutors.astro"];
+/** The pages with a Malay twin, by file under src/pages, from the list the site's links use. */
+const localizedPages = twinned.map((route) => (route === "/" ? "index.astro" : `${route.slice(1)}.astro`));
 
 /** JSX attributes whose strings are never copy. */
 const codeAttributes = new Set(["className", "class", "id", "href", "src", "key", "type", "rel", "target", "role", "lang", "hrefLang", "htmlFor", "name", "autoComplete", "inputMode", "d", "viewBox", "fill", "stroke", "method", "action", "slot", "loading", "decoding", "fetchPriority", "sizes", "srcSet", "data-motion"]);
@@ -258,6 +283,7 @@ function swapLocale(text: string) {
 const unused = [
   ...Object.keys(dictionary.translations).filter((k) => !used.has(k)),
   ...Object.entries(dictionary.files).flatMap(([file, entries]) => Object.keys(entries).filter((k) => !used.has(`${file}::${k}`)).map((k) => `${file}: ${k}`)),
+  ...dictionary.keep.filter((k) => !used.has(`keep::${k}`)).map((k) => `keep: ${k}`),
 ];
 const untranslatedCount = [...missing.values()].reduce((n, set) => n + set.size, 0);
 

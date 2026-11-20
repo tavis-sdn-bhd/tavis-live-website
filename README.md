@@ -112,6 +112,8 @@ The footer form posts to EmDash's forms plugin. Submissions appear in the admin 
 
 Add the addresses that should hear about new messages under the form's notification settings. Those emails need an email provider: EmDash sends through Cloudflare Email Sending, which only works once `tavis.live` is a zone on the Tavis account. Until then submissions are stored in the admin and sent to Google Sheets, but no email goes out. At launch, onboard `tavis.live` for Email Sending, add `cloudflareEmail({ from: "…@tavis.live" })` from `@emdash-cms/cloudflare` to the `plugins` in `astro.config.mjs`, and add a `send_email` binding named `EMAIL` to `cloudflare.config.ts`.
 
+Before a submission reaches the plugin, `src/middleware.ts` applies two Cloudflare rate limits from `cloudflare.config.ts`: 3 a minute per visitor and 20 a minute across the site. It also checks the contact form's fields against the limits in `src/lib/enquiry.ts`, which the form's inputs use too.
+
 ### Leads in Google Sheets
 
 The form's **Webhook URL** setting posts every submission as JSON. `scripts/google-sheets-leads.gs` receives it and adds a row to a Google Sheet.
@@ -124,7 +126,7 @@ The form's **Webhook URL** setting posts every submission as JSON. `scripts/goog
 
 The URL is the only key to the sheet, so keep it out of the repository. To be emailed about each new row, use the sheet's **Tools › Notification settings**.
 
-Before a submission reaches the plugin, `src/middleware.ts` applies two Cloudflare rate limits from `cloudflare.config.ts`: 3 a minute per visitor and 20 a minute across the site. It also checks the contact form's fields against the limits in `src/lib/enquiry.ts`, which the form's inputs use too.
+An Apps Script web app answers every POST with HTTP 200 and a redirect to `script.googleusercontent.com`, whatever happened. So the plugin logs *Webhook was redirected* on every submission, which is expected here, and can't tell a rejected payload from a saved one. The sheet is the check: a submission without its row failed.
 
 ## Deploy
 
@@ -145,3 +147,11 @@ pnpm run deploy
 ```
 
 The adapter also binds `SESSION` (KV) and `IMAGES` (Cloudflare Images); `cf deploy --prebuilt --dry-run` lists every binding the Worker will get. The site is served on `*.workers.dev` until `tavis.live` moves to that account.
+
+## Launch
+
+When `tavis.live` points at this Worker:
+
+1. Remove `X-Robots-Tag` from `public/_headers` and `src/middleware.ts`, and the `robots` meta from `src/layouts/Ba.astro`.
+2. Submit both sitemaps in Google Search Console: `/sitemap.xml` (EmDash's, the blog's posts) and `/sitemap-pages.xml` (the site's pages in both languages). EmDash serves `/robots.txt` and names only its own. To name both, add `Sitemap: https://www.tavis.live/sitemap-pages.xml` under the admin's SEO settings, and EmDash appends its own line.
+3. Set up form emails (Contact form, above).

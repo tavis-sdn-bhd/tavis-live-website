@@ -6,7 +6,7 @@ import { StructuredData } from "@/components/structured-data";
 import { links } from "@/lib/content";
 import { ogAlt, ogImagePath, ogSize } from "@/og/cards";
 import { type PagePath, pageMeta, siteName, siteUrl } from "@/lib/site";
-import { htmlLang, isEnglishOnly, locale, ogLocale, pathIn } from "@/lib/locale";
+import { hasTwin, htmlLang, locale, ogLocale, pathIn } from "@/lib/locale";
 import { BaChat, BaFooter, BaHeader } from "@/views/ba/chrome";
 
 /** What a page with its own content (a blog post) says about itself, in place of its deck page's title and card. */
@@ -30,8 +30,9 @@ const ogImage = new URL(own?.image?.url ?? ogImagePath(page), Astro.url).href;
 const ogImageMeta = own?.image ?? { ...ogSize, alt: ogAlt(page), type: "image/png" };
 const appStoreId = "1580342756";
 const androidPackage = "com.tavis.tavisapp.v26";
+const route = routePath(Astro.url);
 // A page with a twin in the other language names both, so search engines show each reader theirs.
-const twins = Astro.props.notFound || isEnglishOnly(page) ? null : { en: siteUrl + pathIn("en", routePath(Astro.url)), ms: siteUrl + pathIn("ms", routePath(Astro.url)) };
+const twins = Astro.props.notFound || !hasTwin(page) ? null : { en: siteUrl + pathIn("en", route), ms: siteUrl + pathIn("ms", route) };
 ---
 
 <!doctype html>
@@ -82,9 +83,9 @@ const twins = Astro.props.notFound || isEnglishOnly(page) ? null : { en: siteUrl
     >
       Skip to content
     </a>
-    <BaHeader client:load path={routePath(Astro.url)} />
+    <BaHeader client:load path={route} />
     <main id="main"><slot /></main>
-    <BaFooter client:visible path={routePath(Astro.url)} />
-    <BaChat client:idle path={routePath(Astro.url)} />
+    <BaFooter client:visible path={route} />
+    <BaChat client:idle path={route} />
   </body>
 </html>
