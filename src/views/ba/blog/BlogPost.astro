@@ -2,10 +2,10 @@
 import { Image, PortableText } from "emdash/ui";
 import { cx } from "@/components/ui";
 import { chunky } from "@/components/v2/ui";
-import { type BlogPost, formatDate, indexHref, postHref, readingMinutes } from "@/lib/blog";
+import { type BlogPost, formatDate, indexHref, postHref, postSlug, readingMinutes } from "@/lib/blog";
 
 /** A post: back to the index, its date and reading time, the title, the cover, the body at a reading measure, then the
-    posts either side of it. Rendered on the server; the body is the post's Portable Text, set by `.article-body`. */
+    posts either side of it. Built with the site; the body is the post's Portable Text, set by `.article-body`. */
 type Props = { post: BlogPost; newer: BlogPost | null; older: BlogPost | null };
 
 const { post, newer, older } = Astro.props;
@@ -56,7 +56,7 @@ const neighbours = [
               {neighbours.map((n) => (
                 <li class={cx("flex", n.rel === "next" && neighbours.length === 1 && "sm:col-start-2")}>
                   <a
-                    href={postHref("ba", n.post.data.slug ?? n.post.id)}
+                    href={postHref("ba", postSlug(n.post))}
                     rel={n.rel}
                     class={cx(chunky, "press flex w-full flex-col gap-2 p-5 hover:border-sky/40 sm:p-6", n.rel === "next" && "sm:text-right")}
                   >

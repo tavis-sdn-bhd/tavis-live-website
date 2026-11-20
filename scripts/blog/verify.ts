@@ -56,7 +56,7 @@ async function main() {
   // The index, page by page, until it runs out.
   const listed: string[] = [];
   for (let page = 1; ; page++) {
-    const { response, html } = await get(page === 1 ? blog : `${blog}?page=${page}`);
+    const { response, html } = await get(page === 1 ? blog : `${blog}/page/${page}`);
     if (response.status === 404 && page > 1) break;
     if (response.status !== 200) {
       fail(`index page ${page}: HTTP ${response.status}`);

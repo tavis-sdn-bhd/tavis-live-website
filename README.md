@@ -15,7 +15,7 @@ Built by [Cynco](https://cynco.io). The repository moves to Tavis at handover.
 
 Design BA is ported from the proposal site and served at `/`. The old `/ba` addresses redirect there, and so do tavis.live's old addresses (`public/_redirects`). Every page sends `noindex` until launch.
 
-BA's pages, `/get` and the 404 page are pre-rendered (`export const prerender = true`): built once at deploy and served as static files, so they never wake the Worker and cost no CPU. Their copy only changes with a deploy, as it already did. The Worker renders only what has to be live: the blog, EmDash's admin and API, and the contact form's submissions. On Workers' free plan a Worker request may use 10 ms of CPU and EmDash's start-up alone takes more, so those routes can fail there; the paid plan lifts the limit.
+BA's pages, the blog, `/get` and the 404 page are pre-rendered (`export const prerender = true`): built once at deploy and served as static files, so they never wake the Worker and cost no CPU. They only change with a deploy. The Worker handles only what has to be live: EmDash's admin and API, the media library's files, and the contact form's submissions. On Workers' free plan a Worker request may use 10 ms of CPU and EmDash's start-up alone takes more, so those routes can fail there with Cloudflare's error 1102; the paid plan lifts the limit. The blog was rendered by the Worker until its posts began failing that way.
 
 `/get` is the footer QR code's target. Phones are redirected to their app store, and other devices see the store badges.
 
@@ -60,7 +60,7 @@ The first visit to `/_emdash/admin` runs EmDash's setup. Locally, the dev server
 | `src/layouts/Ba.astro` | The `<head>`, and BA's header, footer and WhatsApp button as islands |
 | `src/views/ba/` | Each page's body, a React island; the blog's views are Astro components in `src/views/ba/blog/` |
 | `src/lib/blog.ts` | The blog's queries, paths, dates and reading time |
-| `scripts/blog/` | The blog's inventory, import and check |
+| `scripts/blog/` | The blog's inventory, import and checks |
 | `seed/` | EmDash's seed, the blog inventory and the posts' original images |
 | `src/components/` | The React components the pages share |
 | `src/lib/site.ts` | Pages, titles, and each language's path prefix |
@@ -70,7 +70,9 @@ The first visit to `/_emdash/admin` runs EmDash's setup. Locally, the dev server
 
 ## Blog
 
-The blog is at `/blog`, a post at `/blog/<slug>`. Posts live in EmDash's `posts` collection, which `seed/seed.json` defines; EmDash applies it at setup. The index and post pages read the collection on the server and send no script of their own.
+The blog is at `/blog`, its later pages at `/blog/page/<n>`, a post at `/blog/<slug>`. Posts live in EmDash's `posts` collection, which `seed/seed.json` defines; EmDash applies it at setup. The pages send no script of their own.
+
+The blog's pages are built with the site, from the posts published in the deployed database at that moment. **A post published, edited or unpublished in the admin shows on the site after the next `pnpm run deploy`**, not before. The build reaches the database over a remote binding (Deploy, below).
 
 The 56 posts from the old tavis.live (Webflow) were brought over in three steps, each a script you can rerun:
 
@@ -80,20 +82,26 @@ The 56 posts from the old tavis.live (Webflow) were brought over in three steps,
 
 No post on tavis.live shows a date or an author. The date each post shows is the creation time in its Webflow page id, which follows the old index's order; `seed/blog-inventory.json` lists that and everything else missing at the source.
 
-Old links keep working: `/tavis-blog/<slug>` redirects to its post with a 301 (`src/pages/tavis-blog/[slug].astro`), and the index is at `/blog`, as it was.
+Old links keep working: `/tavis-blog/<slug>` redirects to its post with a 301 (`public/_redirects`), and the index is at `/blog`, as it was.
 
-A post or an index page that doesn't exist answers 404 with the site's 404 page. The routes return an empty 404 and Astro fills it with the pre-rendered page. `Astro.rewrite("/404")` fails there, because a pre-rendered page has no component in the Worker.
+A post or an index page that doesn't exist answers 404 with the site's 404 page. It has no file, so the request reaches the Worker, which has no route for it either.
+
+The posts' images are served as uploaded, through the Worker, until launch (Launch, below).
 
 ### Importing into production
 
 R2 must be enabled on the Cloudflare account and the `tavis-live-media` bucket created before EmDash can store the images. Then:
 
-1. Check the `IMAGES` (Cloudflare Images) binding the adapter adds: the blog's responsive images are resized through it, and without it every phone gets the full-size originals. Deploy and run setup at `/_emdash/admin`. Setup applies `seed/seed.json`, which creates the `posts` collection.
+1. Build and deploy without the deploy's check for posts, since there are none yet: `pnpm build`, then `cf deploy --prebuilt`. Run setup at `/_emdash/admin`. Setup applies `seed/seed.json`, which creates the `posts` collection.
 2. As an admin, create an API token under Settings › API tokens with the scopes `content:read`, `content:write`, `media:read`, `media:write` and `schema:read`. Writing a post's date needs an admin's or editor's token.
-3. Run the import against the deployed site, then the check:
+3. Run the import against the deployed site, deploy again so the blog is built from the imported posts, then run the check:
 
 ```bash
 EMDASH_TOKEN=… pnpm blog:import --url https://<deployed host>
+```
+
+```bash
+pnpm run deploy
 ```
 
 ```bash
@@ -128,7 +136,11 @@ An Apps Script web app answers every POST with HTTP 200 and a redirect to `scrip
 
 ## Deploy
 
-Deploys run through Cloudflare's `cf` CLI, configured by `cloudflare.config.ts`, which pins the Tavis-owned account (`Admin@tavis.live`). `cf` must be signed in to it: `cf auth whoami`. The Astro adapter (15, which builds with Cloudflare's Vite plugin v2) writes the Worker to `.cloudflare/output`, and `pnpm run deploy` builds and then uploads it with `cf deploy --prebuilt`. `pnpm types` regenerates the bindings' types in `.cloudflare/types`; `pnpm typecheck` runs it first. Locally, `pnpm dev` keeps D1 and R2 in `.cloudflare/state`.
+Deploys run through Cloudflare's `cf` CLI, configured by `cloudflare.config.ts`, which pins the Tavis-owned account (`Admin@tavis.live`). `cf` must be signed in to it: `cf auth whoami`. The Astro adapter (15, which builds with Cloudflare's Vite plugin v2) writes the Worker to `.cloudflare/output`, and `pnpm run deploy` builds and then uploads it with `cf deploy --prebuilt`. `pnpm types` regenerates the bindings' types in `.cloudflare/types`; `pnpm typecheck` runs it first. Locally, `pnpm dev` and `pnpm preview` keep D1 and R2 in `.cloudflare/state`.
+
+`pnpm build` connects to the deployed D1 database to build the blog's pages, so it needs the network and the same `cf` sign-in. `cloudflare.config.ts` marks the `DB` binding remote, and `astro.config.mjs` allows remote bindings only for `astro build`. Left to the local database, the build would publish an empty blog: the pre-render Worker keeps a local database of its own, separate from the one `pnpm dev` fills. `pnpm run deploy` therefore stops before uploading when the build has no post pages (`scripts/blog/built.ts`). EmDash's start-up runs in the build too, against the deployed database. After an EmDash upgrade that means a build applies the new version's migrations there, so build an upgrade only when you are about to deploy it.
+
+`pnpm preview` serves the built blog with a local media library, which doesn't hold the deployed posts' images, so their images are missing there.
 
 Before the first deploy, turn on R2 for the account in the dashboard, then create the database and bucket the config names:
 
@@ -153,3 +165,4 @@ When `tavis.live` points at this Worker:
 1. Remove `X-Robots-Tag` from `public/_headers` and `src/middleware.ts`, and the `robots` meta from `src/layouts/Ba.astro`.
 2. Submit both sitemaps in Google Search Console: `/sitemap.xml` (EmDash's, the blog's posts) and `/sitemap-pages.xml` (the site's pages in both languages). EmDash serves `/robots.txt` and names only its own. To name both, add `Sitemap: https://www.tavis.live/sitemap-pages.xml` under the admin's SEO settings, and EmDash appends its own line.
 3. Set up form emails (Contact form, above).
+4. Resize the blog's images. Add `image: { domains: ["www.tavis.live"] }` to `astro.config.mjs` and deploy again. The build then fetches each post's image from `www.tavis.live` and writes it at several widths as static files, so a phone no longer downloads the original and the pages' images stop passing through the Worker. The fetch fails until `www.tavis.live` serves this Worker, which is why this is its own deploy after the domain moves. A trial build against the `workers.dev` address resized the 56 images into 508 files in 9 seconds: the originals average 603 kB, the resized files 44 kB, 22 MB in all.

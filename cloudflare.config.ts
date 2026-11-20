@@ -18,8 +18,15 @@ export default defineConfig({
 			}),
 		],
 		env: {
+			// The build reads the deployed database, so the blog's pages are built from the posts published there.
+			// Only the build: astro.config.mjs turns remote bindings off for dev and preview, which keep D1 locally.
 			DB: bindings.d1({
 				name: "tavis-live-website",
+				// A remote connection finds the database by id, not by name.
+				id: "7c0ffe16-7a0c-4239-b122-bec39b125150",
+				dev: {
+					remote: true,
+				},
 			}),
 			MEDIA: bindings.r2({
 				name: "tavis-live-media",
