@@ -65,7 +65,7 @@ The first visit to `/_emdash/admin` runs EmDash's setup. Locally, the dev server
 | `src/components/` | The React components the pages share |
 | `src/lib/site.ts` | Pages, titles, and each language's path prefix |
 | `src/og/cards.ts` | Each page's Open Graph card: its words and its art |
-| `src/middleware.ts` | Contact form rate limits and checks, and security headers |
+| `src/middleware.ts` | Contact form rate limits and checks, security headers, and `noindex` on the admin |
 | `public/_headers`, `public/_redirects` | The same headers for static files and pre-rendered pages, and the redirects from old addresses, applied by Cloudflare before the Worker |
 
 ## Blog
@@ -148,7 +148,8 @@ The adapter also binds `SESSION` (KV) and `IMAGES` (Cloudflare Images); `cf depl
 
 ## Launch
 
-The site no longer sends `noindex`, so deploy this only once `tavis.live` points at this Worker. Then:
+The site no longer sends `noindex`, and `cloudflare.config.ts` names `www.tavis.live` as the Worker's domain. Both need the `tavis.live` zone on the Tavis Cloudflare account, so deploy only once it is there; the deploy attaches the domain. Then:
 
-1. Submit both sitemaps in Google Search Console: `/sitemap.xml` (EmDash's, the blog's posts) and `/sitemap-pages.xml` (the site's pages in both languages). EmDash serves `/robots.txt` and names only its own. To name both, add `Sitemap: https://www.tavis.live/sitemap-pages.xml` under the admin's SEO settings, and EmDash appends its own line.
-2. Set up form emails (Contact form, above).
+1. Redirect the bare `tavis.live` to `www.tavis.live` with a redirect rule on the zone. The Worker serves only `www`.
+2. Submit both sitemaps in Google Search Console: `/sitemap.xml` (EmDash's, the blog's posts) and `/sitemap-pages.xml` (the site's pages in both languages). EmDash serves `/robots.txt` and names only its own. To name both, add `Sitemap: https://www.tavis.live/sitemap-pages.xml` under the admin's SEO settings, and EmDash appends its own line.
+3. Set up form emails (Contact form, above).

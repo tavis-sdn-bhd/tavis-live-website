@@ -47,19 +47,24 @@ async function guardSubmission(request: Request): Promise<Response | null> {
   return errors.length ? rejected(400, errors) : null;
 }
 
-/** A copy of the response with the security headers. A copy because a
+/** EmDash's admin. It sends no `noindex` of its own, and robots.txt's Disallow doesn't keep a linked address out of
+    search results. */
+const adminPath = "/_emdash/admin";
+
+/** A copy of the response with the security headers, and `noindex` on the admin. A copy because a
     redirect or a fetched response has immutable headers. A WebSocket upgrade (co-editing) passes as it is. */
-function secured(response: Response): Response {
+function secured(response: Response, pathname: string): Response {
   if (response.status === 101) return response;
   const copy = new Response(response.body, response);
   for (const [name, value] of Object.entries(securityHeaders)) if (!copy.headers.has(name)) copy.headers.set(name, value);
+  if (pathname.startsWith(adminPath)) copy.headers.set("X-Robots-Tag", "noindex, nofollow");
   return copy;
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
   if (context.request.method === "POST" && context.url.pathname === submitPath) {
     const blocked = await guardSubmission(context.request);
-    if (blocked) return secured(blocked);
+    if (blocked) return secured(blocked, context.url.pathname);
   }
-  return secured(await next());
+  return secured(await next(), context.url.pathname);
 });

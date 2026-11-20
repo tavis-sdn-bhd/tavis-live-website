@@ -11,6 +11,10 @@ export default defineConfig({
 			"nodejs_compat",
 		],
 		entrypoint: "./src/worker.ts",
+		// Needs the tavis.live zone on this account; a deploy fails until it is there.
+		domains: [
+			"www.tavis.live",
+		],
 		// EmDash's maintenance cron.
 		triggers: [
 			triggers.scheduled({
