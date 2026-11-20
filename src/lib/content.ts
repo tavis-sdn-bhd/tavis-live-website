@@ -149,13 +149,26 @@ export const faq = {
     },
     {
       q: "Are the classes live?",
-      a: "Yes. Classes run on weekday evenings, and every class is recorded so your child can rewatch it.",
+      a: "Yes. Classes run live online on weekday evenings, so your child joins from home on any device with an internet connection. Every class is recorded so your child can rewatch it.",
       link: { label: "See the timetable", href: "/online-tuition#timetable" },
+    },
+    {
+      q: "What if my child misses a class?",
+      a: "They watch the class recording, so they don’t fall behind.",
+    },
+    {
+      q: "How many students are in a class?",
+      a: "It depends on the form and the subject. WhatsApp us to ask about your child’s classes.",
+      link: { label: "Ask on WhatsApp", href: whatsappWith("I'd like to ask how many students are in a class. My child is in Form ") },
     },
     {
       q: "Who are the teachers?",
       a: "Experienced Malaysian teachers, including a Sejarah examiner with 25 years in the classroom and writers of KSSM science modules.",
       link: { label: "Meet the tutors", href: "/online-tuition#tutors" },
+    },
+    {
+      q: "How do I follow my child’s progress?",
+      a: "Tavis emails you a progress report every week, to the email address you registered with.",
     },
     {
       q: "How do points turn into rewards?",

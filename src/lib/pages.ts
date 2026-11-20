@@ -509,6 +509,7 @@ export const baTuition = {
       { feature: "Experienced Malaysian teachers, including examiners and module writers", free: false, tuition: true },
       { feature: "Every class recorded to rewatch", free: false, tuition: true },
       { feature: "Points for attending classes", free: false, tuition: true },
+      { feature: "A weekly progress report emailed to parents", free: false, tuition: true },
     ],
     price: { free: "Free", tuition: { from: "From", amount: ringgit(lowestRate), per: "a month" } },
   },
@@ -521,7 +522,10 @@ export const baTuition = {
     items: [
       askedByParents("How much is online tuition?"),
       askedByParents("Are the classes live?"),
+      askedByParents("What if my child misses a class?"),
+      askedByParents("How many students are in a class?"),
       askedByParents("Who are the teachers?"),
+      askedByParents("How do I follow my child’s progress?"),
       askedByParents("Is Tavis free?"),
     ],
   },
