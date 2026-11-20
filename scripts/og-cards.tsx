@@ -11,13 +11,13 @@ import * as malay from "@/ms/og/cards";
 
 const root = path.resolve(import.meta.dirname, "..");
 
-async function renderAll({ ogCards, ogImagePath }: typeof english) {
+async function renderAll({ ogCards, ogImagePath, ogCta }: typeof english) {
   const pathsOf = Object.keys(ogCards) as PagePath[];
   const keep = new Set(pathsOf.map((page) => path.join(root, "public", ogImagePath(page))));
   const results = await Promise.all(
     pathsOf.map(async (page) => {
       const file = path.join(root, "public", ogImagePath(page));
-      const bytes = await renderOgCard(ogCards[page]);
+      const bytes = await renderOgCard(ogCards[page], ogCta);
       const current = await readFile(file).catch(() => null);
       if (current && Buffer.compare(current, bytes) === 0) return false;
       await mkdir(path.dirname(file), { recursive: true });

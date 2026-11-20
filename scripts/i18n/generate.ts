@@ -103,6 +103,13 @@ function isCodePosition(node: ts.Node) {
   return false;
 }
 
+function isComparison(node: ts.Node) {
+  const parent = node.parent;
+  if (!parent) return false;
+  if (ts.isCaseClause(parent)) return true;
+  return ts.isBinaryExpression(parent) && [ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken].includes(parent.operatorToken.kind);
+}
+
 type Edit = { start: number; end: number; text: string };
 
 /** The Malay text of a TS or TSX source, plus its imports pointed at the Malay twin. */
@@ -113,6 +120,9 @@ function translateCode(file: string, text: string, kind: ts.ScriptKind, translat
     if (ts.isStringLiteral(node) && isModuleSpecifier(node)) {
       const target = node.text.startsWith(".") ? relativeTarget(file, node.text) : mirroredTarget(node.text);
       if (target) edits.push({ start: node.getStart(), end: node.getEnd(), text: JSON.stringify(target) });
+    } else if (translate && ts.isStringLiteral(node) && isComparison(node) && node.text in dictionary.translations) {
+      // A comparison stays English while the copy it compares against turns Malay, so it would never match.
+      throw new Error(`${file}: "${node.text}" is compared against in code and also translated. Compare an id instead, or keep the string.`);
     } else if (translate && (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) && !isCodePosition(node)) {
       const malay = lookup(file, node.text);
       if (malay !== null) edits.push({ start: node.getStart(), end: node.getEnd(), text: ts.isStringLiteral(node) ? JSON.stringify(malay) : `\`${malay}\`` });

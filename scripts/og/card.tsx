@@ -109,7 +109,7 @@ function headlineSize(lines: readonly string[]) {
   return Math.max(54, Math.min(92, Math.floor(column / (longest * 0.56))));
 }
 
-export async function renderOgCard({ title, accent, visual }: OgCard): Promise<Buffer> {
+export async function renderOgCard({ title, accent, visual }: OgCard, cta: string): Promise<Buffer> {
   const lines = title.map(plain);
   const accentLine = accent ? plain(accent) : undefined;
   const fontSize = headlineSize(accentLine ? [...lines, accentLine] : lines);
@@ -141,7 +141,7 @@ export async function renderOgCard({ title, accent, visual }: OgCard): Promise<B
               boxShadow: `0 5px 0 ${brandLedge}`,
             }}
           >
-            GET TAVIS FREE
+            {plain(cta).toUpperCase()}
           </div>
           <div style={{ fontWeight: 800, fontSize: 26, color: muted }}>tavis.live</div>
         </div>
