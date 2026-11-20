@@ -1,0 +1,16 @@
+---
+import Layout from "@/layouts/Ba.astro";
+import BlogIndex from "@/views/ba/blog/BlogIndex.astro";
+import { indexPage } from "@/lib/blog";
+
+// ?page=2 and on. Anything that isn't a page of posts is the 404.
+const param = Astro.url.searchParams.get("page");
+const page = param === null ? 1 : /^[1-9]\d*$/.test(param) ? Number(param) : 0;
+const result = await indexPage(page);
+if (result.kind === "out-of-range") return Astro.rewrite("/404");
+if (result.kind === "error") Astro.response.status = 503;
+---
+
+<Layout path="/blog">
+  <BlogIndex result={result} />
+</Layout>

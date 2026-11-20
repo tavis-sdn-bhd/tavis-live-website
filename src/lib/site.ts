@@ -42,6 +42,12 @@ const pages = {
       "What Tavis offers parents of Form 1–5 students: free practice questions, live online tuition, real rewards for learning, and student safety.",
     designs: ["ba"],
   },
+  "/blog": {
+    label: "Blog",
+    title: "The Tavis blog: study tips, SPM preparation and online tuition — Tavis",
+    description: "Articles for Form 1–5 students and their parents on studying, SPM preparation and online tuition in Malaysia.",
+    designs: ["ba"],
+  },
   "/about": {
     label: "About",
     title: "Our story, from 2022 to today — Tavis",

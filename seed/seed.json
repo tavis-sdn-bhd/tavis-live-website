@@ -1,10 +1,63 @@
 {
   "$schema": "https://emdashcms.com/seed.schema.json",
   "version": "1",
-  "meta": { "name": "Tavis", "description": "The Tavis marketing site", "author": "Cynco" },
+  "meta": {
+    "name": "Tavis",
+    "description": "The Tavis marketing site",
+    "author": "Cynco"
+  },
   "settings": {
     "title": "Tavis",
     "tagline": "Free practice and online tuition for Form 1–5 students in Malaysia"
   },
-  "collections": []
+  "collections": [
+    {
+      "slug": "posts",
+      "label": "Blog posts",
+      "labelSingular": "Blog post",
+      "description": "The Tavis blog. Posts from the old tavis.live are imported by scripts/blog/import.ts.",
+      "icon": "article",
+      "supports": [
+        "drafts",
+        "revisions",
+        "scheduling",
+        "search",
+        "seo"
+      ],
+      "urlPattern": "/ba/blog/{slug}",
+      "dateField": "publishedAt",
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Title",
+          "type": "string",
+          "required": true,
+          "searchable": true
+        },
+        {
+          "slug": "excerpt",
+          "label": "Excerpt",
+          "type": "text",
+          "searchable": true
+        },
+        {
+          "slug": "cover",
+          "label": "Cover image",
+          "type": "image"
+        },
+        {
+          "slug": "card_image",
+          "label": "Card image",
+          "type": "image"
+        },
+        {
+          "slug": "body",
+          "label": "Body",
+          "type": "portableText",
+          "required": true,
+          "searchable": true
+        }
+      ]
+    }
+  ]
 }

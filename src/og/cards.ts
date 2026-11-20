@@ -33,6 +33,7 @@ export const ogCards: Record<PagePath, OgCard> = {
   "/tutors": { title: tutorsPage.hero.title, visual: { kind: "cutout", asset: "tuition-team.webp" } },
   "/parents": { title: parentsPage.hero.title, accent: parentsPage.hero.accent, visual: { kind: "phone", file: "screen-home.png" } },
   "/about": { title: aboutPage.hero.title, accent: aboutPage.hero.accent, visual: { kind: "photo", asset: "journey-2023.webp" } },
+  "/blog": { title: ["The Tavis blog."], accent: "Study tips for Form 1–5.", visual: { kind: "tavi", mood: "think", outfit: "graduate" } },
   "/get": { title: ["Get Tavis."], accent: "Free on iPhone and Android.", visual: { kind: "tavi", mood: "wave", outfit: "school" } },
 };
 

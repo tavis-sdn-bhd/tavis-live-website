@@ -1,0 +1,104 @@
+---
+import { cx } from "@/components/ui";
+import { buttonClass, chunky, lede } from "@/components/v2/ui";
+import { type IndexPage, indexHref } from "@/lib/blog";
+import { hrefIn } from "@/lib/site";
+import PostCard from "./PostCard.astro";
+
+/** The blog's index: the newest post wide on page 1, then a grid, then the pages. Read in full on the server; no
+    script. With no posts it says so, and when the posts cannot be read it says that, with a way to try again. */
+type Props = { result: Exclude<IndexPage, { kind: "out-of-range" }> };
+
+const { result } = Astro.props;
+const page = result.kind === "page" ? result : null;
+const posts = page?.posts ?? [];
+// Page 1 opens with the newest post, wide; the rest of it, and every later page, is the grid.
+const featured = page?.page === 1 ? (posts[0] ?? null) : null;
+const rest = featured ? posts.slice(1) : posts;
+const pageLink = "tap grid size-11 place-items-center rounded-xl font-display text-body-sm";
+---
+
+<section id="top" data-band="white" class="shell pb-10 pt-[clamp(3rem,2rem+4vw,5.5rem)] text-center sm:pb-14">
+  <h1 class="text-[clamp(2.5rem,1.6rem+4.4vw,4.5rem)] leading-[0.98] lowercase text-brand-ink text-balance">The Tavis blog</h1>
+  <p class={cx("mx-auto mt-5 max-w-[34rem] text-muted", lede)}>Study tips, SPM preparation and online tuition, for <span class="whitespace-nowrap">Form 1–5</span> students and their parents.</p>
+</section>
+
+{
+  result.kind === "error" && (
+    <section data-band="white" class="shell pb-[clamp(5rem,3rem+7vw,9rem)]">
+      <div class={cx(chunky, "mx-auto max-w-[36rem] p-8 text-center sm:p-10")}>
+        <h2 class="text-[1.5rem] leading-tight text-forest">The posts didn’t load</h2>
+        <p class="mt-3 font-semibold leading-relaxed text-muted">Something went wrong on our side. Try again in a moment.</p>
+        <a href={indexHref("ba", 1)} class={buttonClass({ size: "md", className: "mt-6" })}>Try again</a>
+      </div>
+    </section>
+  )
+}
+
+{
+  page && page.total === 0 && (
+    <section data-band="white" class="shell pb-[clamp(5rem,3rem+7vw,9rem)]">
+      <div class={cx(chunky, "mx-auto max-w-[36rem] p-8 text-center sm:p-10")}>
+        <h2 class="text-[1.5rem] leading-tight text-forest">No posts yet</h2>
+        <p class="mt-3 font-semibold leading-relaxed text-muted">The first ones are on their way. Meanwhile, Tavis has free practice questions for every Form 1–5 subject.</p>
+        <a href={hrefIn("ba", "/question-universe")} class={buttonClass({ size: "md", className: "mt-6" })}>See the questions</a>
+      </div>
+    </section>
+  )
+}
+
+{
+  page && page.total > 0 && (
+    <section data-band="white" aria-label={page.pages > 1 ? `Posts, page ${page.page} of ${page.pages}` : "Posts"} class="shell pb-[clamp(4rem,2.5rem+6vw,7rem)]">
+      {featured && (
+        <div class="mb-6 sm:mb-8">
+          <PostCard post={featured} featured priority />
+        </div>
+      )}
+      <ul class="grid gap-6 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-8 lg:grid-cols-3">
+        {rest.map((post, i) => (
+          <li class="flex [&>article]:w-full">
+            <PostCard post={post} priority={!featured && i < 2} />
+          </li>
+        ))}
+      </ul>
+
+      {page.pages > 1 && (
+        <nav aria-label="Pages of posts" class="mt-12 flex items-center justify-center gap-2 sm:mt-16">
+          {page.page > 1 ? (
+            <a href={indexHref("ba", page.page - 1)} rel="prev" class={buttonClass({ tone: "white", size: "md" })}>
+              Newer
+            </a>
+          ) : (
+            <span aria-hidden="true" class={buttonClass({ tone: "white", size: "md", className: "pointer-events-none opacity-40" })}>Newer</span>
+          )}
+          <ol class="mx-1 hidden items-center gap-1 sm:flex">
+            {Array.from({ length: page.pages }, (_, i) => i + 1).map((n) => (
+              <li>
+                {n === page.page ? (
+                  <span aria-current="page" class={cx(pageLink, "bg-sky/10 text-sky-ink ring-2 ring-inset ring-sky/40")}>
+                    {n}
+                  </span>
+                ) : (
+                  <a href={indexHref("ba", n)} aria-label={`Page ${n}`} class={cx(pageLink, "text-muted hover:bg-cream hover:text-forest")}>
+                    {n}
+                  </a>
+                )}
+              </li>
+            ))}
+          </ol>
+          <p class="mx-2 text-small font-extrabold text-muted sm:hidden">
+            {page.page} of {page.pages}
+          </p>
+          {page.page < page.pages ? (
+            <a href={indexHref("ba", page.page + 1)} rel="next" class={buttonClass({ tone: "white", size: "md" })}>
+              Older
+            </a>
+          ) : (
+            <span aria-hidden="true" class={buttonClass({ tone: "white", size: "md", className: "pointer-events-none opacity-40" })}>Older</span>
+          )}
+        </nav>
+      )}
+    </section>
+  )
+}

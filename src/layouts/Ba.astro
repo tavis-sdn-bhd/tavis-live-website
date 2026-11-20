@@ -7,15 +7,25 @@ import { ogAlt, ogImagePath, ogSize } from "@/og/cards";
 import { type PagePath, pageMeta, siteName } from "@/lib/site";
 import { BaChat, BaFooter, BaHeader } from "@/views/ba/chrome";
 
-/** A page of the site, or the 404, which shares the home page's card. */
-type Props = { path: PagePath; notFound?: never } | { notFound: true; path?: never };
+/** What a page with its own content (a blog post) says about itself, in place of its deck page's title and card. */
+export type OwnMeta = {
+  title: string;
+  description: string;
+  /** Its own share image; without one it shares its deck page's card. */
+  image?: { url: string; width: number; height: number; alt: string };
+  article?: { publishedTime: string };
+};
+
+/** A page of the site, or the 404, which shares the home page's card. A page under a deck page (a post under /blog)
+    names that page as `path` and brings its own `meta`. */
+type Props = ({ path: PagePath; notFound?: never } | { notFound: true; path?: never }) & { meta?: OwnMeta };
 
 const page: PagePath = Astro.props.path ?? "/";
-const { title, description } = Astro.props.notFound
-  ? { title: "Page not found — Tavis", description: pageMeta("/").description }
-  : pageMeta(page);
+const own = Astro.props.meta;
+const { title, description } = own ?? (Astro.props.notFound ? { title: "Page not found — Tavis", description: pageMeta("/").description } : pageMeta(page));
 // From the request, so a preview on workers.dev links its own cards.
-const ogImage = new URL(ogImagePath(page), Astro.url).href;
+const ogImage = new URL(own?.image?.url ?? ogImagePath(page), Astro.url).href;
+const ogImageMeta = own?.image ?? { ...ogSize, alt: ogAlt(page), type: "image/png" };
 const appStoreId = "1580342756";
 const androidPackage = "com.tavis.tavisapp.v26";
 ---
@@ -33,12 +43,13 @@ const androidPackage = "com.tavis.tavisapp.v26";
     <meta property="og:description" content={description} />
     <meta property="og:site_name" content={siteName} />
     <meta property="og:locale" content="en_MY" />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={own?.article ? "article" : "website"} />
+    {own?.article && <meta property="article:published_time" content={own.article.publishedTime} />}
     <meta property="og:image" content={ogImage} />
-    <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:width" content={String(ogSize.width)} />
-    <meta property="og:image:height" content={String(ogSize.height)} />
-    <meta property="og:image:alt" content={ogAlt(page)} />
+    {"type" in ogImageMeta && <meta property="og:image:type" content={ogImageMeta.type} />}
+    <meta property="og:image:width" content={String(ogImageMeta.width)} />
+    <meta property="og:image:height" content={String(ogImageMeta.height)} />
+    <meta property="og:image:alt" content={ogImageMeta.alt} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImage} />
     <meta name="twitter:title" content={title} />

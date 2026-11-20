@@ -1,0 +1,29 @@
+---
+import { getSeoMeta } from "emdash";
+import Layout from "@/layouts/Ba.astro";
+import BlogPost from "@/views/ba/blog/BlogPost.astro";
+import BlogUnavailable from "@/views/ba/blog/BlogUnavailable.astro";
+import { postPage } from "@/lib/blog";
+import { siteName } from "@/lib/site";
+
+const result = await postPage(Astro.params.slug ?? "");
+if (result.kind === "missing") return Astro.rewrite("/404");
+if (result.kind === "error") Astro.response.status = 503;
+
+const post = result.kind === "post" ? result.post : null;
+const seo = post ? getSeoMeta(post, { siteTitle: siteName, titleSeparator: " — " }) : null;
+const cover = post?.data.cover;
+const storageKey = typeof cover?.meta?.storageKey === "string" ? cover.meta.storageKey : null;
+const meta = post && seo
+  ? {
+      title: seo.title,
+      description: seo.description ?? post.data.excerpt ?? "",
+      image: cover && storageKey && cover.width && cover.height ? { url: `/_emdash/api/media/file/${storageKey}`, width: cover.width, height: cover.height, alt: "" } : undefined,
+      article: post.data.publishedAt ? { publishedTime: post.data.publishedAt.toISOString() } : undefined,
+    }
+  : { title: "The post didn’t load — Tavis", description: "" };
+---
+
+<Layout path="/blog" meta={meta}>
+  {result.kind === "post" ? <BlogPost post={result.post} newer={result.newer} older={result.older} /> : <BlogUnavailable />}
+</Layout>

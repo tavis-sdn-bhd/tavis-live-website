@@ -41,13 +41,48 @@ The first visit to `/_emdash/admin` runs EmDash's setup. Locally, the dev server
 |---|---|
 | `src/pages/ba/` | One Astro route per BA page |
 | `src/layouts/Ba.astro` | The `<head>`, and BA's header, footer and WhatsApp button as islands |
-| `src/views/ba/` | Each page's body, a React island |
+| `src/views/ba/` | Each page's body, a React island; the blog's views are Astro components in `src/views/ba/blog/` |
+| `src/lib/blog.ts` | The blog's queries, paths, dates and reading time |
+| `scripts/blog/` | The blog's inventory, import and check |
+| `seed/` | EmDash's seed, the blog inventory and the posts' original images |
 | `src/components/` | The React components the pages share |
 | `src/lib/site.ts` | Pages, titles, and the prefix each design lives under |
 | `src/og/cards.ts` | Each page's Open Graph card: its words and its art |
 | `src/middleware.ts` | Contact form rate limits and checks, security and `noindex` headers |
 
 When a design is chosen, set its prefix in `src/lib/site.ts` to `""`, move its routes to `src/pages/`, and drop the root redirect and the `noindex` header.
+
+## Blog
+
+The blog is at `/ba/blog`, a post at `/ba/blog/<slug>`. Posts live in EmDash's `posts` collection, which `seed/seed.json` defines; EmDash applies it at setup. The index and post pages read the collection on the server and send no script of their own.
+
+The 56 posts from the old tavis.live (Webflow) were brought over in three steps, each a script you can rerun:
+
+1. `pnpm blog:inventory` reads tavis.live's sitemap, `/blog` and every post, and writes `seed/blog-inventory.json`: each post's text as served, its body as Portable Text, its SEO fields, and what the source lacks. It downloads every image a post shows into `seed/blog/media/`, so nothing later needs the old site. It stops on markup it does not know rather than drop it.
+2. `pnpm blog:import [--url <site>]` uploads the images to EmDash's media library and creates or updates each post, matched by slug, then publishes it. A rerun changes nothing that is current: EmDash knows an image it already holds by its hash, and an unchanged post is skipped. Locally it signs in through the dev bypass; anywhere else it needs `EMDASH_TOKEN`.
+3. `pnpm blog:verify [--url <site>]` checks every inventoried post on a running site: listed on the index, its old URL redirecting to it, its title and whole body word for word, its cover image, and every link on those pages.
+
+No post on tavis.live shows a date or an author. The date each post shows is the creation time in its Webflow page id, which follows the old index's order; `seed/blog-inventory.json` lists that and everything else missing at the source.
+
+Old links keep working: `/tavis-blog/<slug>` redirects to the post and `/blog` to the index (`src/pages/tavis-blog/`, `src/pages/blog.astro`). The post redirect is a 302 while the design waits under `/ba`, and becomes a 301 by itself once the prefix is `""`.
+
+At launch, besides the steps under Status: delete `src/pages/blog.astro` (the blog's own route takes `/blog`), and in the admin change the collection's URL pattern from `/ba/blog/{slug}` to `/blog/{slug}`.
+
+### Importing into production
+
+R2 must be enabled on the Cloudflare account and the `tavis-live-media` bucket created before EmDash can store the images. Then:
+
+1. Deploy and run setup at `/_emdash/admin`. Setup applies `seed/seed.json`, which creates the `posts` collection.
+2. As an admin, create an API token under Settings › API tokens with the content and media read and write scopes. Writing a post's date needs an admin's or editor's token.
+3. Run the import against the deployed site, then the check:
+
+```bash
+EMDASH_TOKEN=… pnpm blog:import --url https://<deployed host>
+```
+
+```bash
+pnpm blog:verify --url https://<deployed host>
+```
 
 ## Contact form
 

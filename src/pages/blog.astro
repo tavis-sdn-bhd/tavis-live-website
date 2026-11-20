@@ -1,0 +1,8 @@
+---
+import { indexHref } from "@/lib/blog";
+import { defaultDesign } from "@/lib/site";
+
+// tavis.live's blog index. Until the chosen design moves to /, the blog lives under its prefix; delete this file then,
+// when src/pages/blog/ takes the path.
+return Astro.redirect(indexHref(defaultDesign, 1), 302);
+---

@@ -1,0 +1,9 @@
+---
+import { postHref } from "@/lib/blog";
+import { defaultDesign, hrefIn } from "@/lib/site";
+
+// tavis.live served each post at /tavis-blog/<slug>; the slugs are unchanged, so each old link lands on its post.
+// Temporary while the design waits under its prefix, so no browser caches a /ba URL; permanent once it moves to /.
+const live = hrefIn(defaultDesign, "/") === "/";
+return Astro.redirect(postHref(defaultDesign, Astro.params.slug ?? ""), live ? 301 : 302);
+---
