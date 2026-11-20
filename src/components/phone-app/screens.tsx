@@ -1,15 +1,15 @@
 "use client";
 
 import { Image } from "@/components/image";
-import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState, type ReactNode, type Ref } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type Ref } from "react";
 import { rewards } from "@/lib/content";
 import { useClientValue } from "@/lib/use-client-value";
 import { minutes, upcomingClass, timetable2027, weekByForm } from "@/lib/pages";
-import { learningCard as card, optionState, q6, q17, q17Answer } from "@/lib/questions";
+import { learningCard as card, optionState, q6, q17, q17Answer, type OptionKey } from "@/lib/questions";
 import { Bacteriophage } from "../bacteriophage";
 import { Coin } from "../coin";
-import { DigitRoll } from "../digit-roll";
+import { Count } from "../stageshow/motion/Count";
 import { Check, Close, Flag } from "../icons";
 import { Mascot } from "../mascot";
 import { Student, type Look } from "../student";
@@ -48,7 +48,8 @@ const btn = {
 
 /* ── Small pieces ──────────────────────────────────────────────────────── */
 
-/** Tappable element: a native button with a CSS press, no JS per button. */
+/** Tappable element: a native button with a CSS press, no JS per button. `target` names it for a scripted tap, which
+    presses it through `data-pressed`. */
 function Press({
   children,
   className,
@@ -56,6 +57,8 @@ function Press({
   label,
   color,
   pressed,
+  target,
+  crop,
   ref,
 }: {
   children: ReactNode;
@@ -65,6 +68,10 @@ function Press({
   color?: string;
   /** Set for toggle buttons. */
   pressed?: boolean;
+  /** The name a scripted demo taps it by. */
+  target?: string;
+  /** It crops its content on purpose (a figure cut by the tile's edge). Marked for the demo's film checks. */
+  crop?: boolean;
   ref?: Ref<HTMLButtonElement>;
 }) {
   return (
@@ -74,7 +81,9 @@ function Press({
       aria-label={label}
       aria-pressed={pressed}
       onClick={onClick}
-      className={cx("transition-transform duration-100 active:scale-[0.96]", className)}
+      data-target={target}
+      data-crop={crop || undefined}
+      className={cx("transition-transform duration-100 active:scale-[0.96] data-pressed:scale-[0.96]", className)}
       style={color ? { background: color } : undefined}
     >
       {children}
@@ -82,7 +91,8 @@ function Press({
   );
 }
 
-function Mark({ ok, className }: { ok: boolean; className?: string }) {
+/** The ✓ or ✕ an answered option carries. */
+export function Mark({ ok, className }: { ok: boolean; className?: string }) {
   return (
     <span className={cx("grid place-items-center rounded-full text-paper", ok ? "bg-correct" : "bg-wrong", className)}>
       {ok ? <Check className="size-3.5" /> : <Close className="size-3" />}
@@ -90,14 +100,14 @@ function Mark({ ok, className }: { ok: boolean; className?: string }) {
   );
 }
 
-const Pencil = () => (
+export const Pencil = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
     <path d="M4 20l1.2-4.6L16 4.6a2 2 0 0 1 2.8 0l.6.6a2 2 0 0 1 0 2.8L8.6 18.8Z" className="fill-sun" />
     <path d="M16 4.6 19.4 8" className="stroke-coral" strokeWidth="3" />
     <path d="M4 20l1.2-4.6 3.4 3.4Z" fill="#f4e2c0" />
   </svg>
 );
-const Lock = () => (
+export const Lock = () => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
     <rect x="5" y="10" width="14" height="11" rx="2.5" />
     <path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="#fff" strokeWidth="3" />
@@ -111,11 +121,18 @@ function CrownBadge({ className }: { className?: string }) {
     </svg>
   );
 }
-const Shoe = () => (
+export const Shoe = () => (
   <svg width="30" height="20" viewBox="0 0 30 20" aria-hidden="true">
     <path d="M3 6c4 0 7 3 12 3s8 2 11 4c2 1 2 4-1 4H5c-2 0-3-1-3-3Z" fill="#ffffff" />
     <path d="M3 15h23" className="stroke-line-strong" strokeWidth="2" />
     <path d="M9 8l2 2M12 9l2 2" className="stroke-app-muted" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+/** A row's "more" mark, drawn so it has a real box (a text "›" is mostly side bearing). */
+const Chevron = ({ className = "text-app-ink/60" }: { className?: string }) => (
+  <svg aria-hidden="true" width="10" height="16" viewBox="0 0 10 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cx("shrink-0", className)}>
+    <path d="M2.5 2.5 7.5 8l-5 5.5" />
   </svg>
 );
 
@@ -156,6 +173,8 @@ export function Screen({ children, className, bg = "bg-cream", light, title, sub
   return (
     <div
       data-status={light ? "light" : undefined}
+      // A scroller: it crops what runs past its foot on purpose (marked for the demo's film checks)
+      data-crop
       className={cx(
         bg,
         "absolute inset-0 overflow-y-auto pt-[54px] [scrollbar-width:none] pointer-coarse:group-data-locked/phone:overflow-y-hidden [&::-webkit-scrollbar]:hidden",
@@ -251,17 +270,16 @@ export function HomeScreen() {
   const date = useNextClassDate();
   return (
     <Screen tabbed>
-      <div className="bg-mint px-5 pb-6 pt-3">
+      {/* The header's mint runs up behind the status bar, as an iOS header does, rather than stopping under it. */}
+      <div className="-mt-[54px] bg-mint px-5 pb-6 pt-[66px]">
         <div className="flex items-center gap-2.5">
           <span className="size-[46px] overflow-hidden rounded-full bg-paper ring-2 ring-white">
             <Student look={look} head className="size-full" />
           </span>
-          <Press onClick={() => go("rewards")} className={cx(btn.pill, "pl-2 pr-3")} label={`${points} points`}>
+          <Press onClick={() => go("rewards")} className={cx(btn.pill, "px-2.5")} label={`${points} points`}>
             <Coin />
-            <DigitRoll value={points} format={String} className="font-display text-[19px] text-app-ink" />
-            <span aria-hidden="true" className="text-app-ink/60">
-              ›
-            </span>
+            <Count value={points} format={String} className="font-display text-[19px] text-app-ink" />
+            <Chevron />
           </Press>
           <Press onClick={() => handoff("Verify your ID in the app to earn +200 pts.")} className={cx(btn.pill, "px-3")}>
             <svg aria-hidden="true" width="22" height="16" viewBox="0 0 22 16" fill="none" className="stroke-brand-ink" strokeWidth="1.8">
@@ -303,7 +321,7 @@ export function HomeScreen() {
       </div>
 
       <div className="grid gap-3.5 px-5 pt-5">
-        <Press onClick={() => setTab("universe")} color={tile.universe} className="relative flex h-[112px] items-center overflow-hidden rounded-[24px] px-6 text-left text-app-ink">
+        <Press onClick={() => setTab("universe")} target="universe" color={tile.universe} className="relative flex h-[112px] items-center overflow-hidden rounded-[24px] px-6 text-left text-app-ink">
           <span>
             <span className="block font-display text-[20px] tracking-[0.03em]">Question Universe</span>
             <span className="mt-1 block font-display text-[16px] tracking-[0.03em]">
@@ -352,7 +370,7 @@ export function UniverseScreen() {
   const { go, handoff, answers } = useApp();
   return (
     <Screen title="Question Universe" subtitle="Unlimited free practice · Form 5">
-      <div className="mt-5 grid gap-3 px-5">
+      <div className="mt-5 grid gap-3.5 px-5">
         <Press onClick={() => go("leaderboard")} className={cx(leaderboard.field, "flex items-center gap-3.5 rounded-[20px] p-4 text-left text-white")}>
           <span className="grid size-11 place-items-center rounded-2xl bg-white/15">
             <CrownBadge className="size-7" />
@@ -361,9 +379,7 @@ export function UniverseScreen() {
             <span className="block font-display text-[17px]">Leaderboard</span>
             <span className="block text-[13px] text-white">See how you rank this week</span>
           </span>
-          <span aria-hidden="true" className="text-[20px] text-white/70">
-            ›
-          </span>
+          <Chevron className="text-white/70" />
         </Press>
         {subjects.map((s, i) => {
           const live = i === 0;
@@ -371,6 +387,7 @@ export function UniverseScreen() {
             <Press
               key={s}
               onClick={() => (live ? go("question") : handoff(`${s} questions are waiting in the app.`))}
+              target={live ? "sains" : undefined}
               className="flex items-center gap-3.5 rounded-[20px] bg-paper p-4 text-left shadow-[0_2px_10px_rgb(0_0_0/0.05)]"
             >
               <span className={cx("grid size-11 place-items-center rounded-2xl", live ? "bg-mint" : "bg-cream")}>
@@ -396,43 +413,90 @@ const optionStyles = {
   muted: "bg-paper/60 text-app-muted",
 } as const;
 
-/** A quiz's top bar: close, the points pill (with `children` over it) and the pencils left. */
-function QuizBar({ onClose, points, pencils, children }: { onClose: () => void; points: ReactNode; pencils: string; children?: ReactNode }) {
+/** A quiz's top bar: close, the points pill (with `children` over it) and the pencils left. As much air over the
+    pills as under them. */
+function QuizBar({ onClose, points, pencils, children }: { onClose: () => void; points: ReactNode; pencils: number; children?: ReactNode }) {
   const pill = "flex h-[40px] items-center rounded-full bg-brand shadow-[0_3px_0_var(--color-brand-ledge)]";
   return (
-    <div className="flex h-[56px] items-center gap-2 px-4">
-      <Press onClick={onClose} label="Close" className={cx("relative grid size-10 place-items-center rounded-full border-2 border-line-strong text-app-muted", hit)}>
+    <div className="flex h-[60px] items-center gap-2 px-4">
+      <Press onClick={onClose} label="Close" target="close" className={cx("relative grid size-10 place-items-center rounded-full border-2 border-line-strong text-app-muted", hit)}>
         <Close className="size-3.5" />
       </Press>
       <div className={cx(pill, "relative ml-auto gap-2 pl-3.5 pr-1.5")}>
-        <span className="font-display text-[17px] text-forest">{points}</span>
-        <Coin size={28} />
+        <span data-target="points" className="font-display text-[17px] text-forest">
+          {points}
+        </span>
+        <span data-target="pill-coin" className="grid">
+          <Coin size={28} />
+        </span>
         {children}
       </div>
       <div className={cx(pill, "gap-1.5 px-3")}>
         <Pencil />
-        <span className="leading-none">
-          <span className="block font-display text-[15px] text-forest">{pencils}</span>
-          <span className="block text-[10px] text-forest">Pencils</span>
+        <span className="grid gap-[5px]">
+          <span className="block font-display text-[15px] leading-[1.1] text-forest">{pencils}/50</span>
+          <span className="block text-[10px] leading-[1.1] text-forest">Pencils</span>
         </span>
       </div>
     </div>
   );
 }
 
+/** Clear space between an answered option and the top of the answer drawer. */
+const DRAWER_GAP = 16;
+
+/** A quiz's question box, under its fixed bar. Once scrolled, its top edge fades rather than slicing a line. */
+/** Room kept under Next Question when the explanation scrolls to it: clear of the home indicator. */
+const EXPLAIN_GAP = 40;
+
+const quizScroller =
+  "absolute inset-x-0 bottom-0 top-[114px] overflow-y-auto [scrollbar-width:none] pointer-coarse:group-data-locked/phone:overflow-y-hidden [&::-webkit-scrollbar]:hidden data-scrolled:[mask-image:linear-gradient(to_bottom,transparent,#000_20px)]";
+
+/** Whether a box is scrolled from its top, to fade that edge. */
+function useScrolled() {
+  const [scrolled, setScrolled] = useState(false);
+  const onScroll = (e: { currentTarget: HTMLElement }) => setScrolled(e.currentTarget.scrollTop > 1);
+  return { "data-scrolled": scrolled || undefined, onScroll };
+}
+
 export function QuestionScreen() {
-  const { points, picked, pick, go, back, handoff, rewarded } = useApp();
+  const { points, pencils, picked, pick, go, back, handoff, rewarded } = useApp();
   const answered = picked !== null;
   const correct = picked === q17.answer;
   const next = useRef<HTMLButtonElement>(null);
+  const scroller = useRef<HTMLDivElement>(null);
+  const drawer = useRef<HTMLDivElement>(null);
+  const options = useRef<Partial<Record<OptionKey, HTMLButtonElement | null>>>({});
+  const reduce = useReducedMotion();
+  const mounted = useRef(false);
+  const fade = useScrolled();
   // Answering disables the focused option, so hand focus to the drawer's next step.
   useEffect(() => {
     if (answered) next.current?.focus({ preventScroll: true });
   }, [answered]);
+  // The drawer rises over the options: scroll the pick up with it, so the answer stays whole above the drawer with a
+  // clear gap. A screen that opens already answered starts there.
+  useLayoutEffect(() => {
+    const first = !mounted.current;
+    mounted.current = true;
+    const box = scroller.current;
+    const sheet = drawer.current;
+    const option = picked ? options.current[picked] : null;
+    if (!box || !sheet || !option) return;
+    const top = option.offsetTop + option.offsetHeight + DRAWER_GAP - (box.clientHeight - sheet.offsetHeight);
+    if (top > box.scrollTop) box.scrollTo({ top, behavior: first || reduce ? "instant" : "smooth" });
+  }, [picked, reduce]);
   return (
     <div className="absolute inset-0 bg-cream">
-      <Screen className="pb-[190px]">
-        <QuizBar onClose={back} pencils="50/50" points={<DigitRoll value={points} format={String} className="font-display" />}>
+      {/* The bar stays put; the question scrolls in its own box under it */}
+      <div className="absolute inset-x-0 top-0 z-10 pt-[54px]">
+        <QuizBar onClose={back} pencils={pencils} points={
+            <>
+              {/* Count names itself on a plain span, which screen readers skip: say the figure in text. */}
+              <span className="sr-only">{points}</span>
+              <Count value={points} format={String} aria-hidden="true" />
+            </>
+          }>
           <AnimatePresence initial={false}>
               {correct && rewarded && (
                 <motion.span
@@ -447,9 +511,16 @@ export function QuestionScreen() {
               )}
           </AnimatePresence>
         </QuizBar>
-
+      </div>
+      <div
+        ref={scroller}
+        // A scroller: it crops what runs past its edges on purpose (marked for the demo's film checks)
+        data-crop
+        {...fade}
+        className={cx(quizScroller, "pb-[260px]")}
+      >
         <div className="px-5">
-          <p {...screenTitle} className="mt-2 font-display text-[19px] text-app-ink outline-none">
+          <p {...screenTitle} className="font-display text-[19px] text-app-ink outline-none">
             Question {q17.number}/{q17.of}
           </p>
           <div className="mt-2.5 h-[8px] rounded-full bg-line">
@@ -462,37 +533,42 @@ export function QuestionScreen() {
             {q17.stem.en}
           </p>
           <div className="mt-4 grid place-items-center rounded-[22px] bg-line py-3">
-            <div className="rounded-lg bg-paper px-3">
-              <Bacteriophage className="h-[190px] w-auto" />
+            <div className="rounded-lg bg-paper p-3">
+              <Bacteriophage className="h-[166px] w-auto" />
             </div>
           </div>
-          <div className="mt-4 grid gap-2.5">
+          <div className="mt-4 grid gap-3.5">
             {q17.options.map((o) => {
               const state = optionState(picked, o.key);
               return (
                 <motion.button
                   key={o.key}
+                  ref={(el) => {
+                    options.current[o.key] = el;
+                  }}
                   type="button"
                   disabled={answered}
                   onClick={() => pick(o.key)}
+                  data-target={`option-${o.key}`}
                   animate={state === "wrong" ? { x: [0, -6, 6, -4, 4, 0] } : { x: 0 }}
                   className={cx(
-                    "relative flex min-h-[54px] items-center justify-between rounded-[18px] px-5 text-left font-display text-[17px] transition-[background-color,color,box-shadow,scale] duration-150 active:scale-[0.98]",
+                    // The mark sits as far from the right as from the top and bottom: (54 − 28) / 2.
+                    "relative flex min-h-[54px] items-center justify-between gap-3 rounded-[18px] pl-5 pr-[13px] text-left font-display text-[17px] transition-[background-color,color,box-shadow,scale] duration-150 active:scale-[0.98] data-pressed:scale-[0.98]",
                     // Fill the gap between options, so a tap there still lands.
-                    "pointer-coarse:after:absolute pointer-coarse:after:inset-x-0 pointer-coarse:after:-inset-y-[5px]",
+                    "pointer-coarse:after:absolute pointer-coarse:after:inset-x-0 pointer-coarse:after:-inset-y-[7px]",
                     optionStyles[state],
                   )}
                 >
                   <span>
                     {o.key}. <span lang="ms">{o.ms}</span> / {o.en}
                   </span>
-                  {(state === "correct" || state === "wrong") && <Mark ok={state === "correct"} className="size-7" />}
+                  {(state === "correct" || state === "wrong") && <Mark ok={state === "correct"} className="size-7 shrink-0" />}
                 </motion.button>
               );
             })}
           </div>
         </div>
-      </Screen>
+      </div>
 
       {/* Answer drawer, as in the app */}
       <AnimatePresence initial={false}>
@@ -502,15 +578,20 @@ export function QuestionScreen() {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 320, damping: 34 }}
+            ref={drawer}
             data-transient
-            className={cx("absolute inset-x-0 bottom-0 z-30 rounded-t-[28px] px-5 pb-9 pt-5", correct ? "bg-correct-soft" : "bg-wrong-soft")}
+            // As much air over the title as under the buttons, which clear the home indicator
+            className={cx("absolute inset-x-0 bottom-0 z-30 rounded-t-[28px] px-5 pb-9 pt-[35px]", correct ? "bg-correct-soft" : "bg-wrong-soft")}
           >
-            <p className={cx("text-center font-display text-[26px]", correct ? "text-correct-ink" : "text-wrong-ink")}>{correct ? "Correct Answer" : "Not quite"}</p>
-            <p className="mt-1 flex items-center justify-center gap-2 font-display text-[19px] text-app-ink">
+            <p className={cx("text-center font-display text-[26px] leading-[1.25]", correct ? "text-correct-ink" : "text-wrong-ink")}>{correct ? "Correct Answer" : "Not quite"}</p>
+            <p className={cx("mt-1 font-display text-[19px] leading-[1.3] text-app-ink", correct ? "flex items-center justify-center gap-2" : "text-center text-balance")}>
               {correct ? (
                 rewarded ? (
                   <>
-                    <Coin size={26} /> +{q17.reward} points
+                    <span data-target="reward" className="grid">
+                      <Coin size={26} />
+                    </span>
+                    +{q17.reward} points
                   </>
                 ) : (
                   <>Points already earned for this question</>
@@ -525,7 +606,7 @@ export function QuestionScreen() {
               <Press onClick={() => handoff("Flag questions for your teacher in the app.")} className={cx(btn.secondary, "flex items-center justify-center gap-2")}>
                 <Flag className="size-5 text-math" /> Flag
               </Press>
-              <Press ref={next} onClick={() => go("done")} className={cx(btn.primary, "tracking-[0.04em]")}>
+              <Press ref={next} onClick={() => go("done")} target="next" className={cx(btn.primary, "tracking-[0.04em]")}>
                 Next Question
               </Press>
             </div>
@@ -559,7 +640,7 @@ export function DoneScreen() {
           <Press onClick={() => handoff("Questions 18 to 20 are waiting in the app.")} className={btn.primary}>
             Continue in the app
           </Press>
-          <Press onClick={retry} className={btn.secondary}>
+          <Press onClick={retry} target="retry" className={btn.secondary}>
             Try again
           </Press>
           <Press onClick={home} className="h-[48px] font-display text-[16px] text-app-muted">
@@ -772,7 +853,7 @@ export function HistoryScreen() {
 /* ── Me: avatar ───────────────────────────────────────────────────────── */
 
 /** Shoe prices as listed in the app's avatar shop. */
-const shoes = [2500, 3500, 3500, 5000, 5000] as const;
+export const shoePrices = [2500, 3500, 3500, 5000, 5000] as const;
 
 export function MeScreen() {
   const { look, setLook, say, handoff, points } = useApp();
@@ -797,14 +878,14 @@ export function MeScreen() {
         <p className="font-display text-[16px] text-app-ink">Outfit</p>
         <div className="mt-2 grid grid-cols-3 gap-3">
           {(Object.keys(looks) as Look[]).map((id) => (
-            <Press key={id} onClick={() => setLook(id)} pressed={id === look} className={cx("flex h-[92px] w-full items-start justify-center overflow-hidden rounded-[20px]", id === look ? "bg-mint ring-2 ring-brand" : "bg-cream")}>
+            <Press key={id} onClick={() => setLook(id)} target={`look-${id}`} crop pressed={id === look} className={cx("flex h-[92px] w-full items-start justify-center overflow-hidden rounded-[20px]", id === look ? "bg-mint ring-2 ring-brand" : "bg-cream")}>
               <Student look={id} label={looks[id]} className="mt-2 h-[200px] w-auto" />
             </Press>
           ))}
         </div>
         <p className="mt-5 font-display text-[16px] text-app-ink">Shoes</p>
         <div className="mt-2 grid grid-cols-5 gap-2">
-          {shoes.map((p, i) => (
+          {shoePrices.map((p, i) => (
             <Press
               key={i}
               onClick={() => (p > points ? say(`${(p - points).toLocaleString("en-MY")} more points to unlock.`) : handoff("Unlock outfits for your avatar in the app."))}
@@ -902,48 +983,125 @@ export function LeaderboardScreen() {
   );
 }
 
-/* ── Explanation: why an answer is wrong, then the right one ──────────── */
+/* ── Explanation: Q6 answered wrong, why, then the right one ─────────── */
 
+/**
+ * Q6 as the app explains it: the stem and the two options the explanation shows. Picking the wrong one marks it,
+ * opens "Why D is wrong" under it, reveals the right answer and offers the next question. A screen that opens
+ * already answered (the mockup scene) shows that state at once.
+ */
 export function ExplanationScreen() {
-  const { back } = useApp();
-  const option = "flex items-center justify-between gap-3 rounded-[18px] border-2 px-4 py-3.5 font-display text-[16px] leading-[1.3]";
+  const { back, points, pencils, q6: pick, pickQ6, next } = useApp();
+  const reduce = useReducedMotion();
+  const wrong = pick === q6.wrong.key;
+  const fade = useScrolled();
+  const scroller = useRef<HTMLDivElement>(null);
+  const why = useRef<HTMLDivElement>(null);
+  const end = useRef<HTMLDivElement>(null);
+  const mounted = useRef(false);
+  // The explanation opens taller than the screen: scroll with it, so the right answer and Next Question end whole
+  // above the home indicator. The why box is still opening, so its full height is added. A screen that opens
+  // already answered (the mockup scene) stays at its top.
+  useLayoutEffect(() => {
+    const first = !mounted.current;
+    mounted.current = true;
+    const box = scroller.current;
+    const foot = end.current;
+    if (first || !box || !foot || pick === null) return;
+    const k = box.getBoundingClientRect().height / box.offsetHeight || 1;
+    const bottom = (foot.getBoundingClientRect().top - box.getBoundingClientRect().top) / k + box.scrollTop + (why.current?.offsetHeight ?? 0);
+    const top = bottom + EXPLAIN_GAP - box.clientHeight;
+    if (top > box.scrollTop) box.scrollTo({ top, behavior: reduce ? "instant" : "smooth" });
+  }, [pick, reduce]);
+  const option =
+    "flex w-full items-center justify-between gap-3 rounded-[18px] border-2 py-3.5 pl-4 pr-[13px] text-left font-display text-[16px] leading-[1.3] transition-[background-color,border-color,color,scale] duration-150 active:scale-[0.98] data-pressed:scale-[0.98]";
+  const idle = "border-line bg-paper text-app-ink";
+  const open = reduce ? { duration: 0 } : ({ type: "spring", stiffness: 300, damping: 36 } as const);
   return (
-    <Screen bg="bg-[#d9dcdb]">
-      <QuizBar onClose={back} points="388" pencils="49/50" />
-      <div className="mt-3 min-h-[700px] rounded-t-[28px] bg-paper px-5 pb-10 pt-5">
-        <p {...screenTitle} className="text-[16px] text-app-muted outline-none">
-          Question {q6.number}
-        </p>
-        <p lang="ms" className="mt-1 font-display text-[17px] leading-[1.3] text-app-ink">
-          {q6.stem.ms}
-        </p>
-        <p lang="en" className="mt-1 font-display text-[15px] leading-[1.35] text-app-ink/75">
-          {q6.stem.en}
-        </p>
-        <div className={cx(option, "mt-4 border-wrong bg-wrong-soft text-wrong-ink")}>
-          <span>
-            {q6.wrong.key}. <span lang="ms">{q6.wrong.ms}</span> / {q6.wrong.en}
-          </span>
-          <Mark ok={false} className="size-7 shrink-0" />
-        </div>
-        <div className="mt-3 rounded-[18px] border border-wrong/25 p-4">
-          <p className="flex items-center gap-2 font-display text-[15px] text-wrong-ink">
-            <span aria-hidden="true" className="grid size-[18px] place-items-center rounded-full border-[1.5px] border-current text-[11px] leading-none">
-              i
+    <div className="absolute inset-0 bg-[#d9dcdb]">
+      <div className="absolute inset-x-0 top-0 z-10 pt-[54px]">
+        <QuizBar
+          onClose={back}
+          pencils={pencils}
+          points={
+            <>
+              <span className="sr-only">{points}</span>
+              <Count value={points} format={String} aria-hidden="true" />
+            </>
+          }
+        />
+      </div>
+      {/* Room under the card, so a scroll started while the explanation is still opening isn't clamped short */}
+      <div ref={scroller} data-crop {...fade} className={cx(quizScroller, "pb-[240px]")}>
+        {/* At least the screen's height under the bar (874 − 114 − 12), so no grey shows at its foot */}
+        <div className="mt-3 min-h-[748px] rounded-t-[28px] bg-paper px-5 pb-10 pt-5">
+          <p {...screenTitle} className="text-[16px] text-app-muted outline-none">
+            Question {q6.number}
+          </p>
+          <p lang="ms" className="mt-1 font-display text-[17px] leading-[1.3] text-app-ink">
+            {q6.stem.ms}
+          </p>
+          <p lang="en" className="mt-1 font-display text-[15px] leading-[1.35] text-app-ink/75">
+            {q6.stem.en}
+          </p>
+          <button
+            type="button"
+            disabled={pick !== null}
+            onClick={() => pickQ6(q6.wrong.key)}
+            data-target={`q6-${q6.wrong.key}`}
+            className={cx(option, "mt-4", wrong ? "border-wrong bg-wrong-soft text-wrong-ink" : idle)}
+          >
+            <span>
+              {q6.wrong.key}. <span lang="ms">{q6.wrong.ms}</span> / {q6.wrong.en}
             </span>
-            Why {q6.wrong.key} is wrong
-          </p>
-          <p className="mt-3 text-[14px] leading-[1.45] text-app-muted">
-            <span lang="ms">{q6.why.ms}</span> / {q6.why.en}
-          </p>
-        </div>
-        <div className={cx(option, "mt-3 border-brand bg-correct-soft text-correct-ink")}>
-          <span>
-            {q6.right.key}. <span lang="ms">{q6.right.ms}</span> / {q6.right.en}
-          </span>
-          <Mark ok className="size-7 shrink-0" />
+            {wrong && <Mark ok={false} className="size-7 shrink-0" />}
+          </button>
+          <AnimatePresence initial={false}>
+            {wrong && (
+              <motion.div key="why" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} transition={open} className="overflow-hidden">
+                <div ref={why} className="pt-3.5">
+                  <div className="rounded-[18px] border border-wrong/25 p-4">
+                    <p className="flex items-center gap-2 font-display text-[15px] text-wrong-ink">
+                      <span aria-hidden="true" className="grid size-[18px] place-items-center rounded-full border-[1.5px] border-current text-[11px] leading-none">
+                        i
+                      </span>
+                      Why {q6.wrong.key} is wrong
+                    </p>
+                    <p className="mt-3 text-[14px] leading-[1.45] text-app-muted">
+                      <span lang="ms">{q6.why.ms}</span> / {q6.why.en}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <button
+            type="button"
+            disabled={pick !== null}
+            onClick={() => pickQ6(q6.right.key)}
+            data-target={`q6-${q6.right.key}`}
+            className={cx(option, "mt-3.5", pick !== null ? "border-brand bg-correct-soft text-correct-ink" : idle)}
+          >
+            <span>
+              {q6.right.key}. <span lang="ms">{q6.right.ms}</span> / {q6.right.en}
+            </span>
+            {pick !== null && <Mark ok className="size-7 shrink-0" />}
+          </button>
+          <AnimatePresence initial={false}>
+            {pick !== null && (
+              <motion.div key="next" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={reduce ? { duration: 0 } : { delay: 0.3, duration: 0.3 }}>
+                <Press onClick={next} target="next" className={cx(btn.primary, "mt-5 w-full tracking-[0.04em]")}>
+                  Next Question
+                </Press>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <div ref={end} />
         </div>
       </div>
-    </Screen>
+      <p role="status" className="sr-only">
+        {wrong && `Not quite. Why ${q6.wrong.key} is wrong: ${q6.why.en} The answer is ${q6.right.key}, ${q6.right.en}.`}
+      </p>
+    </div>
   );
 }

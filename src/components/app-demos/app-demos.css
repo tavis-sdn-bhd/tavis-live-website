@@ -1,0 +1,131 @@
+/* BA's app demos (app-stage.tsx and the demos beside it). Scoped under .ad;
+   the kit's own styles are in @layer stageshow, so these win without
+   !important. */
+
+.ad {
+  /* The tile: the app's mint, lit from the top in its light green */
+  & .ss-stage {
+    overflow: hidden;
+    border-radius: 32px;
+    background:
+      radial-gradient(90% 55% at 50% 0%, color-mix(in srgb, var(--color-brand-soft) 75%, transparent), transparent 75%),
+      var(--color-mint);
+  }
+
+  & .ad-phone {
+    position: absolute;
+  }
+
+  /* The app's own type at its own sizes, not the kit screen's 15px system
+     text; its layer sits under the status bar and island */
+  & .ad-app {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    isolation: isolate;
+    overflow: hidden;
+    font-family: var(--font-round, var(--font-sans));
+    font-size: 16px;
+    line-height: 1.55;
+    letter-spacing: 0.012em;
+    color: var(--color-ink);
+  }
+
+  /* ---- The question (practice demo) ---- */
+
+  /* The question scrolls with the drawer, at UIKit's pace */
+  & .ad-scroll {
+    will-change: transform;
+    transition: transform 0.5s cubic-bezier(0.3, 0.75, 0.1, 1);
+  }
+
+  /* Once scrolled, the box's top edge fades rather than slicing a line */
+  & .ad-scrollbox[data-lifted] {
+    mask-image: linear-gradient(to bottom, transparent, #000 20px);
+  }
+
+  & .ad-option {
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease,
+      box-shadow 0.15s ease,
+      scale 0.1s ease;
+  }
+
+  & .ad-option[data-pressed] {
+    scale: 0.98;
+  }
+
+  & .ad-option[data-shake] {
+    animation: ad-shake 0.4s ease-out;
+  }
+
+  /* A drawer rises from the screen's foot and sinks back; the one leaving
+     goes first, quickly */
+  & .ad-drawer {
+    transform: translateY(100%);
+    will-change: transform;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 1, 1);
+  }
+
+  & .ad-drawer[data-open] {
+    transform: translateY(0);
+    transition: transform 0.5s cubic-bezier(0.3, 0.75, 0.1, 1) 0.12s;
+  }
+
+  /* ---- The avatar (rewards demo) ---- */
+
+  & .ad-look {
+    opacity: 0;
+    scale: 0.97;
+    transition:
+      opacity 0.3s ease,
+      scale 0.45s cubic-bezier(0.3, 0.75, 0.1, 1);
+  }
+
+  & .ad-look[data-on] {
+    opacity: 1;
+    scale: 1;
+  }
+
+  & .ad-tile {
+    transition:
+      background-color 0.15s ease,
+      box-shadow 0.15s ease,
+      scale 0.1s ease;
+  }
+
+  & .ad-tile[data-pressed] {
+    scale: 0.96;
+  }
+
+  & .ad-lock {
+    transition:
+      opacity 0.2s ease,
+      scale 0.25s ease;
+  }
+
+  & .ad-lock[data-open] {
+    opacity: 0;
+    scale: 0.4;
+  }
+}
+
+@keyframes ad-shake {
+  0%,
+  100% {
+    translate: 0;
+  }
+  20% {
+    translate: -6px;
+  }
+  40% {
+    translate: 6px;
+  }
+  60% {
+    translate: -4px;
+  }
+  80% {
+    translate: 4px;
+  }
+}

@@ -72,7 +72,8 @@ const tabs: Array<{ id: Tab; label: string; icon: ReactNode }> = [
 function TabBar() {
   const { tab, setTab, look } = useApp();
   return (
-    <div role="group" aria-label="App tabs" className="absolute inset-x-0 bottom-0 z-30 flex h-[96px] justify-around border-t border-line bg-paper px-2 pt-2.5">
+    // As much air over the icons as under the tallest label (Question Universe wraps to two lines), above the home indicator.
+    <div role="group" aria-label="App tabs" className="absolute inset-x-0 bottom-0 z-30 flex h-[100px] items-start justify-around border-t border-line bg-paper px-2 pt-[17px]">
       {tabs.map((t) => {
         const active = t.id === tab;
         return (
@@ -83,12 +84,13 @@ function TabBar() {
             aria-current={active ? "true" : undefined}
             className={cx("flex w-[72px] flex-col items-center gap-1 text-center transition-transform duration-100 active:scale-[0.92]", active ? "text-brand-text" : "text-app-muted")}
           >
+            {/* A scripted tap aims at the icon: the button stretches to the bar's foot, which a cropped phone cuts. */}
             {t.icon ? (
-              <span className={cx("flex h-9 w-[52px] items-center justify-center rounded-full", active && "bg-mint")}>
+              <span data-target={`tab-${t.id}`} className={cx("flex h-9 w-[52px] items-center justify-center rounded-full transition-transform duration-100 data-pressed:scale-[0.92]", active && "bg-mint")}>
                 {t.icon}
               </span>
             ) : (
-              <span className={cx("size-[28px] overflow-hidden rounded-full bg-mint", active && "ring-2 ring-brand")}>
+              <span data-target={`tab-${t.id}`} className={cx("size-[28px] overflow-hidden rounded-full bg-mint transition-transform duration-100 data-pressed:scale-[0.92]", active && "ring-2 ring-brand")}>
                 <Student look={look} head className="size-full" />
               </span>
             )}
@@ -207,7 +209,8 @@ function useScreenFocus(root: RefObject<HTMLDivElement | null>, stack: readonly 
   }, [root, stack]);
 }
 
-function Shell() {
+/** The app's screen stack, tab bar and toasts, drawn from the `AppProvider` above it. */
+export function Shell() {
   const { stack, dir, screen } = useApp();
   const reduce = useReducedMotion();
   const root = useRef<HTMLDivElement>(null);
@@ -223,7 +226,7 @@ function Shell() {
   };
 
   return (
-    <div ref={root} className="absolute inset-0 overflow-hidden bg-cream font-display">
+    <div ref={root} data-crop className="absolute inset-0 overflow-hidden bg-cream font-display">
       <AnimatePresence initial={false} custom={dir}>
         <motion.div
           key={key}

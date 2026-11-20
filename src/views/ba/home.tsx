@@ -1,12 +1,13 @@
 import { island } from "@/components/island";
 import type { ReactNode } from "react";
-import { HeroPhone } from "@/components/hero-phone";
-import { Bolt, Classroom, Floaters, Podium, Star, TreasureScene } from "@/components/v2/art";
+import { Classroom, Podium } from "@/components/v2/art";
 import { GetTavis } from "@/components/v2/get-button";
 import { HomeHero } from "@/components/v2/hero";
 import { Faq, PressRow, Stats, SubjectStrip, Testimonials, TuitionPromo, TutorFaces } from "@/components/v2/sections";
 import { Button, Feature } from "@/components/v2/ui";
 import { DesignLink } from "@/components/design-link";
+import { AvatarDemo } from "@/components/app-demos/avatar-demo";
+import { PracticeDemo } from "@/components/app-demos/practice-demo";
 import { hero, practice, rewards, tuition } from "@/lib/content";
 import { baHome, baParentsFaq, rewardsPage, tuitionPage } from "@/lib/pages";
 
@@ -54,20 +55,12 @@ function Home() {
         title={practice.title}
         body={practice.body}
         flip
-        visual={<HeroPhone tavi="beside" />}
-        backdrop={
-          <Floaters
-            spots={[
-              { node: <Star className="w-full" />, className: "-left-[8%] top-[6%] w-[14%] -rotate-12" },
-              { node: <Bolt className="w-full" />, className: "-right-[6%] bottom-[18%] w-[12%] rotate-12" },
-            ]}
-          />
-        }
+        visual={<PracticeDemo />}
       >
         <More href="/question-universe">{practice.cta}</More>
       </Feature>
 
-      <Feature id="rewards" title={rewards.title} body={rewards.body} visual={<TreasureScene vouchers={rewards.vouchers} />}>
+      <Feature id="rewards" title={rewards.title} body={rewards.body} visual={<AvatarDemo />}>
         <More href="/rewards">{rewards.cta}</More>
       </Feature>
 

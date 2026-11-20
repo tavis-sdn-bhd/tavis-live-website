@@ -29,8 +29,9 @@ const faces: Record<Look, { face: string; disc: string; label: string }> = {
   },
 };
 
-/** What the button must never sit on. */
-const control = "a, button, summary, input, textarea, select, label, [role=button], [role=tab]";
+/** What the button must never sit on: a control, or a picture marked `data-chat-avoid` (the practice demo's phone),
+    which it would hide part of. */
+const control = "a, button, summary, input, textarea, select, label, [role=button], [role=tab], [data-chat-avoid]";
 
 /**
  * True while a control is under the button's spot. `spot` is an invisible copy of the button, always in place, so the
