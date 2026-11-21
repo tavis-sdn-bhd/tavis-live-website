@@ -9,6 +9,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import { defaultDesign, hrefIn } from "../../src/lib/site.ts";
+import { decode } from "../html.ts";
 import { type BlogInventory, inventoryPath, oldPostPath } from "./shared.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
@@ -23,16 +24,6 @@ const fail = (message: string) => {
   console.log(`FAIL ${message}`);
 };
 
-const decode = (html: string) =>
-  html
-    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCodePoint(parseInt(hex, 16)))
-    .replace(/&#(\d+);/g, (_, dec: string) => String.fromCodePoint(Number(dec)))
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&");
 const words = (text: string) => text.replace(/\s+/g, " ").trim();
 const textOf = (html: string) => words(decode(html.replace(/<br\s*\/?>/g, " ").replace(/<\/(p|h[1-6]|li|blockquote)>/g, " ").replace(/<[^>]+>/g, "")));
 

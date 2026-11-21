@@ -23,7 +23,8 @@
     "blog:inventory": "node scripts/blog/inventory.ts",
     "blog:import": "node scripts/blog/import.ts",
     "blog:built": "node scripts/blog/built.ts",
-    "blog:verify": "node --import tsx scripts/blog/verify.ts"
+    "blog:verify": "node --import tsx scripts/blog/verify.ts",
+    "site:check": "node --import tsx scripts/site/check.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "15.0.0-beta.6",
