@@ -12,7 +12,9 @@ export default defineConfig({
   // Pre-rendered pages are written as /rewards.html, so Cloudflare serves /rewards directly, without a
   // trailing-slash redirect.
   build: { format: "file" },
-  adapter: cloudflare(),
+  // `astro build` pre-renders the blog from the deployed database (cloudflare.config.ts marks DB remote). Dev and
+  // preview stay on the local one, so nothing done in a local admin reaches production.
+  adapter: cloudflare({ remoteBindings: process.argv.includes("build") }),
   integrations: [
     react(),
     emdash({
@@ -21,10 +23,9 @@ export default defineConfig({
       plugins: [formsPlugin({ defaultSpamProtection: "honeypot" })],
     }),
   ],
-  // EmDash builds srcsets for media-library images (the blog's) through Astro's image service, which only resizes URLs on
-  // hosts listed here; anything else is served at full size. localhost covers `astro preview`. A preview on
-  // workers.dev serves full-size images unless its host is added.
-  image: { domains: ["www.tavis.live", "tavis.live", "localhost"] },
+  // No image.domains yet, so the blog's images are served as uploaded. EmDash resizes a media-library image only on a
+  // host listed there, and for a pre-rendered page the build does the resizing, fetching each original from
+  // www.tavis.live. Until that address serves this Worker the fetch fails, so the host goes in at launch (README, Launch).
   vite: { plugins: [tailwindcss()] },
   devToolbar: { enabled: false },
 });

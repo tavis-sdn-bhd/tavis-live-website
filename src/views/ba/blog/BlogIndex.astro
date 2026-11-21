@@ -5,15 +5,14 @@ import { type IndexPage, indexHref } from "@/lib/blog";
 import { hrefIn } from "@/lib/site";
 import PostCard from "./PostCard.astro";
 
-/** The blog's index: the newest post wide on page 1, then a grid, then the pages. Read in full on the server; no
-    script. With no posts it says so, and when the posts cannot be read it says that, with a way to try again. */
-type Props = { result: Exclude<IndexPage, { kind: "out-of-range" }> };
+/** One page of the blog's index: the newest post wide on page 1, then a grid, then the pages. Built with the site; no
+    script. With no posts it says so. */
+type Props = { page: IndexPage };
 
-const { result } = Astro.props;
-const page = result.kind === "page" ? result : null;
-const posts = page?.posts ?? [];
+const { page } = Astro.props;
+const { posts } = page;
 // Page 1 opens with the newest post, wide; the rest of it, and every later page, is the grid.
-const featured = page?.page === 1 ? (posts[0] ?? null) : null;
+const featured = page.page === 1 ? (posts[0] ?? null) : null;
 const rest = featured ? posts.slice(1) : posts;
 const pageLink = "tap grid size-11 place-items-center rounded-xl font-display text-body-sm";
 ---
@@ -24,19 +23,7 @@ const pageLink = "tap grid size-11 place-items-center rounded-xl font-display te
 </section>
 
 {
-  result.kind === "error" && (
-    <section data-band="white" class="shell pb-[clamp(5rem,3rem+7vw,9rem)]">
-      <div class={cx(chunky, "mx-auto max-w-[36rem] p-8 text-center sm:p-10")}>
-        <h2 class="text-[1.5rem] leading-tight text-forest">The posts didn’t load</h2>
-        <p class="mt-3 font-semibold leading-relaxed text-muted">Something went wrong on our side. Try again in a moment.</p>
-        <a href={indexHref("ba", 1)} class={buttonClass({ size: "md", className: "mt-6" })}>Try again</a>
-      </div>
-    </section>
-  )
-}
-
-{
-  page && page.total === 0 && (
+  page.total === 0 && (
     <section data-band="white" class="shell pb-[clamp(5rem,3rem+7vw,9rem)]">
       <div class={cx(chunky, "mx-auto max-w-[36rem] p-8 text-center sm:p-10")}>
         <h2 class="text-[1.5rem] leading-tight text-forest">No posts yet</h2>
@@ -48,7 +35,7 @@ const pageLink = "tap grid size-11 place-items-center rounded-xl font-display te
 }
 
 {
-  page && page.total > 0 && (
+  page.total > 0 && (
     <section data-band="white" aria-label={page.pages > 1 ? `Posts, page ${page.page} of ${page.pages}` : "Posts"} class="shell pb-[clamp(4rem,2.5rem+6vw,7rem)]">
       {featured && (
         <div class="mb-6 sm:mb-8">

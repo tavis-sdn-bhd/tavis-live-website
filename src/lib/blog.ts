@@ -1,4 +1,4 @@
-import { getEmDashCollection, getEmDashEntry, type ContentEntry } from "emdash";
+import { getEmDashCollection, type ContentEntry } from "emdash";
 import type { Post } from "../../emdash-env";
 import { type DesignId, hrefIn } from "@/lib/site";
 
@@ -11,11 +11,14 @@ const gridSize = 12;
 /** The posts page `page` of the index shows, as [start, end) of the newest-first list. */
 const pageSpan = (page: number): [number, number] => (page === 1 ? [0, gridSize + 1] : [gridSize + 1 + (page - 2) * gridSize, gridSize + 1 + (page - 1) * gridSize]);
 
+/** The slug in a post's address. */
+export const postSlug = (post: BlogPost) => post.data.slug ?? post.id;
+
 /** A post's page in a design: "/blog/<slug>". */
 export const postHref = (design: DesignId, slug: string) => hrefIn(design, `/blog/${slug}`);
 
 /** An index page's URL; page 1 is the index itself. */
-export const indexHref = (design: DesignId, page: number) => hrefIn(design, page > 1 ? `/blog?page=${page}` : "/blog");
+export const indexHref = (design: DesignId, page: number) => hrefIn(design, page > 1 ? `/blog/page/${page}` : "/blog");
 
 /** The words of a Portable Text body. */
 function words(body: Post["body"]): number {
@@ -41,42 +44,23 @@ export const cardImage = (post: BlogPost) => post.data.card_image ?? post.data.c
 
 const newestFirst = { published_at: "desc" } as const;
 
-export type IndexPage =
-  | { kind: "page"; posts: BlogPost[]; page: number; pages: number; total: number }
-  | { kind: "out-of-range"; pages: number }
-  | { kind: "error" };
-
-/** One page of the index, newest first. A failed read, returned or thrown, is an `error` page. */
-export async function indexPage(page: number): Promise<IndexPage> {
-  const { entries, error } = await getEmDashCollection("posts", { status: "published", orderBy: newestFirst, limit: 1000 }).catch((thrown: unknown) => ({ entries: [], error: thrown }));
-  if (error) {
-    console.error("blog index:", error);
-    return { kind: "error" };
-  }
-  const total = entries.length;
-  const pages = 1 + Math.ceil(Math.max(0, total - (gridSize + 1)) / gridSize);
-  if (page < 1 || page > pages) return { kind: "out-of-range", pages };
-  return { kind: "page", posts: entries.slice(...pageSpan(page)), page, pages, total };
+/** Every published post, newest first. The blog's pages are built from this once, when the site is built (README,
+    Blog), so a failed read throws and stops the build, which would otherwise publish a blog without its posts. */
+export async function publishedPosts(): Promise<BlogPost[]> {
+  const { entries, error } = await getEmDashCollection("posts", { status: "published", orderBy: newestFirst, limit: 1000 });
+  if (error) throw new Error("The blog's posts could not be read", { cause: error });
+  return entries;
 }
 
-export type PostPage =
-  | { kind: "post"; post: BlogPost; newer: BlogPost | null; older: BlogPost | null }
-  | { kind: "missing" }
-  | { kind: "error" };
+export type IndexPage = { posts: BlogPost[]; page: number; pages: number; total: number };
 
-/** A published post, with the posts either side of it by date. */
-export async function postPage(slug: string): Promise<PostPage> {
-  const { entry, error } = await getEmDashEntry("posts", slug).catch((thrown: unknown) => ({ entry: null, error: thrown }));
-  if (error) {
-    console.error(`blog post ${slug}:`, error);
-    return { kind: "error" };
-  }
-  if (!entry || entry.data.status !== "published" || !entry.data.publishedAt) return { kind: "missing" };
-  const at = entry.data.publishedAt.toISOString();
-  const none = { entries: [] };
-  const [newer, older] = await Promise.all([
-    getEmDashCollection("posts", { status: "published", where: { published_at: { gt: at } }, orderBy: { published_at: "asc" }, limit: 1 }).catch(() => none),
-    getEmDashCollection("posts", { status: "published", where: { published_at: { lt: at } }, orderBy: newestFirst, limit: 1 }).catch(() => none),
-  ]);
-  return { kind: "post", post: entry, newer: newer.entries[0] ?? null, older: older.entries[0] ?? null };
-}
+/** How many pages the index has: one even with no posts. */
+export const indexPageCount = (total: number) => 1 + Math.ceil(Math.max(0, total - (gridSize + 1)) / gridSize);
+
+/** Page `page` of the index of `posts`. */
+export const indexPage = (posts: BlogPost[], page: number): IndexPage => ({ posts: posts.slice(...pageSpan(page)), page, pages: indexPageCount(posts.length), total: posts.length });
+
+export type PostPage = { post: BlogPost; newer: BlogPost | null; older: BlogPost | null };
+
+/** Each post with the posts either side of it by date. */
+export const postPages = (posts: BlogPost[]): PostPage[] => posts.map((post, i) => ({ post, newer: posts[i - 1] ?? null, older: posts[i + 1] ?? null }));

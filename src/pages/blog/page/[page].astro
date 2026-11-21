@@ -1,0 +1,22 @@
+---
+import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
+import Layout from "@/layouts/Ba.astro";
+import BlogIndex from "@/views/ba/blog/BlogIndex.astro";
+import { indexPage, indexPageCount, publishedPosts } from "@/lib/blog";
+
+// The index from page 2 on; page 1 is ../index.astro.
+export const prerender = true;
+
+export const getStaticPaths = (async () => {
+  const posts = await publishedPosts();
+  return Array.from({ length: indexPageCount(posts.length) - 1 }, (_, i) => ({ params: { page: String(i + 2) }, props: { page: indexPage(posts, i + 2) } }));
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { page } = Astro.props;
+---
+
+<Layout path="/blog">
+  <BlogIndex page={page} />
+</Layout>

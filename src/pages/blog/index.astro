@@ -1,17 +1,14 @@
 ---
 import Layout from "@/layouts/Ba.astro";
 import BlogIndex from "@/views/ba/blog/BlogIndex.astro";
-import { indexHref, indexPage } from "@/lib/blog";
+import { indexPage, publishedPosts } from "@/lib/blog";
 
-// ?page=2 and on. Anything that isn't a page of posts is a 404: an empty one, which Astro fills with the pre-rendered
-// 404 page. Astro.rewrite("/404") can't, because a pre-rendered page has no component in the Worker.
-const param = Astro.url.searchParams.get("page");
-const page = param === null ? 1 : /^[1-9]\d*$/.test(param) ? Number(param) : 0;
-const result = await indexPage(page);
-if (result.kind === "out-of-range") return new Response(null, { status: 404 });
-if (result.kind === "error") Astro.response.status = 503;
+// Built with the site, from the posts published then (README, Blog). Page 2 and on are ./page/[page].astro.
+export const prerender = true;
+
+const page = indexPage(await publishedPosts(), 1);
 ---
 
-<Layout path="/blog" address={result.kind === "page" ? indexHref("ba", result.page) : undefined}>
-  <BlogIndex result={result} />
+<Layout path="/blog">
+  <BlogIndex page={page} />
 </Layout>
