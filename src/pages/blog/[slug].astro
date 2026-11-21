@@ -1,5 +1,6 @@
 ---
 import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
+import { getImage } from "astro:assets";
 import { getSeoMeta } from "emdash";
 import Layout from "@/layouts/Ba.astro";
 import BlogPost from "@/views/ba/blog/BlogPost.astro";
@@ -17,10 +18,31 @@ const { post, newer, older } = Astro.props;
 const seo = getSeoMeta(post, { siteTitle: siteName, titleSeparator: " — " });
 const cover = post.data.cover;
 const storageKey = typeof cover?.meta?.storageKey === "string" ? cover.meta.storageKey : null;
+
+/** The widest a link preview draws a share image. */
+const shareWidth = 1200;
+
+/** The cover as a link preview shows it: a JPEG no wider than `shareWidth`. A cover is served as it was uploaded, and
+    WhatsApp skips a share image over 600 kB. Astro resizes it once the site's address is in image.domains
+    (astro.config.mjs); until then, or if it can't, the upload is the share image. */
+async function shareImage(key: string, upload: { width: number; height: number }) {
+  const url = `/_emdash/api/media/file/${key}`;
+  const width = Math.min(upload.width, shareWidth);
+  const height = Math.round((upload.height * width) / upload.width);
+  try {
+    const src = new URL(url, Astro.url).href;
+    const resized = await getImage({ src, width, height, format: "jpeg", background: "#fff" });
+    if (resized.src !== src) return { url: resized.src, width, height, alt: "" };
+  } catch {
+    // The upload, below.
+  }
+  return { url, width: upload.width, height: upload.height, alt: "" };
+}
+
 const meta = {
   title: seo.title,
   description: seo.description ?? post.data.excerpt ?? "",
-  image: cover && storageKey && cover.width && cover.height ? { url: `/_emdash/api/media/file/${storageKey}`, width: cover.width, height: cover.height, alt: "" } : undefined,
+  image: cover && storageKey && cover.width && cover.height ? await shareImage(storageKey, { width: cover.width, height: cover.height }) : undefined,
   article: post.data.publishedAt ? { publishedTime: post.data.publishedAt.toISOString() } : undefined,
 };
 ---

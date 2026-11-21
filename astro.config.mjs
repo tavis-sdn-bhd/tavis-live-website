@@ -23,9 +23,10 @@ export default defineConfig({
       plugins: [formsPlugin({ defaultSpamProtection: "honeypot" })],
     }),
   ],
-  // No image.domains yet, so the blog's images are served as uploaded. EmDash resizes a media-library image only on a
-  // host listed there, and for a pre-rendered page the build does the resizing, fetching each original from
-  // www.tavis.live. Until that address serves this Worker the fetch fails, so the host goes in at launch (README, Launch).
+  // No image.domains yet, so the blog's images are served as uploaded, a post's share image included
+  // (src/pages/blog/[slug].astro). EmDash resizes a media-library image only on a host listed there, and for a
+  // pre-rendered page the build does the resizing, fetching each original from www.tavis.live. Until that address
+  // serves this Worker the fetch fails, so the host goes in at launch (README, Launch).
   vite: { plugins: [tailwindcss()] },
   devToolbar: { enabled: false },
 });
