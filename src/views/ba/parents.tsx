@@ -3,13 +3,12 @@ import { PhoneShot, BurstStage, Classroom, TreasureScene, type Piece } from "@/c
 import { Envelope, WhatsApp } from "@/components/icons";
 import { Mascot } from "@/components/mascot";
 import { Phone } from "@/components/phone";
-import { Voucher } from "@/components/ticket";
-import { NewTab, cx } from "@/components/ui";
+import { Voucher, voucherSizes } from "@/components/ticket";
 import { CoinArt, TudungLeap } from "@/components/v2/cast";
 import { GetButton } from "@/components/v2/get-button";
 import { SplitHero } from "@/components/v2/hero";
 import { Faq, Steps, SubjectGroups } from "@/components/v2/sections";
-import { Actions, Button, Centered, Feature, Section, lede } from "@/components/v2/ui";
+import { Actions, Button, Centered, Feature, Section } from "@/components/v2/ui";
 import { links, rewards, screens } from "@/lib/content";
 import { askAboutTuition as ask, parentsPage as page, tuitionPage } from "@/lib/pages";
 
@@ -17,8 +16,8 @@ import { askAboutTuition as ask, parentsPage as page, tuitionPage } from "@/lib/
 /** What a child gets, bursting out of the app: vouchers, points, a classmate and Tavi. The phone spans x 29 to 69%,
     so every piece frames it from the sides and touches at most its bezel. */
 const heroPieces: Piece[] = [
-  { key: "foodpanda", x: 0, y: 4, w: 27, ratio: 5 / 6, tilt: -10, node: <Voucher name="Foodpanda" cost={rewards.vouchers.find((v) => v.name === "Foodpanda")?.cost} /> },
-  { key: "tavis", x: 72, y: 0, w: 28, ratio: 5 / 6, tilt: 9, node: <Voucher name="Tavis" title="Tuition voucher" value="RM20" /> },
+  { key: "foodpanda", x: 0, y: 4, w: 27, ratio: 5 / 6, tilt: -10, node: <Voucher name="Foodpanda" cost={rewards.vouchers.find((v) => v.name === "Foodpanda")?.cost} sizes={voucherSizes.scene} /> },
+  { key: "tavis", x: 72, y: 0, w: 28, ratio: 5 / 6, tilt: 9, node: <Voucher name="Tavis" title="Tuition voucher" value="RM20" sizes={voucherSizes.scene} /> },
   { key: "tudung", x: 0, y: 46, w: 27, ratio: 1.2, node: <TudungLeap className="w-full" /> },
   { key: "coin-a", x: 76, y: 34, w: 10, ratio: 0.875, tilt: 10, node: <CoinArt className="w-full" /> },
   { key: "tavi", x: 71, y: 50, w: 29, ratio: 1, still: true, node: <Mascot mood="wave" outfit="school" decorative /> },
@@ -34,9 +33,9 @@ function Wave({ flip }: { flip?: boolean }) {
 }
 
 /** BA's page for parents, on Duolingo's ABC page: the worry and the promise, what a child gets, what they learn, how
-    tuition works, their data, the questions parents ask, then a way to talk to us. */
+    tuition works, the questions parents ask (their child's data among them), then a way to talk to us. */
 function ParentsPage() {
-  const { hero, gets, learn, steps, safety, faq, contact } = page;
+  const { hero, gets, learn, steps, faq, contact } = page;
 
   return (
     <>
@@ -62,9 +61,9 @@ function ParentsPage() {
         }
       />
 
-      <Feature id={gets.practice.id} flip title={gets.practice.title} body={gets.practice.body} visual={<PhoneShot screen={gets.practice.screen} />} />
-      <Feature id={gets.rewards.id} title={gets.rewards.title} body={gets.rewards.body} visual={<TreasureScene vouchers={rewards.vouchers} />} />
-      <Feature id={gets.tuition.id} flip title={gets.tuition.title} body={gets.tuition.body} visual={<Classroom image={tuitionPage.hero.image} />}>
+      <Feature id={gets.practice.id} flip textFirst title={gets.practice.title} body={gets.practice.body} visual={<PhoneShot screen={gets.practice.screen} />} />
+      <Feature id={gets.rewards.id} textFirst title={gets.rewards.title} body={gets.rewards.body} visual={<TreasureScene vouchers={rewards.vouchers} />} />
+      <Feature id={gets.tuition.id} flip textFirst title={gets.tuition.title} body={gets.tuition.body} visual={<Classroom image={tuitionPage.hero.image} />}>
         <Button href="/online-tuition#pricing" tone="white" size="lg">
           See plans
         </Button>
@@ -98,37 +97,24 @@ function ParentsPage() {
         </div>
       </Section>
 
-      <Section id={safety.id} band="sky">
-        <div className="shell">
-          <Centered band="sky" title={safety.title} body={safety.body} />
-          <p className="mt-8 text-center">
-            <a href={links.privacy} target="_blank" rel="noopener noreferrer" className="link-press inline-flex min-h-11 items-center font-display text-small uppercase tracking-[0.06em] text-sky-ink">
-              {safety.cta}
-              <NewTab />
-            </a>
-          </p>
-        </div>
-      </Section>
-
       <Faq set={faq} />
 
       <section id={contact.id} data-cta className="border-b-2 border-brand-deep/20 bg-brand py-[clamp(4rem,3rem+4vw,7rem)] text-brand-deep">
         <div className="shell text-center">
-          <h2 className="text-[clamp(2.125rem,1.4rem+3.6vw,4.5rem)] leading-[0.98] lowercase text-night">{contact.title}</h2>
-          <p className={cx("mx-auto mt-6 max-w-[32rem]", lede)}>{contact.body}</p>
-          <div className="mx-auto mt-9 grid w-full max-w-[21rem] gap-3">
+          <Centered band="green" title={contact.title} body={contact.body} />
+          <Actions className="mt-9">
             <Button href={ask} tone="white" size="lg">
               <WhatsApp aria-hidden="true" className="size-5" />
               {contact.whatsapp}
             </Button>
-            <Button href="#contact" tone="sky" size="lg">
-              {contact.form}
-            </Button>
-          </div>
-          <p className="mt-6">
-            <a href={links.email} className="link-press inline-flex min-h-11 items-center gap-2 font-bold hover:text-night">
+          </Actions>
+          <p className="mt-6 flex flex-wrap items-center justify-center gap-x-6 font-bold">
+            <a href={links.email} className="link-press inline-flex min-h-11 items-center gap-2 hover:text-night">
               <Envelope aria-hidden="true" className="size-5" />
               {links.emailLabel}
+            </a>
+            <a href="#contact" className="link-press inline-flex min-h-11 items-center underline decoration-2 underline-offset-4 hover:text-night">
+              {contact.form}
             </a>
           </p>
         </div>

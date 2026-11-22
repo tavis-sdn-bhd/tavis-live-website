@@ -5,7 +5,7 @@ import { useState } from "react";
 import { SubjectChip, subjectKey, subjectLang, type SubjectKey } from "@/components/subject";
 import { cx } from "@/components/ui";
 import { chunky } from "@/components/v2/ui";
-import { timetableSubjects, tuitionPage, tutorsPage } from "@/lib/pages";
+import { credentialDot, timetableSubjects, tuitionPage, tutorsPage } from "@/lib/pages";
 
 const tutors = tuitionPage.tutors.list;
 
@@ -65,12 +65,19 @@ export function TutorGrid() {
                   className="absolute bottom-0 left-1/2 h-[92%] w-auto max-w-none -translate-x-1/2 object-contain object-bottom"
                 />
               </div>
-              <div className="flex flex-1 flex-col p-3.5 sm:p-5">
+              <div className="@container flex flex-1 flex-col p-3.5 sm:p-5">
                 <h3 className="text-[1.125rem] leading-tight text-forest sm:text-[1.375rem]">{t.name}</h3>
-                <p className="mt-1 text-small font-semibold text-muted sm:text-body">{t.credential}</p>
+                <p className="mt-1 text-small font-semibold text-muted">
+                  {t.credential.split(credentialDot).map((part, i) => (
+                    <span key={part} className="max-sm:block">
+                      {i > 0 && <span className="max-sm:hidden">{credentialDot}</span>}
+                      {part}
+                    </span>
+                  ))}
+                </p>
                 <p className="mt-auto flex flex-wrap gap-1.5 pt-4">
                   {t.subjects.map((s) => (
-                    <SubjectChip key={s} name={s} lang="ms" className="max-w-full sm:whitespace-nowrap sm:text-small" />
+                    <SubjectChip key={s} name={s} lang="ms" className="w-min max-w-full @[10rem]:w-auto sm:whitespace-nowrap sm:text-small" />
                   ))}
                 </p>
               </div>

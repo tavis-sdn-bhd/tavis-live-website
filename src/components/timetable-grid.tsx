@@ -88,14 +88,14 @@ export function TimetableGrid() {
           const classes = week[d] ?? [];
           const holidays = timetable2027.holidays[d] ?? [];
           return (
-            <section key={day.ms} aria-labelledby={`${id}-day-${d}`} className="flex flex-col rounded-2xl bg-cream p-2">
+            <section key={day.ms} aria-labelledby={`${id}-day-${d}`} className="flex flex-col rounded-2xl bg-cream p-2 lg:row-span-3 lg:grid lg:grid-rows-subgrid lg:gap-y-0">
               <header className="flex items-baseline justify-between px-2 pb-2 pt-1">
                 <h3 id={`${id}-day-${d}`} lang="ms" className="text-body-lg">
                   {day.ms}
                 </h3>
                 <span className="label text-muted">{day.en}</span>
               </header>
-              <div className="grid gap-1.5">
+              <div className="grid content-start gap-1.5">
                 <AnimatePresence mode="popLayout" initial={false}>
                   {classes.map((slot, i) => (
                     <motion.div
@@ -111,7 +111,7 @@ export function TimetableGrid() {
                   ))}
                 </AnimatePresence>
               </div>
-              <div className="mt-auto pt-3">
+              <div className="mt-auto pt-3 lg:mt-0">
                 <p className="label px-2 text-muted">
                   <span lang="ms">Cuti umum</span> / Holidays
                 </p>

@@ -142,8 +142,9 @@ const plans = [
 
 const monthlyRate = plans[0].perMonth;
 
-/** Joins a credential's parts with a dot that never starts a line. */
-const dotted = (...parts: string[]) => parts.join("\u00a0· ");
+/** Between a credential's parts: a dot that never starts a line. */
+export const credentialDot = "\u00a0· ";
+const dotted = (...parts: string[]) => parts.join(credentialDot);
 
 /** The WhatsApp message for signing up to a plan; the (GA) tag in `whatsappWith` is the greeting. */
 export const signUpFor = (plan: { readonly name: string; readonly total: number }) =>
@@ -430,10 +431,14 @@ const joinSteps = [
   { title: "Rewatch anytime", body: "Every class is recorded, so it can be watched again." },
 ] as const;
 
+/** BA's headline for tuition's price, on Home and over the plans: what the price covers. The shared "One price."
+    reads wrongly above four plans. */
+const baPriceTitle = ["All subjects", "for your form."] as const;
+
 export const baHome = {
   promo: {
-    title: [tuitionPage.pricing.title, tuitionPage.pricing.accent],
-    body: `Live classes in every subject for your form, from ${ringgit(lowestRate)} a month.`,
+    title: baPriceTitle,
+    body: `Live classes, from ${ringgit(lowestRate)} a month.`,
   },
 } as const;
 
@@ -442,7 +447,7 @@ export const baQuestionUniverse = {
     id: "practice",
     title: questionUniverse.universe.title,
     body: questionUniverse.universe.body,
-    screen: questionUniverse.universe.screen,
+    screen: { scene: "universe", alt: "Question Universe listing Form 5 subjects to practise, with Sains ready to start" },
   },
   subjects: {
     id: "subjects",
@@ -513,6 +518,10 @@ export const baTuition = {
     ],
     price: { free: "Free", tuition: { from: "From", amount: ringgit(lowestRate), per: "a month" } },
   },
+  pricing: {
+    title: baPriceTitle,
+    body: `Longer plans cost less per month, from ${ringgit(monthlyRate)} down to ${ringgit(lowestRate)}.`,
+  },
   steps: { id: "how-it-works", title: "How it works.", items: joinSteps },
   tutors: { cta: "Meet the tutors" },
   faq: {
@@ -537,15 +546,6 @@ export const tutorsPage = {
     body: `${tuitionPage.tutors.body} They run Tavis’s live online classes for ${allForms}.`,
   },
   list: { id: "tutors", title: "Our tutors.", cta: "See the tutors", all: "All subjects" },
-  teaching: {
-    id: "how-they-teach",
-    title: "How they teach.",
-    items: [
-      { title: "Live", body: "Classes run live online on weekday evenings." },
-      { title: "Recorded", body: "Every class is recorded." },
-      { title: "Rewatch", body: "Enrolled students sign in to rewatch any class." },
-    ],
-  },
   closing: { title: "Learn with them.", body: tuitionPage.hero.body, cta: "Explore online tuition" },
 } as const;
 
@@ -555,7 +555,8 @@ export const askAboutTuition = whatsappWith("I'd like to ask about online tuitio
 export const parentsPage = {
   hero: {
     title: ["Revision is hard."],
-    accent: "We made it rewarding.",
+    // A no-break space keeps "we made it" on one line, so the headline breaks before "rewarding." and nowhere else.
+    accent: "We made\u00a0it rewarding.",
     body: `Free practice for ${allForms}, points your child swaps for real rewards, and live online tuition from ${ringgit(lowestRate)} a month.`,
     cta: "Ask about tuition",
     secondary: "Get Tavis free",
@@ -585,12 +586,6 @@ export const parentsPage = {
     cta: "See the timetable",
   },
   steps: { id: "how-tuition-works", title: "How tuition works.", items: joinSteps },
-  safety: {
-    id: "safety",
-    title: "Your child’s data.",
-    body: "Tavis Sdn. Bhd. handles personal data as set out in our Privacy Policy.",
-    cta: "Read the Privacy Policy",
-  },
   faq: baParentsFaq,
   contact: {
     id: "talk",

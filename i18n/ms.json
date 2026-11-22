@@ -228,7 +228,6 @@
     "Classes run live online on weekday evenings.": "Kelas berlangsung secara langsung dalam talian pada waktu malam hari bekerja.",
     "Rewatch anytime": "Tonton semula bila-bila masa",
     "Every class is recorded, so it can be watched again.": "Setiap kelas dirakam, jadi boleh ditonton semula.",
-    "Live classes in every subject for your form, from ${ringgit(lowestRate)} a month.": "Kelas langsung untuk setiap subjek tingkatan anda, dari ${ringgit(lowestRate)} sebulan.",
     "Subjects for every form.": "Subjek untuk setiap tingkatan.",
     "Free practice covers ${allForms} core subjects. Online tuition teaches every subject below.": "Latihan percuma merangkumi subjek teras ${allForms}. Tuisyen dalam talian mengajar setiap subjek di bawah.",
     "from students and parents.": "daripada pelajar dan ibu bapa.",
@@ -276,16 +275,10 @@
     "Our tutors.": "Tutor kami.",
     "See the tutors": "Lihat tutor",
     "All subjects": "Semua subjek",
-    "How they teach.": "Cara mereka mengajar.",
-    "Live": "Langsung",
-    "Recorded": "Dirakam",
-    "Every class is recorded.": "Setiap kelas dirakam.",
-    "Rewatch": "Tonton semula",
-    "Enrolled students sign in to rewatch any class.": "Pelajar berdaftar log masuk untuk menonton semula mana-mana kelas.",
+    "Rewatch": "Rakaman",
     "Learn with them.": "Belajar bersama mereka.",
     "I'd like to ask about online tuition. My child is in Form ": "Saya ingin bertanya tentang tuisyen dalam talian. Anak saya di Tingkatan ",
     "Revision is hard.": "Ulang kaji itu susah.",
-    "We made it rewarding.": "Kami jadikannya berbaloi.",
     "Free practice for ${allForms}, points your child swaps for real rewards, and live online tuition from ${ringgit(lowestRate)} a month.": "Latihan percuma untuk ${allForms}, mata yang anak anda boleh tukar dengan ganjaran sebenar, dan tuisyen langsung dalam talian dari ${ringgit(lowestRate)} sebulan.",
     "Ask about tuition": "Tanya tentang tuisyen",
     "Free practice.": "Latihan percuma.",
@@ -297,7 +290,6 @@
     "What they learn.": "Apa yang mereka pelajari.",
     "The KSSM subjects for ${allForms}, as on the 2027 class timetable.": "Subjek KSSM untuk ${allForms}, seperti dalam jadual kelas 2027.",
     "How tuition works.": "Cara tuisyen berfungsi.",
-    "Your child’s data.": "Data anak anda.",
     "Talk to us.": "Hubungi kami.",
     "Ask about classes, plans or your child’s form on WhatsApp, or write to us.": "Tanya tentang kelas, pakej atau tingkatan anak anda di WhatsApp, atau tulis kepada kami.",
     "Chat on WhatsApp": "Sembang di WhatsApp",
@@ -376,7 +368,13 @@
     "(optional)": "(pilihan)",
     "pts": "mata",
     "/mo": "/bulan",
-    "total": "keseluruhan"
+    "total": "keseluruhan",
+    "We made\u00a0it rewarding.": "Kami jadikannya berbaloi.",
+    "for your form.": "tingkatan anda.",
+    "Live classes, from ${ringgit(lowestRate)} a month.": "Kelas langsung, dari ${ringgit(lowestRate)} sebulan.",
+    "Longer plans cost less per month, from ${ringgit(monthlyRate)} down to ${ringgit(lowestRate)}.": "Pelan yang lebih panjang lebih murah sebulan, dari ${ringgit(monthlyRate)} hingga serendah ${ringgit(lowestRate)}.",
+    "Send us a message and we’ll reply by email.": "Hantar mesej kepada kami dan kami akan membalas melalui e-mel.",
+    "Question Universe listing Form 5 subjects to practise, with Sains ready to start": "Question Universe menyenaraikan subjek Tingkatan 5 untuk latihan, dengan Sains sedia untuk dimulakan"
   },
   "keep": [
     "${copy ? \"b\" : \"a\"}-${item.key}",
@@ -524,7 +522,10 @@
     "noopener noreferrer",
     "start start",
     "tavis",
-    "timetable2027: F5 Selasa has no first class"
+    "timetable2027: F5 Selasa has no first class",
+    "Zoom",
+    "Live",
+    "calc${lead(\"100%\")}"
   ],
   "files": {}
 }

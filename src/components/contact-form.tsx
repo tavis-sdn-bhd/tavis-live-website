@@ -147,7 +147,7 @@ export function ContactForm({ buttonClassName, fieldClassName = "rounded-control
       </label>
       <label className="grid gap-1.5 text-small font-bold">
         Message
-        <textarea name="message" required rows={4} maxLength={enquiryLimits.message} {...invalid("message")} className={cx(field, fieldClassName, "block px-4 py-3 font-normal leading-relaxed")} />
+        <textarea name="message" required rows={4} maxLength={enquiryLimits.message} {...invalid("message")} className={cx(field, fieldClassName, "block resize-y px-4 py-3 font-normal leading-relaxed")} />
         <FieldError id={errorId("message")} message={errors.message} />
       </label>
       <div className="sr-only" aria-hidden="true">

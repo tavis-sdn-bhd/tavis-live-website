@@ -1,10 +1,10 @@
 import { Image } from "@/components/image";
 import type { CSSProperties, ReactNode } from "react";
 import type { Screen } from "@/lib/content";
-import { Play } from "../icons";
+import { ChatCircle, Microphone, Play, VideoCamera } from "../icons";
 import { Mascot } from "../mascot";
 import { Phone } from "../phone";
-import { Voucher, type VoucherData } from "../ticket";
+import { Voucher, type VoucherData, voucherSizes } from "../ticket";
 import { cx } from "../ui";
 import { BobFly, CoinArt, TudungLeap } from "./cast";
 import { Scene } from "./scene";
@@ -239,7 +239,10 @@ export function Podium({ className }: { className?: string }) {
   );
 }
 
-/** Live class: a laptop showing the teaching team; the LIVE and REWATCH tags and Tavi in a mortarboard pop in beside it. */
+/** Live class: a laptop on a Zoom call with the teaching team. LIVE, Zoom's wordmark and Rewatch sit in the call's
+    own bar and its controls in a dock below the team, who stand clear of every edge, so nothing is drawn over a
+    face. Tavi in a mortarboard waves beside it. The call's chrome is sized from the screen's width, with a floor that keeps its labels
+    readable on a phone. */
 export function Classroom({
   image,
   intro,
@@ -249,19 +252,42 @@ export function Classroom({
   intro?: "view" | "load";
   className?: string;
 }) {
+  const tag = "scene-pop inline-flex items-center gap-[0.4em] rounded-lg px-[0.8em] py-[0.3em] text-[max(0.6875rem,3cqw)] font-black uppercase leading-[1.5] tracking-[0.08em]";
+  const control = "grid size-[max(1.625rem,8cqw)] place-items-center rounded-full [&>svg]:size-[52%]";
   return (
     <Scene intro={intro} className={cx("relative mx-auto w-full max-w-[34rem] pb-6", className)}>
       <div className="relative mx-[6%] rounded-t-[1.4rem] p-3 pb-4" style={{ backgroundColor: screenBase }}>
-        <div className="relative overflow-hidden rounded-xl bg-paper">
-          {/* The team photo is 1.88:1; a 16:10 frame would crop the outer tutors off. */}
-          <Image src={image.src} alt={image.alt} width={image.w} height={image.h} sizes="(min-width: 768px) 460px, 80vw" className="aspect-[1059/564] h-auto w-full object-cover" />
-          <span className="scene-pop absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-lg bg-wrong-fill px-2.5 py-1 text-[0.75rem] font-black uppercase tracking-[0.08em] text-white shadow-[0_3px_0_var(--color-wrong-ledge)]" style={delay(350)}>
-            <span className="size-2 animate-pulse rounded-full bg-white" />
-            Live
-          </span>
-          <span className="scene-pop absolute right-3 top-3 rounded-lg bg-paper px-2.5 py-1 text-[0.75rem] font-black uppercase tracking-[0.08em] text-sky-ink shadow-[0_3px_0_var(--color-line-strong)]" style={delay(500)}>
-            <Play className="size-3 inline-block" aria-hidden="true" /> Rewatch
-          </span>
+        <div className="@container flex aspect-[16/10.5] flex-col overflow-hidden rounded-xl bg-paper">
+          {/* Zoom's wordmark sits dead centre where the bar is wide enough, and evenly between the tags where it is not. */}
+          <div className="flex items-center justify-between gap-x-[2.5cqw] px-[3.5cqw] py-[2.6cqw] @[16rem]:grid @[16rem]:grid-cols-[1fr_auto_1fr] @[16rem]:*:first:justify-self-start @[16rem]:*:last:justify-self-end">
+            <span className={cx(tag, "bg-wrong-fill text-white shadow-[0_3px_0_var(--color-wrong-ledge)]")} style={delay(350)}>
+              <span className="size-[max(6px,1.8cqw)] shrink-0 animate-pulse rounded-full bg-white" />
+              Live
+            </span>
+            {/* Classes run on Zoom: its own wordmark (public/assets/brands), never redrawn. */}
+            <Image src="/assets/brands/zoom.svg" alt="Zoom" width={906} height={206} unoptimized className="scene-pop h-[max(0.625rem,3.6cqw)] w-auto" style={delay(420)} />
+            <span className={cx(tag, "bg-sky-soft text-sky-ink shadow-[0_3px_0_var(--color-sky-ink)]")} style={delay(500)}>
+              {/* On the narrowest phones the bar has no room for the triangle beside Zoom's wordmark. */}
+              <Play className="hidden size-[0.85em] @[16rem]:block" />
+              Rewatch
+            </span>
+          </div>
+          <div className="relative min-h-0 flex-1 overflow-hidden bg-sky-soft">
+            <span aria-hidden="true" className="absolute left-1/2 top-[12%] aspect-square w-[84%] -translate-x-1/2 rounded-full bg-paper" />
+            {/* The team photo is a cut-out, 1.88:1, whose back row reaches its top edge: set narrower than the stage and on its floor, it keeps air above the heads. It is also held under the stage's height, so a bar made taller by a long label shrinks the team and never crops their heads. */}
+            <Image src={image.src} alt={image.alt} width={image.w} height={image.h} sizes="(min-width: 768px) 400px, 70vw" className="absolute bottom-0 left-1/2 h-auto max-h-[94%] w-[86%] max-w-none -translate-x-1/2 object-contain object-bottom" />
+            <div aria-hidden="true" className="scene-pop absolute bottom-[3cqw] left-[3.5cqw] flex gap-[1.4cqw] rounded-full bg-paper p-[1.2cqw] shadow-[0_3px_0_var(--color-line-strong)]" style={delay(650)}>
+              <span className={cx(control, "bg-cream text-forest")}>
+                <Microphone />
+              </span>
+              <span className={cx(control, "bg-brand text-night")}>
+                <VideoCamera />
+              </span>
+              <span className={cx(control, "bg-cream text-forest")}>
+                <ChatCircle />
+              </span>
+            </div>
+          </div>
         </div>
       </div>
       <div className="h-5 rounded-b-[1.4rem] rounded-t-md" style={{ backgroundColor: laptopBase, boxShadow: `0 6px 0 ${laptopBaseShade}` }} />
@@ -298,7 +324,7 @@ export function TreasureScene({
   const pieces: Piece[] = [
     ...vouchers.slice(0, voucherSpots.length).map((v, i) => {
       const spot = voucherSpots[i] ?? voucherSpots[0];
-      return { key: v.name, ...spot, ratio: 5 / 6, node: <Voucher {...v} /> };
+      return { key: v.name, ...spot, ratio: 5 / 6, node: <Voucher {...v} sizes={voucherSizes.scene} /> };
     }),
     ...coinSpots.map((c, i) => ({ key: `coin-${i}`, ...c, ratio: 0.875, node: <CoinArt className="w-full" /> })),
   ];

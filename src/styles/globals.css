@@ -505,12 +505,10 @@ html[data-visitor="idle"] :is(.animate-float, .animate-spin-slow, .animate-bounc
   }
 }
 
-/* Two white bands back to back would stack both paddings into a gap of up to 190px on a phone; the second one
-   halves its top there. Unlayered, so it wins over the band's own padding utility. */
-@media (width < 48rem) {
-  .v2 [data-band="white"] + [data-band="white"] {
-    padding-top: clamp(2.5rem, 1.5rem + 3.5vw, 4.5rem);
-  }
+/* Two white bands back to back would stack both paddings into a gap of up to 290px; the second one halves its
+   top. Unlayered, so it wins over the band's own padding utility. */
+.v2 [data-band="white"] + [data-band="white"] {
+  padding-top: clamp(2.5rem, 1.5rem + 3.5vw, 4.5rem);
 }
 
 /* ── A blog post's body (views/ba/blog/BlogPost.astro): Portable Text at a reading size. 18px on phones, 19px from

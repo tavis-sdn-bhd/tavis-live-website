@@ -35,7 +35,8 @@ export const subjectLang = (name: string) => (name === "English" ? "en" : "ms");
 export function SubjectChip({ name, className, lang }: { name: string; className?: string; lang?: string }) {
   return (
     <span lang={name === "English" ? "en" : lang} className={cx("inline-flex items-center gap-1.5 rounded-md bg-cream px-2 py-0.5 text-[0.75rem] leading-5 text-forest", className)}>
-      <span aria-hidden="true" className={cx("size-1.5 rounded-full", subjectDot[subjectKey(name)])} />
+      {/* Centred on the first 20px line, so it stays beside the name's first line when the name wraps. */}
+      <span aria-hidden="true" className={cx("mt-[7px] size-1.5 shrink-0 self-start rounded-full", subjectDot[subjectKey(name)])} />
       {name}
     </span>
   );
