@@ -12,7 +12,8 @@ import { links } from "@/lib/content";
 import { baTuition as ba, ringgit, signUpFor, tuitionPage as page } from "@/lib/pages";
 
 
-/** The closing scene: Tavi in a mortarboard, cheering, with a crown, a star and points round him; the hero already shows the class. */
+/** The closing scene: Tavi dressed for school, waving, with a crown, a star and points round him; the hero already
+    shows the class, and the download band below has Tavi in his mortarboard. */
 const closingPieces: Piece[] = [
   { key: "star", x: 4, y: 10, w: 16, ratio: 1, tilt: -12, node: <Star className="w-full" /> },
   { key: "crown", x: 78, y: 6, w: 18, ratio: 1, tilt: 10, node: <Crown className="w-full" /> },
@@ -22,8 +23,8 @@ const closingPieces: Piece[] = [
 
 function Mark({ included }: { included: boolean }) {
   return included ? (
-    <span className="mx-auto grid size-8 place-items-center rounded-full bg-brand text-forest shadow-[inset_0_-3px_0_var(--color-brand-ledge)]">
-      <Check aria-hidden="true" className="size-4" />
+    <span className="mx-auto grid size-7 place-items-center rounded-full bg-brand text-forest shadow-[inset_0_-3px_0_var(--color-brand-ledge)]">
+      <Check aria-hidden="true" className="size-3.5" />
       <span className="sr-only">Included</span>
     </span>
   ) : (
@@ -33,61 +34,68 @@ function Mark({ included }: { included: boolean }) {
   );
 }
 
-/** Duolingo's Free and Super table: what the free app gives everyone, and what tuition adds. */
+/** Duolingo's Free and Super table: what the free app gives everyone, and what tuition adds. The headline, the table
+    and the button fit one laptop screen (1440 by 800), so the rows are short and the introduction keeps to one line.
+    The section is a call to action, so the floating chat steps aside: on a laptop it would sit on the table's last
+    column, and beside the section's own WhatsApp button. */
 function Compare() {
   const { compare } = ba;
-  const cell = "px-1 py-4 text-center align-middle sm:px-4";
+  // Each row kind has its own vertical padding, and no cell takes two: `cx` joins classes, it does not merge them.
+  const pad = { head: "py-2.5 sm:py-3", row: "py-2.5 sm:py-2", foot: "py-2.5 sm:py-3.5" };
+  const cell = "px-1 text-center align-middle sm:px-4";
+  const label = "px-4 font-extrabold leading-snug text-pretty text-forest sm:px-7 sm:text-[1.0625rem]";
+  const column = "font-display text-caption uppercase leading-tight tracking-[0.05em] sm:text-body-sm";
   return (
-    <Section id={compare.id}>
+    <Section id={compare.id} cta>
       <div className="shell">
-        <Centered title={compare.title} body={compare.body} />
-        <div className={cx(chunky, "mx-auto mt-12 max-w-[50rem] overflow-hidden")}>
+        <Centered wide title={compare.title} body={compare.body} />
+        <div className={cx(chunky, "mx-auto mt-8 max-w-[64rem] overflow-hidden")}>
           <table className="w-full border-collapse text-left">
             <caption className="sr-only">What the free app and online tuition include</caption>
             <thead>
               <tr className="border-b-2 border-line">
-                <th scope="col" className="px-4 py-5 sm:px-6">
+                <th scope="col">
                   <span className="sr-only">Feature</span>
                 </th>
-                <th scope="col" className={cx(cell, "w-[4.25rem] font-display text-caption uppercase leading-tight tracking-[0.05em] text-muted sm:w-[24%] sm:text-body-sm")}>
+                <th scope="col" className={cx(cell, pad.head, column, "w-[4.25rem] text-muted sm:w-36")}>
                   {compare.columns.free}
                 </th>
-                <th scope="col" className={cx(cell, "w-[4.75rem] bg-mint font-display text-caption uppercase leading-tight tracking-[0.05em] text-brand-deep sm:w-[26%] sm:text-body-sm")}>
+                <th scope="col" className={cx(cell, pad.head, column, "w-[4.75rem] bg-mint text-brand-deep sm:w-44 lg:w-48")}>
                   {compare.columns.tuition}
                 </th>
               </tr>
             </thead>
             <tbody>
               {compare.rows.map((row) => (
-                <tr key={row.feature} className="border-b-2 border-line last:border-b-0">
-                  <th scope="row" className="px-4 py-4 text-[1rem] font-extrabold leading-snug text-forest sm:px-6 sm:text-[1.0625rem]">
+                <tr key={row.feature} className="border-b-2 border-line">
+                  <th scope="row" className={cx(label, pad.row)}>
                     {row.feature}
                   </th>
-                  <td className={cell}>
+                  <td className={cx(cell, pad.row)}>
                     <Mark included={row.free} />
                   </td>
-                  <td className={cx(cell, "bg-mint")}>
+                  <td className={cx(cell, pad.row, "bg-mint")}>
                     <Mark included={row.tuition} />
                   </td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
-              <tr className="border-t-2 border-line">
-                <th scope="row" className="px-4 py-5 text-[1.0625rem] font-extrabold text-forest sm:px-6">
+              <tr>
+                <th scope="row" className={cx(label, pad.foot)}>
                   Price
                 </th>
-                <td className={cx(cell, "font-extrabold text-forest")}>{compare.price.free}</td>
-                <td className={cx(cell, "bg-mint font-extrabold leading-tight text-brand-deep")}>
-                  <span className="block text-caption font-bold">{compare.price.tuition.from}</span>
-                  <span className="nums block text-[1.125rem]">{compare.price.tuition.amount}</span>
-                  <span className="block text-caption font-bold">{compare.price.tuition.per}</span>
+                <td className={cx(cell, pad.foot, "font-extrabold text-forest")}>{compare.price.free}</td>
+                <td className={cx(cell, pad.foot, "bg-mint font-extrabold leading-tight text-brand-deep lg:whitespace-nowrap")}>
+                  <span className="block text-caption font-bold sm:inline">{compare.price.tuition.from}</span>{" "}
+                  <span className="nums block text-[1.125rem] sm:inline">{compare.price.tuition.amount}</span>{" "}
+                  <span className="block text-caption font-bold sm:inline">{compare.price.tuition.per}</span>
                 </td>
               </tr>
             </tfoot>
           </table>
         </div>
-        <Actions className="mt-10">
+        <Actions className="mt-8">
           <Button href={links.whatsapp} size="lg">
             {ba.hero.cta}
           </Button>
@@ -131,11 +139,11 @@ function OnlineTuitionPage() {
         />
         <div className="shell relative">
           <div className="mx-auto max-w-[48rem] text-center">
-            <Shout title={[pricing.title, pricing.accent]} body={pricing.body} />
+            <Shout title={ba.pricing.title} body={ba.pricing.body} />
           </div>
           <ul className="mt-12 grid gap-4 sm:mt-16 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
             {pricing.plans.map((plan) => (
-              <li key={plan.name} className="h-full">
+              <li key={plan.name} className={cx("h-full", plan.featured && "max-sm:mt-4")}>
                 <article className={cx(chunky, "relative flex h-full flex-col p-6 text-center max-sm:grid max-sm:grid-cols-[1fr_auto] max-sm:items-center max-sm:gap-x-4 max-sm:p-5 max-sm:text-left", plan.featured && "border-mint shadow-[0_0_0_4px_var(--color-mint)] max-sm:pt-7")}>
                   {plan.featured && (
                     <span className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-xl bg-mint px-3 py-1.5 font-display text-[0.75rem] uppercase tracking-[0.06em] text-forest">
@@ -219,7 +227,7 @@ function OnlineTuitionPage() {
         art={
           <BurstStage pieces={closingPieces} from={{ x: 50, y: 50 }}>
             <div className="scene-pop absolute left-[20%] top-[16%] w-[60%]">
-              <Mascot mood="cheer" outfit="graduate" decorative />
+              <Mascot mood="wave" outfit="school" decorative />
             </div>
           </BurstStage>
         }

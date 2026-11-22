@@ -395,7 +395,7 @@ export function UniverseScreen() {
               </span>
               <span className="flex-1">
                 <span className="block font-display text-[17px] text-app-ink">F5 {s}</span>
-                <span className="block text-[13px] text-app-muted">{live ? `Question ${q17.number} of ${q17.of}${answers.length ? " · answered" : ""}` : "In the app"}</span>
+                {live && <span className="block text-[13px] text-app-muted">{`Question ${q17.number} of ${q17.of}${answers.length ? " · answered" : ""}`}</span>}
               </span>
               <span className={cx("rounded-full px-3 py-1.5 font-display text-[13px]", live ? "bg-brand text-forest" : "bg-cream text-app-muted")}>{live ? "Start" : "Open"}</span>
             </Press>
@@ -1000,18 +1000,19 @@ export function ExplanationScreen() {
   const end = useRef<HTMLDivElement>(null);
   const mounted = useRef(false);
   // The explanation opens taller than the screen: scroll with it, so the right answer and Next Question end whole
-  // above the home indicator. The why box is still opening, so its full height is added. A screen that opens
-  // already answered (the mockup scene) stays at its top.
+  // above the home indicator. The why box may still be opening, so the height it has yet to gain is added. A screen
+  // that opens already answered (the mockup scene) starts there.
   useLayoutEffect(() => {
     const first = !mounted.current;
     mounted.current = true;
     const box = scroller.current;
     const foot = end.current;
-    if (first || !box || !foot || pick === null) return;
+    if (!box || !foot || pick === null) return;
     const k = box.getBoundingClientRect().height / box.offsetHeight || 1;
-    const bottom = (foot.getBoundingClientRect().top - box.getBoundingClientRect().top) / k + box.scrollTop + (why.current?.offsetHeight ?? 0);
+    const toOpen = why.current?.parentElement ? why.current.offsetHeight - why.current.parentElement.offsetHeight : 0;
+    const bottom = (foot.getBoundingClientRect().top - box.getBoundingClientRect().top) / k + box.scrollTop + toOpen;
     const top = bottom + EXPLAIN_GAP - box.clientHeight;
-    if (top > box.scrollTop) box.scrollTo({ top, behavior: reduce ? "instant" : "smooth" });
+    if (top > box.scrollTop) box.scrollTo({ top, behavior: first || reduce ? "instant" : "smooth" });
   }, [pick, reduce]);
   const option =
     "flex w-full items-center justify-between gap-3 rounded-[18px] border-2 py-3.5 pl-4 pr-[13px] text-left font-display text-[16px] leading-[1.3] transition-[background-color,border-color,color,scale] duration-150 active:scale-[0.98] data-pressed:scale-[0.98]";

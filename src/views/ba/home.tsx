@@ -24,8 +24,8 @@ function More({ href, children }: { href: string; children: ReactNode }) {
   );
 }
 
-/** BA's home, on Duolingo's: the promise, proof it is real, four ideas with pictures, the app, the paid tier, then
-    the questions parents ask and the hero's promise once more. */
+/** BA's home, on Duolingo's: the promise, proof it is real, the free app in three pictures, live tuition and its
+    price, the numbers, then what students say and the questions parents ask. */
 function Home() {
   return (
     <>
@@ -64,15 +64,15 @@ function Home() {
         <More href="/rewards">{rewards.cta}</More>
       </Feature>
 
-      <Feature id="live-tuition" flip title={tuition.title} body={tuition.body} visual={<Classroom image={tuitionPage.hero.image} />}>
-        <More href="/tutors">Meet the tutors</More>
-      </Feature>
-
-      <Feature id="rankings" title={rewardsPage.rankings.title} body={rewardsPage.rankings.body} visual={<Podium />}>
+      <Feature id="rankings" flip title={rewardsPage.rankings.title} body={rewardsPage.rankings.body} visual={<Podium />}>
         <More href="/rewards#rankings">See the rankings</More>
       </Feature>
 
-      <TuitionPromo title={baHome.promo.title} body={baHome.promo.body} art={<TutorFaces count={6} night className="mx-auto max-w-[26rem]" />}>
+      <Feature id="live-tuition" title={tuition.title} body={tuition.body} visual={<Classroom image={tuitionPage.hero.image} />}>
+        <More href="/tutors">Meet the tutors</More>
+      </Feature>
+
+      <TuitionPromo flip title={baHome.promo.title} body={baHome.promo.body} art={<TutorFaces count={6} night className="mx-auto max-w-[26rem]" />}>
         <Button href="/online-tuition" size="lg">
           {tuition.cta}
         </Button>

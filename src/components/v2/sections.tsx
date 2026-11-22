@@ -1,5 +1,5 @@
 import { Image } from "@/components/image";
-import type { ComponentType, CSSProperties, ReactNode, SVGProps } from "react";
+import { Fragment, type ComponentType, type CSSProperties, type ReactNode, type SVGProps } from "react";
 import { download, faq, screens, testimonials, why } from "@/lib/content";
 import { aboutPage, pressHighlights, questionUniverse, subjectGroups, timetableSubjects, tuitionPage, type LinkedOutlet } from "@/lib/pages";
 import { CountUp } from "../count-up";
@@ -41,6 +41,10 @@ export function SubjectStrip() {
   );
 }
 
+/* The dot between a tutor's subjects, drawn on a space. A space that ends a line collapses, so a caption that wraps
+   breaks between two subjects and has no dot there. A drawn dot is not text, so a comma for screen readers goes with it. */
+const gapDot = "bg-[radial-gradient(circle,currentColor_0.1em,transparent_0.13em)] [word-spacing:0.5em]";
+
 /** Tutor faces in rings, like a friends list. `night` sets the names for the dark band. */
 export function TutorFaces({ count, credentials, night, className }: { count?: number; credentials?: boolean; night?: boolean; className?: string }) {
   return (
@@ -50,13 +54,21 @@ export function TutorFaces({ count, credentials, night, className }: { count?: n
           <span className="mx-auto block aspect-square w-full max-w-[7.5rem] overflow-hidden rounded-full bg-mint p-1">
             <Image src={t.src} alt={t.name} width={t.w} height={t.h} sizes="120px" className="size-full rounded-full bg-cream object-cover object-top" />
           </span>
-          <span className={cx("mt-2 block text-body-sm font-extrabold leading-tight", night ? "text-on-forest" : "text-forest")}>{t.name}</span>
+          {/* A name may run 8px into the gap on each side: "Cikgu Sue Dino" stays on one line in a 98px column. */}
+          <span className={cx("-mx-2 mt-2 block text-body-sm font-extrabold leading-tight", night ? "text-on-forest" : "text-forest")}>{t.name}</span>
           <span className={cx("block text-caption font-bold", night ? "text-on-forest-muted" : "text-muted")}>
             {t.subjects.map((subject, i) => (
-              <span key={subject} lang={subjectLang(subject)}>
-                {i > 0 && "\u00a0· "}
-                {subject}
-              </span>
+              <Fragment key={subject}>
+                {i > 0 && (
+                  <>
+                    <span className="sr-only">,</span>
+                    <span className={gapDot}> </span>
+                  </>
+                )}
+                <span lang={subjectLang(subject)} className="inline-block">
+                  {subject}
+                </span>
+              </Fragment>
             ))}
           </span>
           {credentials && <span className="mx-auto mt-1 block max-w-[11rem] text-caption font-semibold leading-snug text-muted">{t.credential}</span>}
@@ -99,7 +111,8 @@ const pathOffsets = ["translate-x-0", "translate-x-[25%] sm:translate-x-[45%]", 
 export function Path({ steps, label }: { steps: ReadonlyArray<{ title: string }>; label: string }) {
   return (
     <Scene>
-      <ol aria-label={label} className="mx-auto grid w-fit gap-9 py-4">
+      {/* Stacked on phones, the START bubble stays inside the list's own padding, so what is above keeps its gap. */}
+      <ol aria-label={label} className="mx-auto grid w-fit gap-9 py-4 max-md:pt-11">
         {steps.map((step, i) => (
           <li key={step.title} className={cx("flex items-center gap-5", pathOffsets[i % pathOffsets.length])}>
             <span className="relative shrink-0">
@@ -141,8 +154,8 @@ export function Stats() {
     <Section band="green" className="py-[clamp(4rem,3rem+4vw,6.5rem)]">
       <Floaters
         spots={[
-          { node: <Star className="w-14" />, className: "left-[6%] top-[18%] -rotate-12 max-sm:left-[3%] max-sm:top-[3%] max-sm:w-10" },
-          { node: <Trophy className="w-16" />, className: "right-[7%] top-[14%] rotate-12 max-sm:right-[3%] max-sm:top-[3%] max-sm:w-12" },
+          { node: <Star className="w-14" />, className: "left-[6%] top-[18%] -rotate-12 max-sm:left-[7%] max-sm:top-[7%] max-sm:w-10" },
+          { node: <Trophy className="w-16" />, className: "right-[7%] top-[14%] rotate-12 max-sm:right-[7%] max-sm:top-[7%] max-sm:w-12" },
           { node: <Bolt className="w-12" />, className: "bottom-[14%] left-[16%] rotate-6 max-md:hidden" },
           { node: <Flame className="w-12" />, className: "bottom-[16%] right-[18%] -rotate-6 max-md:hidden" },
         ]}
@@ -150,8 +163,8 @@ export function Stats() {
       <dl className="shell relative grid gap-10 text-center sm:grid-cols-2">
         {why.stats.map((s) => (
           <div key={s.label} className="flex flex-col-reverse items-center">
-            <dt className="mt-2 text-[1.25rem] font-black uppercase tracking-[0.08em] text-forest/80">{s.label}</dt>
-            <dd className="shout text-[clamp(4rem,2.5rem+6vw,8rem)] leading-none tabular-nums text-forest">
+            <dt className="mt-2 text-[1.25rem] font-black uppercase tracking-[0.08em] text-brand-deep">{s.label}</dt>
+            <dd className="shout text-[clamp(4rem,2.5rem+6vw,8rem)] leading-none tabular-nums text-night">
               <CountUp value={s.value} suffix={s.suffix} />
             </dd>
           </div>
@@ -168,7 +181,7 @@ export function Testimonials() {
     <Section id="testimonials">
       <div className="shell">
         <Centered title={[testimonials.title, testimonials.accent]} />
-        <ul className="mt-14 grid gap-6 lg:grid-cols-3">
+        <ul className="mt-14 grid gap-12 lg:grid-cols-3 lg:gap-6">
           {testimonials.items.map((t, i) => (
             <li key={t.name}>
               <figure className="flex h-full flex-col">
@@ -211,7 +224,7 @@ export function Faq({ set = faq }: { set?: FaqSet }) {
           {set.items.map((item) => (
             <li key={item.q}>
               <details className={cx(chunky, "group transition-colors hover:border-line-strong open:pb-6")}>
-                <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 rounded-[1.375rem] px-6 py-3 text-[1.125rem] font-extrabold text-forest transition-colors hover:bg-cream/60 active:bg-cream focus-visible:rounded-[1.375rem] [&::-webkit-details-marker]:hidden">
+                <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 rounded-[1.375rem] px-6 py-3 text-[1.125rem] font-extrabold text-balance text-forest transition-colors hover:bg-cream/60 active:bg-cream focus-visible:rounded-[1.375rem] [&::-webkit-details-marker]:hidden">
                   {item.q}
                   <span aria-hidden="true" className="relative grid size-9 shrink-0 place-items-center rounded-xl bg-cream transition-colors group-open:bg-brand">
                     <span className="absolute h-1 w-3.5 rounded-full bg-forest" />
@@ -238,8 +251,9 @@ export function Faq({ set = faq }: { set?: FaqSet }) {
   );
 }
 
-/** Online tuition is the paid tier, so it gets Duolingo's Super treatment: the night band and shouted caps. */
-export function TuitionPromo({ title, body, art, children }: { title: Title; body: string; art?: ReactNode; children?: ReactNode }) {
+/** Online tuition is the paid tier, so it gets Duolingo's Super treatment: the night band and shouted caps.
+    `flip` puts the words first: above the picture on phones, left of it from md. */
+export function TuitionPromo({ title, body, art, flip, children }: { title: Title; body: string; art?: ReactNode; flip?: boolean; children?: ReactNode }) {
   return (
     <Section id="tuition" band="night">
       <Floaters
@@ -249,8 +263,8 @@ export function TuitionPromo({ title, body, art, children }: { title: Title; bod
           { node: <Bolt className="w-12" />, className: "bottom-[10%] right-[44%] rotate-6 max-md:hidden" },
         ]}
       />
-      <div className="shell relative grid items-center gap-14 md:grid-cols-2 md:gap-16">
-        <div>
+      <div className="shell relative grid items-center gap-14 md:grid-cols-2 md:gap-16 lg:gap-24">
+        <div className={cx(flip && "order-2")}>
           {art ?? <Classroom image={tuitionPage.hero.image} />}
         </div>
         <div className="text-center md:text-left">
@@ -265,11 +279,11 @@ export function TuitionPromo({ title, body, art, children }: { title: Title; bod
 /** Each form's subjects, from the 2027 timetable: one card per group of forms, every subject with its flag. */
 export function SubjectGroups({ className }: { className?: string }) {
   return (
-    <ul className={cx("mx-auto grid max-w-[56rem] gap-5 md:grid-cols-[5fr_6fr]", className)}>
+    <ul className={cx("mx-auto grid max-w-[44rem] gap-5 md:grid-cols-[5fr_6fr] xl:max-w-[66rem]", className)}>
       {subjectGroups.map((group) => (
         <li key={group.forms} className={cx(chunky, "p-6 sm:p-8")}>
           <h3 className="text-[1.5rem] leading-tight text-forest">{group.forms}</h3>
-          <ul className="mt-5 grid gap-x-6 gap-y-3 sm:grid-cols-2">
+          <ul className="mt-5 grid gap-x-6 gap-y-3 sm:grid-cols-2 md:max-xl:grid-cols-1">
             {group.subjects.map((name) => (
               <li key={name} lang={subjectLang(name)} className="flex items-center gap-3 text-[1.0625rem] font-extrabold leading-tight text-forest">
                 <SubjectIcon name={name} className="size-10" />
@@ -326,7 +340,7 @@ export function DownloadBand() {
       <TiltedPhone screen={questionUniverse.universe.screen} tilt={10} className="absolute -right-10 top-1/2 hidden w-[15rem] -translate-y-1/2 xl:block" />
       <div className="shell relative">
         <Mascot mood="cheer" outfit="graduate" decorative className="mx-auto w-[min(60%,16rem)]" />
-        <Headline band="sky" title={download.title} className="mx-auto mt-8 max-w-[44rem]" />
+        <Headline closing band="sky" title={download.title} className="mx-auto mt-8 max-w-[44rem]" />
         <p className={cx("mt-5 text-forest", lede)}>{download.body}</p>
         <StoreBadges className="mt-10 justify-center" />
         <DownloadQr className="mt-8 justify-center" />
@@ -348,7 +362,8 @@ export function DownloadQr({ className }: { className?: string }) {
 }
 
 /** A page's own last call to action, for a page whose main ask is not the app (tuition sign-up): the picture on one
-    side, a headline and stacked buttons on the other. The download band follows it, from the footer. */
+    side, a headline and stacked buttons on the other; on phones the words and buttons come first. The download band
+    follows it, from the footer. */
 export function ClosingCta({
   title,
   body,
@@ -364,7 +379,7 @@ export function ClosingCta({
     <Section id="get-started" cta>
       <div className="shell">
         <div className="mx-auto grid max-w-[60rem] items-center gap-10 md:grid-cols-2 md:gap-14">
-          <div className="mx-auto w-[82%] max-w-[26rem] md:w-full">{art}</div>
+          <div className="mx-auto w-[82%] max-w-[26rem] max-md:order-2 md:w-full">{art}</div>
           <div className="text-center">
             <Headline title={title} className={halfColumnHeadline} />
             {body && <p className={cx("mx-auto mt-6 max-w-[26rem] text-muted", lede)}>{body}</p>}

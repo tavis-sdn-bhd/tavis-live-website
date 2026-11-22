@@ -20,13 +20,17 @@ type JourneyProps = {
   screen: Screen;
 };
 
+/** Where the shell's content starts: its centring margin plus its gutter, so the first card sits under the logo.
+    `page` is the page's width as the caller can name it. A padding takes "100%", the pinned frame's own width, which
+    leaves a scrollbar out as the shell does; a height has only "100vw". */
+const lead = (page: "100%" | "100vw") => `(max(0px, (${page} - 78rem) / 2) + clamp(1rem, 0.4rem + 2.6vw, 2.5rem))`;
+
 /**
  * How far the pinned track travels, in CSS: its fixed-width cards and padding
  * minus the viewport. The section height comes from this, so server HTML
  * already has the right height and nothing jumps on hydration.
  */
-const travel = (years: number) =>
-  `max(0px, max(2.5rem, (100vw - 76rem) / 2 + 2.5rem) + ${years} * 31.25rem + 16rem + 10vw - 100vw)`;
+const travel = (years: number) => `max(0px, ${lead("100vw")} + ${years} * 31.25rem + 16rem + 10vw - 100vw)`;
 
 /**
  * On desktop the section pins and vertical scroll drives the track sideways;
@@ -61,7 +65,7 @@ export function Journey({ years, end, screen }: JourneyProps) {
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
   const x = useTransform(scrollYProgress, (p) => -p * distance);
   const rail = useTransform(scrollYProgress, [0, 1], [0.04, 1]);
-  const height: CSSProperties & Record<`--${string}`, string> = { "--journey-travel": travel(years.length) };
+  const height: CSSProperties & Record<`--${string}`, string> = { "--journey-travel": travel(years.length), "--journey-lead": `calc${lead("100%")}` };
 
   return (
     <section
@@ -96,7 +100,7 @@ export function Journey({ years, end, screen }: JourneyProps) {
           style={{ x }}
           className={cx(
             "flex flex-col gap-5 border-l-2 border-line pl-6 sm:pl-8",
-            "lg:motion-safe:w-max lg:motion-safe:flex-row lg:motion-safe:items-stretch lg:motion-safe:border-l-0 lg:motion-safe:pl-[max(2.5rem,calc((100vw-76rem)/2+2.5rem))] lg:motion-safe:pr-[10vw]",
+            "lg:motion-safe:w-max lg:motion-safe:flex-row lg:motion-safe:items-stretch lg:motion-safe:border-l-0 lg:motion-safe:pl-[var(--journey-lead)] lg:motion-safe:pr-[10vw]",
           )}
         >
           {years.map((y, i) => (

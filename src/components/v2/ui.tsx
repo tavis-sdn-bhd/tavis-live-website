@@ -44,7 +44,7 @@ export function Button({ href, tone, size, className, children, ...props }: Butt
   );
 }
 
-/** Full-bleed backgrounds. White is the page; sky is Duolingo's pale feature band; night is the paid-tier band; green is the brand at full volume. */
+/** Full-bleed backgrounds. White is the page; sky is Duolingo's pale feature band; night is the dark band (the paid tier, and Rewards' avatar section); green is the brand at full volume. */
 type Band = "white" | "sky" | "night" | "green";
 
 const bands: Record<Band, string> = {
@@ -58,14 +58,14 @@ const headlineTone: Record<Band, string> = {
   white: "text-brand-ink",
   sky: "text-brand-ink",
   night: "text-brand",
-  green: "text-forest",
+  green: "text-night",
 };
 
 const bodyTone: Record<Band, string> = {
   white: "text-muted",
   sky: "text-forest/75",
   night: "text-on-forest-muted",
-  green: "text-forest",
+  green: "text-brand-deep",
 };
 
 /** A title as the copy writes it: one string, or the lines it is authored in. */
@@ -91,13 +91,16 @@ export function Lines({ title, names = true }: { title: Title; /** Keep proper n
   ));
 }
 
-/** The sentence under a headline: 18px on phones, 20px from tablets. */
-export const lede = "text-[clamp(1.125rem,1rem+0.5vw,1.25rem)] font-semibold leading-relaxed";
+/** The sentence under a headline: 18px on phones, 20px from tablets. Balanced, so its last line is never a word or two. */
+export const lede = "text-[clamp(1.125rem,1rem+0.5vw,1.25rem)] font-semibold leading-relaxed text-balance";
 
-/** Lowercase green headline, set big and black. Copy is shared with variant A, so the case is styling, not text. */
-export function Headline({ title, as: Tag = "h2", band = "white", className }: { title: Title; as?: "h1" | "h2"; band?: Band; className?: string }) {
+/** Lowercase green headline, set big and black. Copy is shared with variant A, so the case is styling, not text.
+    A section headline stays under the subpage h1 (`SplitHero`) at every width, so the page title is the largest
+    type on its page; a design whose h1 is larger sets `--headline` (B, in `layout.tsx`). `closing` is the download
+    band's, set at full size. */
+export function Headline({ title, as: Tag = "h2", band = "white", closing, className }: { title: Title; as?: "h1" | "h2"; band?: Band; closing?: boolean; className?: string }) {
   return (
-    <Tag className={cx("text-[clamp(2.125rem,1.4rem+3.6vw,4.5rem)] leading-[0.98] lowercase text-balance [overflow-wrap:break-word]", headlineTone[band], className)}>
+    <Tag className={cx(closing ? "text-[clamp(2.125rem,1.4rem+3.6vw,4.5rem)]" : "text-[length:var(--headline,clamp(2.125rem,1.8rem+1.9vw,3.5rem))]", "leading-[0.98] lowercase text-balance [overflow-wrap:break-word]", headlineTone[band], className)}>
       <Lines title={title} />
     </Tag>
   );
@@ -162,12 +165,13 @@ export function Section({ id, band = "white", cta, className, children }: { id?:
   );
 }
 
-/** Centred headline block for sections whose picture is wide. */
-export function Centered({ title, body, band = "white", className }: { title: Title; body?: string; band?: Band; className?: string }) {
+/** Centred headline block for sections whose picture is wide. `wide` lets the sentence run as wide as a table below
+    it (64rem), where keeping it to one line matters more than its measure; the headline keeps its own width. */
+export function Centered({ title, body, band = "white", wide, className }: { title: Title; body?: string; band?: Band; wide?: boolean; className?: string }) {
   return (
-    <div className={cx("mx-auto max-w-[48rem] text-center", className)}>
-      <Headline band={band} title={title} />
-      {body && <p className={cx("mx-auto mt-6 max-w-[34rem]", lede, bodyTone[band])}>{body}</p>}
+    <div className={cx("mx-auto text-center", wide ? "max-w-[64rem]" : "max-w-[48rem]", className)}>
+      <Headline band={band} title={title} className={wide ? "mx-auto max-w-[48rem]" : undefined} />
+      {body && <p className={cx("mx-auto mt-6", !wide && "max-w-[34rem]", lede, bodyTone[band])}>{body}</p>}
     </div>
   );
 }
