@@ -118,7 +118,7 @@ The footer form posts to EmDash's forms plugin. Submissions appear in the admin 
 
 Add the addresses that should hear about new messages under the form's notification settings. Those emails need an email provider: EmDash sends through Cloudflare Email Sending, which only works once `tavis.live` is a zone on the Tavis account. Until then submissions are stored in the admin and sent to Google Sheets, but no email goes out. At launch, onboard `tavis.live` for Email Sending, add `cloudflareEmail({ from: "…@tavis.live" })` from `@emdash-cms/cloudflare` to the `plugins` in `astro.config.mjs`, and add a `send_email` binding named `EMAIL` to `cloudflare.config.ts`.
 
-Before a submission reaches the plugin, `src/middleware.ts` applies two Cloudflare rate limits from `cloudflare.config.ts`: 3 a minute per visitor and 20 a minute across the site. It also checks the contact form's fields against the limits in `src/lib/enquiry.ts`, which the form's inputs use too.
+Before a submission reaches the plugin, `src/middleware.ts` applies two Cloudflare rate limits from `cloudflare.config.ts`: 3 a minute per visitor and 20 a minute across the site. It also checks the contact form's fields against the limits in `src/lib/enquiry.ts`, which the form's inputs use too. The plugin's submit route also answers other methods and a trailing slash, so the middleware refuses any method but POST, whatever the path's ending, and refuses a body over 16 KB or for any form but `contact`. A second form on the site would need adding there.
 
 ### Leads in Google Sheets
 

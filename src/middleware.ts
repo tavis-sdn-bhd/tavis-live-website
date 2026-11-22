@@ -7,8 +7,13 @@ import { tooManyMessages as tooManyMessagesMalay } from "@/ms/lib/enquiry";
 /** The forms plugin's public endpoint, which the contact form posts to. */
 const submitPath = "/_emdash/api/plugins/emdash-forms/submit";
 
-/** The form the contact form submits, whose data has a shape this site knows. */
+/** The only form on the site. The plugin also finds a form by its storage id, so any other id is refused rather than let
+    past the contact form's checks. */
 const contactFormId = "contact";
+
+/** The most a contact form submission can weigh. Its fields' limits come to about 2,600 characters; the plugin itself
+    would decode file uploads of up to 10 MB before checking the form has a file field. */
+const maxBodyBytes = 16 * 1024;
 
 /** What public/_headers gives static files, for the responses the Worker renders. */
 const securityHeaders = {
@@ -16,7 +21,10 @@ const securityHeaders = {
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  "Content-Security-Policy": "frame-ancestors 'self'",
 };
+
+const unreadable: EnquiryError[] = [{ field: "", message: "That message couldn\u2019t be read." }];
 
 function rejected(status: number, errors: EnquiryError[]) {
   return Response.json({ success: false, errors }, { status });
@@ -40,15 +48,23 @@ async function guardSubmission(request: Request): Promise<Response | null> {
     return rejected(429, [{ field: "", message: malay ? tooManyMessagesMalay : tooManyMessages }]);
   }
 
-  const body: unknown = await request.clone().json().catch(() => null);
-  if (!isRecord(body) || !isRecord(body.data)) return rejected(400, [{ field: "", message: "That message couldn\u2019t be read." }]);
-  if (body.formId !== contactFormId) return null;
+  if (Number(request.headers.get("content-length") ?? 0) > maxBodyBytes) return rejected(413, unreadable);
+  const text = await request.clone().text().catch(() => "");
+  if (text.length > maxBodyBytes) return rejected(413, unreadable);
+  let body: unknown = null;
+  try {
+    body = JSON.parse(text);
+  } catch {
+    // Unreadable, below.
+  }
+  if (!isRecord(body) || !isRecord(body.data) || body.formId !== contactFormId) return rejected(400, unreadable);
   const errors = enquiryErrors(body.data);
   return errors.length ? rejected(400, errors) : null;
 }
 
-/** A copy of the response with the security headers, and `noindex` until a design goes live at /. A copy because a
-    redirect or a fetched response has immutable headers. A WebSocket upgrade (co-editing) passes as it is. */
+/** A copy of the response with the security headers, and `noindex` until a design goes live at /. EmDash's own CSP, on
+    the admin and its API, is kept. A copy because a redirect
+    or a fetched response has immutable headers. A WebSocket upgrade (co-editing) passes as it is. */
 function secured(response: Response): Response {
   if (response.status === 101) return response;
   const copy = new Response(response.body, response);
@@ -57,8 +73,15 @@ function secured(response: Response): Response {
   return copy;
 }
 
+/** Whether a path reaches the submit endpoint. EmDash's router also answers it with trailing slashes, which must not
+    skip the guard. Astro has already decoded the path and collapsed doubled slashes. */
+const isSubmitPath = (pathname: string) => pathname.replace(/\/+$/, "") === submitPath;
+
 export const onRequest = defineMiddleware(async (context, next) => {
-  if (context.request.method === "POST" && context.url.pathname === submitPath) {
+  if (isSubmitPath(context.url.pathname)) {
+    // The plugin's route takes every method and parses a PUT or PATCH body like a POST, so only POST, which the guard
+    // checks, gets through.
+    if (context.request.method !== "POST") return secured(new Response(null, { status: 405, headers: { Allow: "POST" } }));
     const blocked = await guardSubmission(context.request);
     if (blocked) return secured(blocked);
   }
