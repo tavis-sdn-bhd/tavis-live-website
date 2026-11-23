@@ -1,11 +1,10 @@
-import { Image } from "@/components/image";
 import { company, links } from "@/lib/content";
 import { type DesignId, deckOf, navOf } from "@/lib/site";
 import { ContactForm } from "../contact-form";
 import { DesignLink } from "../design-link";
 import { PauseMotionToggle } from "../motion-pause";
-import { WhatsApp } from "../icons";
-import { NewTab } from "../ui";
+import { Envelope, Facebook, Instagram, TikTok, WhatsApp, YouTube } from "../icons";
+import { NewTab, cx } from "../ui";
 import { DownloadBand } from "./sections";
 import { buttonClass } from "./ui";
 
@@ -21,97 +20,130 @@ const parents: FooterLink[] = [
   { label: "FAQ", href: "/#faq" },
 ];
 
-/** Duolingo's footer columns, fitted to Tavis. A link to a page the design doesn't have is left out, and each page
-    is linked once: the parents' page heads its own column rather than repeating under Tavis. */
-function columnsFor(design: DesignId): Array<{ title: string; items: FooterLink[] }> {
+const socials = [
+  { label: "Facebook", href: links.facebook, Icon: Facebook },
+  { label: "Instagram", href: links.instagram, Icon: Instagram },
+  { label: "TikTok", href: links.tiktok, Icon: TikTok },
+  { label: "YouTube", href: links.youtube, Icon: YouTube },
+];
+
+const legal: FooterLink[] = [
+  { label: "Privacy Policy", href: links.privacy, newTab: true },
+  { label: "Terms of Service", href: links.terms, newTab: true },
+];
+
+/** Each page linked once, in two groups: the parents' pages under their own heading, the rest under Tavis. A page the
+    design doesn't have is left out. Contact, social and legal links have their own places in the footer. */
+function groupsFor(design: DesignId): Array<{ title: string; items: FooterLink[] }> {
   const pages = new Set<string>(deckOf(design).map((page) => page.href));
-  const has = (link: FooterLink) => !link.href.startsWith("/") || pages.has(link.href.replace(/[#?].*$/, ""));
-  const forParents = parents.filter(has);
+  const forParents = parents.filter((link) => pages.has(link.href.replace(/[#?].*$/, "")));
+  const rest = navOf(design).filter((page) => !forParents.some((link) => link.href === page.href));
   return [
-    { title: "Tavis", items: navOf(design).filter((page) => !forParents.some((link) => link.href === page.href)) },
+    { title: "Tavis", items: [...rest, { label: "Sign in", href: links.signIn }] },
     { title: "For parents", items: forParents },
-    {
-      title: "Talk to us",
-      items: [
-        { label: "WhatsApp", href: links.whatsapp },
-        { label: links.emailLabel, href: links.email },
-        { label: "Sign in", href: links.signIn },
-      ],
-    },
-    {
-      title: "Follow",
-      items: [
-        { label: "Facebook", href: links.facebook, newTab: true },
-        { label: "Instagram", href: links.instagram, newTab: true },
-        { label: "TikTok", href: links.tiktok, newTab: true },
-      ],
-    },
-    {
-      title: "Legal",
-      items: [
-        { label: "Privacy Policy", href: links.privacy, newTab: true },
-        { label: "Terms of Service", href: links.terms, newTab: true },
-      ],
-    },
   ];
 }
 
-/** Every B and BA page ends here: the download band, then the big green footer. */
+const link =
+  "link-press inline-flex min-h-11 items-center font-bold [overflow-wrap:anywhere] hover:text-night sm:whitespace-nowrap lg:min-h-9 aria-[current=page]:text-night aria-[current=page]:underline aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-4";
+
+/** Every B and BA page ends here: the download band, then the green footer. */
 export function Footer({ design }: { design: DesignId }) {
+  const groups = groupsFor(design);
   return (
     <>
       <DownloadBand />
 
-      {/* Duolingo's rhythm: 96px over, 64px under, headings and links in tones of the green. The bright field keeps
-          its tones dark, which is what passes 4.5:1 on it: headings night (7.9:1), links brand-deep (5.0:1). */}
-      <footer id="contact" className="bg-brand pb-[calc(4rem+env(safe-area-inset-bottom))] pt-16 text-brand-deep sm:pt-24">
-        <div className="shell">
-          {/* Duolingo's 988px column grid. */}
-          <div className="mx-auto max-w-[61.75rem]">
-            {/* From lg the form sits on the three right-hand columns of the grid below, its heading on the other two. */}
-            <div className="grid gap-x-8 gap-y-5 lg:grid-cols-5">
-              <div className="lg:col-span-2">
-                <h2 className="text-[1.5rem] leading-tight text-night">Write to us</h2>
-                <p className="mt-3 max-w-[19rem] font-semibold max-lg:hidden">Send us a message and we’ll reply by email.</p>
-                <a href={links.whatsapp} className="link-press mt-2 inline-flex min-h-11 items-center gap-2 text-body-sm font-bold hover:text-night max-lg:hidden">
-                  <WhatsApp aria-hidden="true" className="size-5" />
-                  Chat on WhatsApp
-                </a>
+      {/* On a laptop the footer is one screen under the sticky header, like the sections above it: the contact block at
+          the top, the wordmark and the small print on the floor. On a phone it takes its own height. The bright field
+          keeps its text dark, which is what passes 4.5:1 on it: headings night (7.9:1), links brand-deep (5.0:1). */}
+      <footer
+        id="contact"
+        className="flex flex-col bg-brand pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-14 text-brand-deep sm:pt-20 [@media(min-width:64rem)_and_(min-height:37.5rem)]:min-h-[calc(100svh-var(--ba-header,4.625rem))] [@media(min-width:64rem)_and_(min-height:37.5rem)]:pt-[clamp(2rem,6svh,4.5rem)]"
+      >
+        <div className="shell flex flex-1 flex-col">
+          <div className="mx-auto flex w-full max-w-[72rem] flex-1 flex-col">
+            <div className="grid gap-x-12 gap-y-12 lg:flex-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:content-center lg:items-center xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] xl:gap-x-20">
+              <div className="md:flex md:flex-wrap md:items-start md:gap-x-10 md:gap-y-12 lg:block">
+                <div className="md:min-w-[22rem] md:flex-1">
+                  <h2 className="text-[clamp(2.5rem,1.75rem+2.4vw,3.5rem)] leading-[0.95] lowercase text-night lg:text-[clamp(2.25rem,3.6vw,3.5rem)]">Write to us.</h2>
+                  <p className="mt-4 max-w-[22rem] font-semibold">Send us a message and we’ll reply by email, or reach us directly.</p>
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <a href={links.whatsapp} className={buttonClass({ tone: "white", className: "link-press" })}>
+                      <WhatsApp aria-hidden="true" className="size-5" />
+                      WhatsApp
+                    </a>
+                    <a href={links.email} className={buttonClass({ tone: "white", className: "link-press normal-case! tracking-normal!" })}>
+                      <Envelope aria-hidden="true" className="size-5" />
+                      {links.emailLabel}
+                    </a>
+                  </div>
+                </div>
+
+                <nav aria-label="Footer" className="mt-12 grid grid-cols-2 gap-x-8 sm:grid-cols-[auto_auto] sm:justify-start sm:gap-x-12 md:mt-1 lg:mt-12 lg:gap-x-8">
+                  {groups.map((group) => (
+                    <div key={group.title}>
+                      <h2 className="text-[1.0625rem] leading-[1.4] text-night">{group.title}</h2>
+                      <ul className={cx("mt-2 grid text-body-sm", group.items.length > 4 && "sm:grid-flow-col sm:grid-rows-4 sm:gap-x-6")}>
+                        {group.items.map((item) => (
+                          <li key={item.label}>
+                            <DesignLink href={item.href} className={link}>
+                              {item.label}
+                            </DesignLink>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </nav>
               </div>
-              <ContactForm buttonClassName={buttonClass({ size: "lg", tone: "sky", className: "max-sm:w-full" })} fieldClassName="rounded-2xl" className="max-w-xl lg:col-span-3" />
+
+              <div className="rounded-[1.75rem] bg-paper p-5 text-forest shadow-[0_8px_0_var(--color-brand-ledge)] sm:p-8 lg:p-[clamp(1.25rem,3.5svh,2rem)]">
+                <ContactForm
+                  buttonClassName={buttonClass({ size: "lg", tone: "sky", className: "max-sm:w-full" })}
+                  fieldClassName="rounded-2xl"
+                  className="[&_textarea]:h-28 lg:[&_textarea]:h-[clamp(4.5rem,12svh,7rem)]"
+                />
+              </div>
             </div>
-            <div className="mt-16 grid grid-cols-2 gap-x-8 gap-y-10 sm:mt-20 sm:grid-cols-3 sm:gap-y-12 lg:grid-cols-5">
-              {columnsFor(design).map((column) => (
-                <div key={column.title}>
-                  <h2 className="text-[1.1875rem] leading-[1.4] text-night">{column.title}</h2>
-                  <ul className="mt-3 grid">
-                    {column.items.map((item) => (
+
+            <div className="mt-16 grid gap-x-12 gap-y-6 lg:mt-0 lg:grid-cols-[auto_1fr] lg:items-end lg:pt-[clamp(1.5rem,4svh,2.5rem)]">
+              <p aria-hidden="true" className="select-none font-display text-[clamp(5.5rem,min(19vw,17svh),15rem)] font-black! leading-[0.78] tracking-[-0.05em] text-paper">
+                tavis
+              </p>
+              <div className="grid gap-4 border-t-2 border-brand-deep/20 pt-5 text-small font-bold lg:justify-items-end lg:gap-3 lg:border-0 lg:pt-0 lg:text-right">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-3 lg:justify-end">
+                  <ul className="flex flex-wrap gap-x-6">
+                    {legal.map((item) => (
                       <li key={item.label}>
-                        <DesignLink
-                          href={item.href}
-                          {...(item.newTab && { target: "_blank", rel: "noopener noreferrer" })}
-                          className="link-press inline-flex min-h-11 items-center text-body-sm font-bold leading-[1.375rem] [overflow-wrap:anywhere] hover:text-night aria-[current=page]:text-night aria-[current=page]:underline aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-4"
-                        >
+                        <a href={item.href} target="_blank" rel="noopener noreferrer" className={link}>
                           {item.label}
-                          {item.newTab && <NewTab />}
-                        </DesignLink>
+                          <NewTab />
+                        </a>
                       </li>
                     ))}
                   </ul>
+                  <div className="flex flex-wrap items-center gap-3">
+                    {socials.map(({ label, href, Icon }) => (
+                      <a
+                        key={label}
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Tavis on ${label} (opens in a new tab)`}
+                        className="link-press grid size-11 place-items-center rounded-full bg-brand-deep text-brand transition-colors hover:bg-night"
+                      >
+                        <Icon aria-hidden="true" className="size-[1.375rem]" />
+                      </a>
+                    ))}
+                    <span aria-hidden="true" className="mx-1 h-6 w-0.5 rounded-full bg-brand-deep/25" />
+                    <PauseMotionToggle
+                      iconOnly
+                      className="bg-paper/40! text-brand-deep! ring-brand-deep/30! hover:bg-paper/70! aria-pressed:bg-night! aria-pressed:text-on-forest! aria-pressed:ring-night!"
+                    />
+                  </div>
                 </div>
-              ))}
-            </div>
-            <div className="mt-16 flex flex-col gap-4 border-t-2 border-brand-deep/20 pt-6 text-small font-bold md:flex-row md:items-center md:justify-between">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                {/* The official mark is the logo's own lighter green, which vanishes on this field, so it sits on white, unrecoloured. */}
-                <span className="inline-flex w-fit rounded-xl bg-paper px-3 py-2">
-                  <Image src="/assets/tavis-logo.svg" alt="Tavis" width={749} height={194} unoptimized className="h-6 w-auto" />
-                </span>
                 <p className="text-balance">{address}</p>
-              </div>
-              {/* Its own width: squeezed beside the address on a tablet, the label broke onto two lines. */}
-              <div className="shrink-0">
-                <PauseMotionToggle className="text-brand-deep! ring-brand-deep/25! aria-pressed:bg-night! aria-pressed:text-on-forest! aria-pressed:ring-night!" />
               </div>
             </div>
           </div>

@@ -294,6 +294,9 @@
     "Ask about classes, plans or your child’s form on WhatsApp, or write to us.": "Tanya tentang kelas, pakej atau tingkatan anak anda di WhatsApp, atau tulis kepada kami.",
     "Chat on WhatsApp": "Sembang di WhatsApp",
     "Write to us": "Tulis kepada kami",
+    "Write to us.": "Tulis kepada kami.",
+    "Footer": "Kaki halaman",
+    "Tavis on ${label} (opens in a new tab)": "Tavis di ${label} (dibuka dalam tab baharu)",
     "+10 points": "+10 mata",
     "Customised avatar wearing a pink sweater": "Avatar yang digayakan dengan baju sejuk merah jambu",
     "Customised avatar wearing a tudung and a green baju kurung": "Avatar yang digayakan dengan tudung dan baju kurung hijau",
@@ -327,9 +330,6 @@
     "Tuition prices": "Harga tuisyen",
     "Timetable": "Jadual",
     "FAQ": "Soalan lazim",
-    "Talk to us": "Hubungi kami",
-    "Follow": "Ikuti kami",
-    "Legal": "Perundangan",
     "Privacy Policy": "Dasar Privasi",
     "Terms of Service": "Terma Perkhidmatan",
     "Tavis home": "Laman utama Tavis",
@@ -373,7 +373,7 @@
     "for your form.": "tingkatan anda.",
     "Live classes, from ${ringgit(lowestRate)} a month.": "Kelas langsung, dari ${ringgit(lowestRate)} sebulan.",
     "Longer plans cost less per month, from ${ringgit(monthlyRate)} down to ${ringgit(lowestRate)}.": "Pelan yang lebih panjang lebih murah sebulan, dari ${ringgit(monthlyRate)} hingga serendah ${ringgit(lowestRate)}.",
-    "Send us a message and we’ll reply by email.": "Hantar mesej kepada kami dan kami akan membalas melalui e-mel.",
+    "Send us a message and we’ll reply by email, or reach us directly.": "Hantar mesej kepada kami dan kami akan membalas melalui e-mel, atau hubungi kami terus.",
     "Question Universe listing Form 5 subjects to practise, with Sains ready to start": "Question Universe menyenaraikan subjek Tingkatan 5 untuk latihan, dengan Sains sedia untuk dimulakan"
   },
   "keep": [
@@ -523,6 +523,7 @@
     "start start",
     "tavis",
     "timetable2027: F5 Selasa has no first class",
+    "YouTube",
     "Zoom",
     "Live",
     "calc${lead(\"100%\")}"

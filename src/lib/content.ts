@@ -12,6 +12,7 @@ export const links = {
   facebook: "https://www.facebook.com/tavislive/",
   instagram: "https://www.instagram.com/tavislive/",
   tiktok: "https://www.tiktok.com/@tavislive",
+  youtube: "https://www.youtube.com/@tavislive4018",
   privacy: "https://web.tavis.live/privacy-policy",
   terms: "https://web.tavis.live/terms-of-service",
 } as const;

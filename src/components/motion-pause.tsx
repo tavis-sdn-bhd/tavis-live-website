@@ -2,7 +2,7 @@
 
 import { useReducedMotion } from "motion/react";
 import { useEffect, useSyncExternalStore } from "react";
-import { Pause } from "./icons";
+import { Pause, Play } from "./icons";
 import { cx } from "./ui";
 import { isVisitorIdle, subscribeVisitorIdle, useVisitorIdle } from "./visitor-idle";
 
@@ -95,22 +95,25 @@ export function useMotionAttributes() {
   }, []);
 }
 
-/** Site-wide "Pause animations" toggle; pressed while animations are paused. */
-export function PauseMotionToggle({ className }: { className?: string }) {
+/** Site-wide "Pause animations" toggle; pressed while animations are paused. `iconOnly` draws it as a round icon
+    button, its name kept for screen readers and shown on hover, showing play while paused. */
+export function PauseMotionToggle({ className, iconOnly }: { className?: string; iconOnly?: boolean }) {
   const pausedNow = useMotionPaused();
   return (
     <button
       type="button"
       aria-pressed={pausedNow}
       onClick={() => setMotionPaused(!pausedNow)}
+      title={iconOnly ? "Pause animations" : undefined}
       className={cx(
-        "tap label inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-forest ring-1 ring-inset ring-forest/15 hover:bg-forest/[0.04] active:bg-forest/[0.06]",
+        "tap rounded-full text-forest ring-1 ring-inset ring-forest/15 hover:bg-forest/[0.04] active:bg-forest/[0.06]",
+        iconOnly ? "grid size-11 place-items-center" : "label inline-flex min-h-11 items-center gap-2 px-4",
         "aria-pressed:bg-forest aria-pressed:text-on-forest aria-pressed:ring-forest aria-pressed:hover:bg-forest-soft",
         className,
       )}
     >
-      <Pause className="size-3" />
-      Pause animations
+      {iconOnly && pausedNow ? <Play className="size-4" /> : <Pause className={iconOnly ? "size-4" : "size-3"} />}
+      {iconOnly ? <span className="sr-only">Pause animations</span> : "Pause animations"}
     </button>
   );
 }

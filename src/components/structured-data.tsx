@@ -25,7 +25,7 @@ const organization = {
     url: links.whatsapp,
     areaServed: "MY",
   },
-  sameAs: [links.facebook, links.instagram, links.tiktok, "https://twitter.com/Tavislive"],
+  sameAs: [links.facebook, links.instagram, links.tiktok, links.youtube, "https://twitter.com/Tavislive"],
 };
 
 const app = {
