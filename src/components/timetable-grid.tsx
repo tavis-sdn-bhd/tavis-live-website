@@ -51,7 +51,7 @@ export function TimetableGrid() {
   }
 
   return (
-    <div className="card p-3 sm:p-4">
+    <div data-reflows className="card p-3 sm:p-4">
       <div className="flex flex-wrap items-center justify-between gap-3 px-2 pt-1 sm:px-3">
         <p className="label text-muted">
           <span lang="ms">Tingkatan</span> <span>/ Form</span>

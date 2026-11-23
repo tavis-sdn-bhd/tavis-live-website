@@ -70,6 +70,7 @@ export function Journey({ years, end, screen }: JourneyProps) {
   return (
     <section
       id="journey"
+      data-screen="own"
       data-tavi="grow"
       ref={sectionRef}
       aria-labelledby={headingId}

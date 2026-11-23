@@ -69,7 +69,7 @@ function ParentsPage() {
         </Button>
       </Feature>
 
-      <div className="mt-[clamp(2rem,1rem+3vw,4rem)]">
+      <div data-screen="group" className="mt-[clamp(2rem,1rem+3vw,4rem)]">
         <Wave />
         <Section id={learn.id} band="green" className="py-[clamp(3.5rem,2rem+5vw,6rem)]">
           <div className="shell">

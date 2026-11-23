@@ -36,6 +36,7 @@ export function TutorGrid() {
       <div
         role="group"
         aria-label="Show tutors by subject"
+        data-reflows
         className="mx-auto flex max-w-[60rem] gap-2 max-sm:-mx-4 max-sm:overflow-x-auto max-sm:overscroll-x-contain max-sm:px-4 max-sm:pb-2 max-sm:[scrollbar-width:none] sm:flex-wrap sm:justify-center"
       >
         <button type="button" aria-pressed={subject === null} onClick={() => setSubject(null)} className={cx(chip, "shrink-0", subject === null ? on : off)}>

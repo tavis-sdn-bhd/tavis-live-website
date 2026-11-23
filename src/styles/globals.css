@@ -494,25 +494,41 @@ html[data-visitor="idle"] :is(.animate-float, .animate-spin-slow, .animate-bounc
   animation-play-state: paused;
 }
 
-/* Design BA on a laptop or desktop: each section is a screen. A scroll that ends near a section's top settles it flush
-   under the header, and a section that fits the screen fills it with its content centred; a taller one (a FAQ, the tutor
-   grid) keeps scrolling freely, since snapping is "proximity". The hero sizes itself, and a strip between screens
-   (`data-strip`, the press row) is passed through. Off for phones, where most sections are taller than the screen, for
-   reduced motion, for the site's "Pause animations" choice, and on a page with no sections, such as a blog post. */
-@media (min-width: 64rem) and (min-height: 37.5rem) and (prefers-reduced-motion: no-preference) {
-  html:not([data-motion="paused"]):has([data-design="ba"] main section) {
+/* Design BA on a laptop or desktop: each section is a screen. A section that fits fills the screen below the header,
+   its content centred, unless it changes height when used (a FAQ answer opening, a filtered grid), where centring
+   would move the control under the pointer. Marked with `data-screen`: "strip" passes between screens (the press row),
+   "own" keeps its own height (the pinned journey, as the hero does), and "group" makes one screen of several elements
+   (a band with its waves). Snapping is "proximity", so a taller section scrolls freely. Off for phones, where most
+   sections are taller than the screen, and on a page with no sections, such as a blog post. */
+@media (min-width: 64rem) and (min-height: 37.5rem) {
+  html:has([data-design="ba"] main section) {
     --ba-header: calc(4.5rem + 2px + env(safe-area-inset-top, 0px));
-    scroll-snap-type: y proximity;
-    scroll-padding-top: var(--ba-header);
 
-    & [data-design="ba"] :is(main section:not(section section, [data-strip]), footer:not(main footer)) {
-      scroll-snap-align: start;
-    }
-
-    & [data-design="ba"] main section:not(section section, [data-strip], #top) {
+    & [data-design="ba"] main :is(section, [data-screen="group"]):not(section section, [data-screen="group"] section, [data-screen="strip"], [data-screen="own"], #top) {
       min-height: calc(100svh - var(--ba-header));
       padding-block: clamp(2.5rem, 6svh, 6rem);
-      align-content: center;
+
+      &:not(:has(details, [data-reflows])) {
+        align-content: center;
+      }
+    }
+  }
+
+  /* The snapping itself is motion, so it stays off for reduced motion and the site's "Pause animations" choice. The
+     layout above does not change with them. A scroll that ends near a section's top settles it flush under the header;
+     focused controls and links keep their own clearance from it. */
+  @media (prefers-reduced-motion: no-preference) {
+    html:not([data-motion="paused"]):has([data-design="ba"] main section) {
+      scroll-snap-type: y proximity;
+      scroll-padding-top: var(--ba-header);
+
+      & [data-design="ba"] :is(main :is(section, [data-screen="group"]):not(section section, [data-screen="group"] section, [data-screen="strip"]), footer:not(main footer)) {
+        scroll-snap-align: start;
+      }
+
+      & [data-design="ba"] :is(a, button, input, select, textarea, summary, [tabindex]) {
+        scroll-margin-top: 0.875rem;
+      }
     }
   }
 }
