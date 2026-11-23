@@ -423,7 +423,7 @@ const linkedOutlets = aboutPage.press.outlets.filter((o): o is LinkedOutlet => o
 /** BA's "featured in" strip under the hero: the best-known outlets, each linking to its article, at optical sizes. */
 export function PressRow() {
   return (
-    <section id="press" aria-labelledby="press-title" className="pb-[clamp(3.5rem,2rem+5vw,6rem)] pt-10">
+    <section id="press" aria-labelledby="press-title" data-strip className="pb-[clamp(3.5rem,2rem+5vw,6rem)] pt-10">
       <div className="shell">
         <h2 id="press-title" className="text-center font-display text-caption uppercase tracking-[0.08em] text-muted">
           Featured in

@@ -75,7 +75,7 @@ const twins = Astro.props.notFound || !hasTwin(page) ? null : { en: siteUrl + pa
     <!-- Applies a saved "Pause animations" choice before first paint, so CSS loops never start. -->
     <script is:inline>try{if(localStorage.getItem("tavis:motion")==="paused")document.documentElement.dataset.motion="paused"}catch(e){}</script>
   </head>
-  <body class="v2">
+  <body class="v2" data-design="ba">
     <StructuredData />
     <a
       href="#main"
