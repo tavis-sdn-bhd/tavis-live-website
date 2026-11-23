@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { useId, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { timetable2027, weekByForm, type Slot } from "@/lib/pages";
 import { easeOutExpo } from "./motion";
 import { subjectDot, subjectKey, subjectLang } from "./subject";
@@ -25,14 +25,34 @@ function ClassSlot({ slot }: { slot: Slot }) {
   );
 }
 
+/** Today as an index into the timetable's Monday-to-Friday week, or null at the weekend. */
+function weekdayToday() {
+  const day = new Date().getDay();
+  return day >= 1 && day <= 5 ? day - 1 : null;
+}
+
 /**
  * The 2027 class timetable as real data instead of a picture: pick a form,
  * see the week. Weekly public holidays sit under the day they fall on.
+ * Below lg the week is a row of days to swipe through, the next one peeking,
+ * opened on today's; from lg the five days stand side by side.
  */
 export function TimetableGrid() {
   const [form, setForm] = useState<Form>(5);
+  const [today, setToday] = useState<number | null>(null);
   const id = useId();
+  const days = useRef<HTMLDivElement>(null);
   const week = weekByForm[form];
+
+  useEffect(() => {
+    const index = weekdayToday();
+    setToday(index);
+    const row = days.current;
+    const day = index === null ? null : row?.children[index];
+    // Not over a swipe the visitor made before this ran, which on the Tavis site can be a while after first paint.
+    if (!row || !(day instanceof HTMLElement) || row.scrollWidth <= row.clientWidth || row.scrollLeft !== 0) return;
+    row.scrollLeft = day.getBoundingClientRect().left - row.getBoundingClientRect().left + row.scrollLeft - parseFloat(getComputedStyle(row).scrollPaddingLeft || "0");
+  }, []);
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const last = forms.length - 1;
@@ -83,17 +103,29 @@ export function TimetableGrid() {
         </LayoutGroup>
       </div>
 
-      <div id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-tab-${form}`} className="mt-4 grid gap-2 lg:grid-cols-5">
+      <motion.div
+        ref={days}
+        layoutScroll
+        id={`${id}-panel`}
+        role="tabpanel"
+        aria-labelledby={`${id}-tab-${form}`}
+        tabIndex={0}
+        className="relative -mx-3 mt-4 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain scroll-px-3 px-3 pb-1 pointer-coarse:[scrollbar-width:none] sm:-mx-4 sm:scroll-px-4 sm:px-4 lg:mx-0 lg:grid lg:grid-cols-5 lg:overflow-visible lg:px-0 lg:pb-0"
+      >
         {timetable2027.days.map((day, d) => {
           const classes = week[d] ?? [];
           const holidays = timetable2027.holidays[d] ?? [];
           return (
-            <section key={day.ms} aria-labelledby={`${id}-day-${d}`} className="flex flex-col rounded-2xl bg-cream p-2 lg:row-span-3 lg:grid lg:grid-rows-subgrid lg:gap-y-0">
+            <section
+              key={day.ms}
+              aria-labelledby={`${id}-day-${d}`}
+              className="flex w-[min(82%,18rem)] shrink-0 snap-start flex-col rounded-2xl bg-cream p-2 lg:row-span-3 lg:grid lg:w-auto lg:grid-rows-subgrid lg:gap-y-0"
+            >
               <header className="flex items-baseline justify-between px-2 pb-2 pt-1">
                 <h3 id={`${id}-day-${d}`} lang="ms" className="text-body-lg">
                   {day.ms}
                 </h3>
-                <span className="label text-muted">{day.en}</span>
+                <span className={cx("label", d === today ? "text-brand-text" : "text-muted")}>{d === today ? "Today" : day.en}</span>
               </header>
               <div className="grid content-start gap-1.5">
                 <AnimatePresence mode="popLayout" initial={false}>
@@ -126,7 +158,7 @@ export function TimetableGrid() {
             </section>
           );
         })}
-      </div>
+      </motion.div>
     </div>
   );
 }

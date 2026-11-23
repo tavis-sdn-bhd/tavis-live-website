@@ -533,7 +533,39 @@ html[data-visitor="idle"] :is(.animate-float, .animate-spin-slow, .animate-bounc
   }
 }
 
+/* Moving between pages: the old page fades and the new one rises into place under a header that stays put, the way an
+   app changes screens. It is the browser's cross-document transition, so it plays wherever a link loads a whole page
+   (every link on the Tavis site itself) with no script, and a browser without it simply loads the page. Off with
+   reduced motion and with the site's "Pause animations" choice. */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: 140ms var(--ease-out-quart) both page-out;
+}
+
+::view-transition-new(root) {
+  animation: 280ms var(--ease-out-quart) 60ms both page-in;
+}
+
+@keyframes page-out {
+  to { opacity: 0; }
+}
+
+@keyframes page-in {
+  from { opacity: 0; transform: translate3d(0, 0.75rem, 0); }
+}
+
+html[data-motion="paused"]::view-transition-group(*),
+html[data-motion="paused"]::view-transition-old(*),
+html[data-motion="paused"]::view-transition-new(*) {
+  animation: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+
   html { scroll-behavior: auto; }
 
   *, *::before, *::after {

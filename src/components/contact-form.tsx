@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "@/lib/pathname";
-import { type FormEvent, useId, useState } from "react";
+import { type FormEvent, type KeyboardEvent, useId, useState } from "react";
 import { enquiryLimits } from "@/lib/enquiry";
 import { cx } from "./ui";
 
@@ -101,6 +101,19 @@ export function ContactForm({ buttonClassName, fieldClassName = "rounded-control
     if (name === "name" || name === "email" || name === "message") setErrors((current) => ({ ...current, [name]: undefined }));
   }
 
+  /** Return in a field marked "next" goes on to the next field, as the keyboard's key says, rather than sending a
+      half-filled form. */
+  function nextField(event: KeyboardEvent<HTMLFormElement>) {
+    const target = event.target;
+    // keyCode 229 is the Enter that commits an input method's text, which Safari sends after composition has ended.
+    if (event.key !== "Enter" || event.nativeEvent.isComposing || event.keyCode === 229) return;
+    if (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (!(target instanceof HTMLInputElement) || target.enterKeyHint !== "next") return;
+    event.preventDefault();
+    const fields = [...event.currentTarget.querySelectorAll<HTMLElement>('input:not([tabindex="-1"]), textarea')];
+    fields[fields.indexOf(target) + 1]?.focus();
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -126,16 +139,16 @@ export function ContactForm({ buttonClassName, fieldClassName = "rounded-control
   }
 
   return (
-    <form noValidate onSubmit={submit} onInput={clearError} className={cx("grid gap-4 text-left", className)} aria-busy={sending}>
+    <form noValidate onSubmit={submit} onInput={clearError} onKeyDown={nextField} className={cx("grid gap-4 text-left", className)} aria-busy={sending}>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="grid gap-1.5 text-small font-bold">
           Name
-          <input name="name" required maxLength={enquiryLimits.name} autoComplete="name" autoCapitalize="words" {...invalid("name")} className={cx(field, fieldClassName, "h-12 px-4 font-normal")} />
+          <input name="name" required maxLength={enquiryLimits.name} autoComplete="name" autoCapitalize="words" enterKeyHint="next" {...invalid("name")} className={cx(field, fieldClassName, "h-12 px-4 font-normal")} />
           <FieldError id={errorId("name")} message={errors.name} />
         </label>
         <label className="grid gap-1.5 text-small font-bold">
           Email
-          <input name="email" type="email" required maxLength={enquiryLimits.email} autoComplete="email" {...invalid("email")} className={cx(field, fieldClassName, "h-12 px-4 font-normal")} />
+          <input name="email" type="email" required maxLength={enquiryLimits.email} autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} enterKeyHint="next" {...invalid("email")} className={cx(field, fieldClassName, "h-12 px-4 font-normal")} />
           <FieldError id={errorId("email")} message={errors.email} />
         </label>
       </div>
@@ -143,7 +156,7 @@ export function ContactForm({ buttonClassName, fieldClassName = "rounded-control
         <span>
           Phone <span className="font-normal">(optional)</span>
         </span>
-        <input name="phone" type="tel" maxLength={enquiryLimits.phone} autoComplete="tel" className={cx(field, fieldClassName, "h-12 px-4 font-normal")} />
+        <input name="phone" type="tel" maxLength={enquiryLimits.phone} autoComplete="tel" enterKeyHint="next" className={cx(field, fieldClassName, "h-12 px-4 font-normal")} />
       </label>
       <label className="grid gap-1.5 text-small font-bold">
         Message

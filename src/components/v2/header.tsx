@@ -117,7 +117,7 @@ export function Header({ design }: { design: DesignId }) {
       <header
         ref={ref}
         className={cx(
-          "sticky top-0 z-40 border-b-2 bg-paper pt-[env(safe-area-inset-top)] transition-[border-color] duration-300",
+          "sticky top-0 z-40 border-b-2 bg-paper pt-[env(safe-area-inset-top)] transition-[border-color] duration-300 [view-transition-name:site-header]",
           pastHero || open ? "border-line" : "border-transparent",
         )}
       >

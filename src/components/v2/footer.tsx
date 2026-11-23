@@ -3,7 +3,7 @@ import { type DesignId, deckOf, navOf } from "@/lib/site";
 import { ContactForm } from "../contact-form";
 import { DesignLink } from "../design-link";
 import { PauseMotionToggle } from "../motion-pause";
-import { Envelope, Facebook, Instagram, TikTok, WhatsApp, YouTube } from "../icons";
+import { Envelope, Facebook, Instagram, PaperPlaneTilt, TikTok, WhatsApp, YouTube } from "../icons";
 import { NewTab, cx } from "../ui";
 import { DownloadBand } from "./sections";
 import { buttonClass } from "./ui";
@@ -59,7 +59,7 @@ export function Footer({ design }: { design: DesignId }) {
           keeps its text dark, which is what passes 4.5:1 on it: headings night (7.9:1), links brand-deep (5.0:1). */}
       <footer
         id="contact"
-        className="flex flex-col bg-brand pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-14 text-brand-deep sm:pt-20 [@media(min-width:64rem)_and_(min-height:37.5rem)]:min-h-[calc(100svh-var(--ba-header,4.625rem))] [@media(min-width:64rem)_and_(min-height:37.5rem)]:pt-[clamp(2rem,6svh,4.5rem)]"
+        className="group/footer flex flex-col bg-brand pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-14 text-brand-deep sm:pt-20 [@media(min-width:64rem)_and_(min-height:37.5rem)]:min-h-[calc(100svh-var(--ba-header,4.625rem))] [@media(min-width:64rem)_and_(min-height:37.5rem)]:pt-[clamp(2rem,6svh,4.5rem)]"
       >
         <div className="shell flex flex-1 flex-col">
           <div className="mx-auto flex w-full max-w-[72rem] flex-1 flex-col">
@@ -68,7 +68,13 @@ export function Footer({ design }: { design: DesignId }) {
                 <div className="md:min-w-[22rem] md:flex-1">
                   <h2 className="text-[clamp(2.5rem,1.75rem+2.4vw,3.5rem)] leading-[0.95] lowercase text-night lg:text-[clamp(2.25rem,3.6vw,3.5rem)]">Write to us.</h2>
                   <p className="mt-4 max-w-[22rem] font-semibold">Send us a message and we’ll reply by email, or reach us directly.</p>
-                  <div className="mt-6 flex flex-wrap gap-3">
+                  <div className="mt-6 flex flex-wrap gap-3 max-sm:grid">
+                    {/* Below lg the form waits behind this, so no page ends on most of a screen of empty fields.
+                        It is a link to the form, which opens it by :target with no script, as any link to #write does. */}
+                    <a href="#write" className={buttonClass({ tone: "white", className: "link-press lg:hidden group-has-[#write:target]/footer:hidden" })}>
+                      <PaperPlaneTilt aria-hidden="true" className="size-5" />
+                      Write a message
+                    </a>
                     <a href={links.whatsapp} className={buttonClass({ tone: "white", className: "link-press" })}>
                       <WhatsApp aria-hidden="true" className="size-5" />
                       WhatsApp
@@ -98,7 +104,10 @@ export function Footer({ design }: { design: DesignId }) {
                 </nav>
               </div>
 
-              <div className="rounded-[1.75rem] bg-paper p-5 text-forest shadow-[0_8px_0_var(--color-brand-ledge)] sm:p-8 lg:p-[clamp(1.25rem,3.5svh,2rem)]">
+              <div
+                id="write"
+                className="rounded-[1.75rem] bg-paper p-5 text-forest shadow-[0_8px_0_var(--color-brand-ledge)] transition-[opacity,translate] duration-300 ease-out-quart max-lg:hidden max-lg:target:block max-lg:starting:translate-y-3 max-lg:starting:opacity-0 sm:p-8 lg:p-[clamp(1.25rem,3.5svh,2rem)]"
+              >
                 <ContactForm
                   buttonClassName={buttonClass({ size: "lg", tone: "sky", className: "max-sm:w-full" })}
                   fieldClassName="rounded-2xl"

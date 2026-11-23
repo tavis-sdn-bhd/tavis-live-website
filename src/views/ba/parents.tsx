@@ -113,7 +113,7 @@ function ParentsPage() {
               <Envelope aria-hidden="true" className="size-5" />
               {links.emailLabel}
             </a>
-            <a href="#contact" className="link-press inline-flex min-h-11 items-center underline decoration-2 underline-offset-4 hover:text-night">
+            <a href="#write" className="link-press inline-flex min-h-11 items-center underline decoration-2 underline-offset-4 hover:text-night">
               {contact.form}
             </a>
           </p>

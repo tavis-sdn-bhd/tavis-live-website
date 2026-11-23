@@ -11,6 +11,7 @@ import { StoreBadges } from "../store-badges";
 import { NewTab, cx } from "../ui";
 import { Bolt, Chest, Classroom, Crown, Flame, Floaters, Star, TiltedPhone, Trophy } from "./art";
 import { DesignLink } from "../design-link";
+import { EasedDetails } from "../eased-details";
 import { Scene } from "./scene";
 import { subjectLang } from "../subject";
 import { SubjectIcon } from "./subject-icon";
@@ -181,9 +182,14 @@ export function Testimonials() {
     <Section id="testimonials">
       <div className="shell">
         <Centered title={[testimonials.title, testimonials.accent]} />
-        <ul className="mt-14 grid gap-12 lg:grid-cols-3 lg:gap-6">
+        {/* Below lg the quotes are a row to swipe, edge to edge with the next one peeking, rather than a screen and a half of
+            stacked cards; from lg they stand three across. */}
+        <ul
+          aria-label="What students say"
+          className="-mx-[var(--gutter)] mt-14 flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain scroll-px-[var(--gutter)] px-[var(--gutter)] pb-3 pointer-coarse:[scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-6 lg:overflow-visible lg:px-0 lg:pb-0"
+        >
           {testimonials.items.map((t, i) => (
-            <li key={t.name}>
+            <li key={t.name} className="w-[min(85%,22rem)] shrink-0 snap-start lg:w-auto">
               <figure className="flex h-full flex-col">
                 <blockquote className={cx(chunky, "relative flex-1 p-7 text-[1.125rem] font-bold leading-snug text-forest")}>
                   <p>“{t.quote}”</p>
@@ -214,7 +220,7 @@ type FaqSet = {
   readonly items: ReadonlyArray<{ readonly q: string; readonly a: string; readonly link?: { readonly label: string; readonly href: string } }>;
 };
 
-/** Native details/summary, drawn as chunky cards. Internal links stay in the design being viewed. The parents' questions unless given another set. */
+/** Native details/summary, drawn as chunky cards, easing open and shut. Internal links stay in the design being viewed. The parents' questions unless given another set. */
 export function Faq({ set = faq }: { set?: FaqSet }) {
   return (
     <Section id={set.id}>
@@ -223,12 +229,12 @@ export function Faq({ set = faq }: { set?: FaqSet }) {
         <ul className="mx-auto mt-12 grid max-w-[46rem] gap-3">
           {set.items.map((item) => (
             <li key={item.q}>
-              <details className={cx(chunky, "group transition-colors hover:border-line-strong open:pb-6")}>
+              <EasedDetails className={cx(chunky, "group transition-colors hover:border-line-strong open:pb-6")}>
                 <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 rounded-[1.375rem] px-6 py-3 text-[1.125rem] font-extrabold text-balance text-forest transition-colors hover:bg-cream/60 active:bg-cream focus-visible:rounded-[1.375rem] [&::-webkit-details-marker]:hidden">
                   {item.q}
-                  <span aria-hidden="true" className="relative grid size-9 shrink-0 place-items-center rounded-xl bg-cream transition-colors group-open:bg-brand">
+                  <span aria-hidden="true" className="relative grid size-9 shrink-0 place-items-center rounded-xl bg-cream transition-colors group-[[open]:not([data-closing])]:bg-brand">
                     <span className="absolute h-1 w-3.5 rounded-full bg-forest" />
-                    <span className="absolute h-3.5 w-1 rounded-full bg-forest transition-transform duration-300 ease-out-expo group-open:scale-y-0" />
+                    <span className="absolute h-3.5 w-1 rounded-full bg-forest transition-transform duration-300 ease-out-expo group-[[open]:not([data-closing])]:scale-y-0" />
                   </span>
                 </summary>
                 <p className="max-w-[40rem] px-6 pt-1 font-semibold text-muted">{item.a}</p>
@@ -242,7 +248,7 @@ export function Faq({ set = faq }: { set?: FaqSet }) {
                     {!item.link.href.startsWith("/") && <NewTab />}
                   </DesignLink>
                 )}
-              </details>
+              </EasedDetails>
             </li>
           ))}
         </ul>
