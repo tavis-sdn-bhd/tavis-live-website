@@ -47,7 +47,7 @@ function ParentsPage() {
             <Button href={ask} size="lg">
               {hero.cta}
             </Button>
-            <GetButton tone="white" size="lg">
+            <GetButton webApp tone="white" size="lg">
               {hero.secondary}
             </GetButton>
           </>

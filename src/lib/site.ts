@@ -9,7 +9,7 @@ export const siteName = "Tavis";
 const pages = {
   "/": {
     label: "Home",
-    title: "Tavis — Free practice, online tuition and rewards for Form 1–5",
+    title: "Tavis — Malaysia’s free education app for SPM revision and online tuition",
     description:
       "Free practice questions and Learning Cards, online tuition and real rewards for Form 1–5 students in Malaysia. All in one app.",
   },
@@ -27,7 +27,7 @@ const pages = {
   },
   "/online-tuition": {
     label: "Online Tuition",
-    title: "Online tuition for Form 1–5 — Tavis",
+    title: "Online tuition in Malaysia for Form 1–5 — Tavis",
     description:
       "Live online classes for Form 1–5 with experienced Malaysian teachers. Rewatch every class. All subjects for your form from RM70 a month.",
   },

@@ -443,6 +443,8 @@ const joinSteps = [
 const baPriceTitle = ["All subjects", "for your form."] as const;
 
 export const baHome = {
+  /** Leads with SPM revision, one of the searches Tavis named in the brief. */
+  title: ["Free SPM revision", `for ${allForms}.`],
   promo: {
     title: baPriceTitle,
     body: `Live classes, from ${ringgit(lowestRate)} a month.`,

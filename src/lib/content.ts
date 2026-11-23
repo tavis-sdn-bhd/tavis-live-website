@@ -1,7 +1,9 @@
 import type { Scene } from "@/components/phone-app/state";
 
 export const links = {
-  signIn: "https://app.tavis.live/",
+  signIn: "https://app.tavis.live/login",
+  /** The web app's sign-up form, where a desktop's "Get Tavis free" goes. */
+  signUp: "https://app.tavis.live/signup",
   appStore: "https://apps.apple.com/my/app/tavis/id1580342756",
   googlePlay: "https://play.google.com/store/apps/details?id=com.tavis.tavisapp.v26",
   /** Scanned from the desktop QR code; sends each phone to its own store. */

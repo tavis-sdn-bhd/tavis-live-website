@@ -12,7 +12,7 @@ import { hero, practice, rewards, tuition } from "@/lib/content";
 import { baHome, baParentsFaq, rewardsPage, tuitionPage } from "@/lib/pages";
 
 
-const heroTitle = [...hero.title, hero.accent];
+const heroTitle = [...baHome.title, hero.accent];
 
 /** Duolingo's feature rows carry no button; a quiet link under the sentence leads on instead. */
 function More({ href, children }: { href: string; children: ReactNode }) {
@@ -33,11 +33,16 @@ function Home() {
         title={heroTitle}
         actions={
           <>
-            <GetTavis>{hero.cta}</GetTavis>
-            {/* Under the store badges a full-width button would outweigh them, so on a phone it is a quiet link. */}
-            <Button href="/parents" tone="white" size="lg" className="max-sm:hidden">
-              {hero.secondary}
-            </Button>
+            <GetTavis
+              secondary={
+                // Under the store badges a full-width button would outweigh them, so on a phone it is a quiet link.
+                <Button href="/parents" tone="white" size="lg" className="max-sm:hidden">
+                  {hero.secondary}
+                </Button>
+              }
+            >
+              {hero.cta}
+            </GetTavis>
             <DesignLink href="/parents" className="link-press inline-flex min-h-11 items-center justify-self-center gap-1.5 font-display text-body-sm uppercase tracking-[0.06em] text-sky-ink sm:hidden">
               {hero.secondary}
               <span aria-hidden="true">→</span>

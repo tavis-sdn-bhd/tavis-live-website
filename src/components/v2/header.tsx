@@ -156,7 +156,7 @@ export function Header({ design }: { design: DesignId }) {
               <NewTab />
             </a>
             {/* The full label from 360px (768px for a long one); narrower, the bar only has room for it without its last word. */}
-            <GetButton size="sm" className="xl:min-h-[3.125rem] xl:px-5 xl:text-body-sm">
+            <GetButton webApp={design === "ba"} size="sm" className="xl:min-h-[3.125rem] xl:px-5 xl:text-body-sm">
               <span>
                 {ctaLead}
                 <span className={ctaLastHidden}>{ctaLast}</span>
@@ -234,7 +234,7 @@ export function Header({ design }: { design: DesignId }) {
             </nav>
             <div className="sticky bottom-0 border-t-2 border-line bg-paper pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
               <div className="shell mx-auto grid max-w-[36rem] gap-3 sm:max-w-[40rem] sm:grid-cols-2">
-                <GetButton size="lg" className="w-full">
+                <GetButton webApp={design === "ba"} size="lg" className="w-full">
                   {home.cta}
                 </GetButton>
                 <Button href={links.signIn} tone="white" size="lg" target="_blank" rel="noopener noreferrer" className="w-full">
