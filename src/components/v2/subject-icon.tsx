@@ -100,7 +100,7 @@ const tileText: Record<ReturnType<typeof subjectKey>, string> = {
 export function SubjectIcon({ name, className }: { name: string; className?: string }) {
   const key = subjectKey(name);
   return (
-    <span aria-hidden="true" className={cx("grid shrink-0 place-items-center rounded-xl shadow-[inset_0_-4px_0_rgb(0_0_0/0.16)]", subjectDot[key], tileText[key], className)}>
+    <span aria-hidden="true" className={cx("grid shrink-0 place-items-center rounded-[28%] shadow-[inset_0_-4px_0_rgb(0_0_0/0.16)]", subjectDot[key], tileText[key], className)}>
       <svg viewBox="0 0 24 24" focusable="false" className="size-[62%] -translate-y-[4%] overflow-visible">
         {glyphs[name] ?? glyphs.Sains}
       </svg>

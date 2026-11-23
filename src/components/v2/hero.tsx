@@ -2,16 +2,17 @@ import type { CSSProperties, ReactNode } from "react";
 import { Mascot, type Mood, type Outfit } from "../mascot";
 import { cx } from "../ui";
 import { Bolt, Floaters, Star } from "./art";
-import { BobFly, CoinArt, Dash, GlassesTumble, TavisMark, TudungLeap } from "./cast";
+import { CoinArt, CurlsCoin, GlassesTumble, PonytailFly, TavisMark, TudungLeap, UniformCheer } from "./cast";
 import { Scene } from "./scene";
+import { SubjectIcon } from "./subject-icon";
 import { Lines, lede, type Title } from "./ui";
 
 const delay = (ms: number) => ({ "--delay": `${ms}ms` }) as CSSProperties;
 
 /* Duolingo opens on its app: the phone wobbles, tips onto its back, and Duo
    and friends burst out of the screen. Ours opens the Tavis app, and out
-   come Tavi and three students drawn for this page, with points spilling
-   onto the phone. Positions are % of a square stage. */
+   come Tavi and five secondary students drawn for this page, with points spilling
+   onto the phone and their subjects flung around them. Positions are % of a square stage. */
 
 /** Centre of the phone's screen before it tips: where every piece starts. */
 const origin = { x: 50, y: 48 };
@@ -23,14 +24,17 @@ const pieces: readonly Piece[] = [
   { key: "coin-b", x: 42, y: 73, w: 12, ratio: 0.875, tilt: 8, node: <CoinArt className="w-full" /> },
   { key: "coin-c", x: 55, y: 67, w: 10, ratio: 0.875, tilt: -4, node: <CoinArt className="w-full" /> },
   { key: "coin-d", x: 38, y: 60, w: 8, ratio: 0.875, tilt: 14, node: <CoinArt className="w-full" /> },
-  { key: "bob", x: 24, y: 0, w: 36, ratio: 0.75, node: <BobFly className="w-full" /> },
-  { key: "tudung", x: 1, y: 6, w: 31, ratio: 1.2, node: <TudungLeap className="w-full" /> },
-  { key: "glasses", x: 0, y: 42, w: 32, ratio: 1, node: <GlassesTumble className="w-full" /> },
-  { key: "tavi", x: 44, y: 15, w: 52, ratio: 1, node: <Mascot mood="swim" outfit="school" decorative /> },
-  { key: "dash-pink", x: 64, y: 5, w: 9, ratio: 0.3, tilt: 35, node: <Dash colour="var(--color-coral)" className="w-full" /> },
-  { key: "dash-sky", x: 90, y: 14, w: 8, ratio: 0.3, tilt: -25, node: <Dash colour="var(--color-sky)" className="w-full" /> },
-  { key: "dash-orange", x: 10, y: 86, w: 8, ratio: 0.3, tilt: 20, node: <Dash colour="var(--color-bm)" className="w-full" /> },
-  { key: "dash-purple", x: 86, y: 72, w: 9, ratio: 0.3, tilt: -35, node: <Dash colour="var(--color-en)" className="w-full" /> },
+  { key: "ponytail", x: 26, y: -2, w: 40, ratio: 0.75, node: <PonytailFly className="w-full" /> },
+  { key: "tudung", x: 0, y: 4, w: 30, ratio: 1.2, node: <TudungLeap className="w-full" /> },
+  { key: "glasses", x: -1, y: 38, w: 32, ratio: 1, node: <GlassesTumble className="w-full" /> },
+  { key: "curls", x: 6, y: 66, w: 27, ratio: 1.2, node: <CurlsCoin className="w-full" /> },
+  { key: "tavi", x: 49, y: 14, w: 46, ratio: 1, node: <Mascot mood="swim" outfit="school" decorative /> },
+  { key: "uniform", x: 67, y: 65, w: 28, ratio: 1.2, node: <UniformCheer className="w-full" /> },
+  { key: "matematik", x: 0, y: 0, w: 8, ratio: 1, tilt: -12, node: <SubjectIcon name="Matematik" className="aspect-square w-full" /> },
+  { key: "bm", x: 67, y: 0, w: 9, ratio: 1, tilt: 10, node: <SubjectIcon name="Bahasa Melayu" className="aspect-square w-full" /> },
+  { key: "english", x: 88, y: 6, w: 10, ratio: 1, tilt: 14, node: <SubjectIcon name="English" className="aspect-square w-full" /> },
+  { key: "sejarah", x: 92, y: 32, w: 8, ratio: 1, tilt: -10, node: <SubjectIcon name="Sejarah" className="aspect-square w-full" /> },
+  { key: "sains", x: 38, y: 37, w: 10, ratio: 1, tilt: -8, node: <SubjectIcon name="Sains" className="aspect-square w-full" /> },
 ];
 
 function Burst() {

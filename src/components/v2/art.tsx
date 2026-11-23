@@ -6,7 +6,7 @@ import { Mascot } from "../mascot";
 import { Phone } from "../phone";
 import { Voucher, type VoucherData, voucherSizes } from "../ticket";
 import { cx } from "../ui";
-import { BobFly, CoinArt, TudungLeap } from "./cast";
+import { CoinArt, PonytailFly, TudungLeap } from "./cast";
 import { Scene } from "./scene";
 
 /* Variant B's illustration kit, drawn for Tavis in Duolingo's manner: flat
@@ -230,7 +230,7 @@ export function Podium({ className }: { className?: string }) {
       </div>
       <div className="flex flex-col items-center">
         <div className="scene-drop mb-[-2%] w-[120%] max-w-none" style={delay(600)}>
-          <BobFly className="w-full" />
+          <PonytailFly className="w-full" />
         </div>
         <div className={cx(step, "h-20 w-full")} style={{ backgroundColor: bronze, boxShadow: `inset 0 10px 0 ${bronzeShine}`, ...delay(0) }}>3</div>
       </div>
