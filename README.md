@@ -125,15 +125,14 @@ The admin hides the built-in pages the site doesn't use (`hiddenNavItems` in `as
 
 ### Publishing rebuilds the site
 
-The pages are built at deploy, so an edit reaches visitors only through a new build. `plugins/site-rebuild.ts` starts one: when anything is published, unpublished, deleted or restored, including a scheduled publish, it calls the Worker's Workers Builds deploy hook. Saving a draft doesn't. How long a build takes on Workers Builds hasn't been measured; time the first one, since the staff guide promises about five minutes. While one is still queued Cloudflare returns it instead of starting another, so a burst of edits costs one or two builds. Workers Builds' free plan allows 3,000 build minutes a month.
+The pages are built at deploy, so an edit reaches visitors only through a new build. `plugins/site-rebuild.ts` starts one: when anything is published, unpublished, deleted or restored, including a scheduled publish, it calls the Worker's Workers Builds deploy hook. Saving a draft doesn't. A build takes about two minutes on Workers Builds (2 min 11 s, 2 min 19 s and 1 min 49 s on 23 November 2026). A publish during a running build queues one more build, so the change still goes live, about four minutes after publishing; the staff guide promises about five. While one is still queued Cloudflare returns it instead of starting another, so a burst of edits costs one or two builds. Workers Builds' free plan allows 3,000 build minutes a month.
 
 Set it up once, with access to the Cloudflare account and to the `tavis-sdn-bhd` GitHub organisation:
 
-1. In Cloudflare, open **Workers & Pages › tavis-live-website › Settings › Builds** and connect the GitHub repository, branch `main`. Leave the build command empty and set the deploy command to `pnpm run deploy`.
-2. The build reads the deployed D1 database, which the API token Workers Builds creates can't. Under **API token**, use a token that also has **D1 › Edit** on the account.
-3. Under **Deploy Hooks**, create a hook named `EmDash publish` for `main` and copy its URL.
-4. In the admin, open **Plugins › site-rebuild › Settings**, paste the URL and save.
-5. Publish any change and check that a build starts under the Worker's **Deployments**.
+1. In Cloudflare, open **Workers & Pages › tavis-live-website › Settings › Builds** and connect the GitHub repository, branch `main`. Leave the build command empty and set the deploy command to `pnpm run deploy`. Cloudflare's defaults, `npx cf build` and `npx cf deploy --prebuilt`, fail: they run `astro build` without the `prebuild` script, so `src/ms` is never generated. The API token Workers Builds creates is enough: it reads the deployed D1 database the build needs.
+2. Under **Deploy Hooks**, create a hook named `EmDash publish` for `main` and copy its URL.
+3. In the admin, open **Plugins › site-rebuild › Settings**, paste the URL and save.
+4. Publish any change and check that a build starts under the Worker's **Deployments**.
 
 Without the URL the plugin logs a warning and does nothing. A build that fails tells nobody: the site just keeps its last version. When staff report a change that hasn't appeared, check the Worker's build history under **Deployments**. To be alerted instead, Workers Builds publishes build events through Event Subscriptions to a Queue a Worker reads (Cloudflare's docs, Workers Builds › Event subscriptions). Once the hook is set, every publish deploys `main`, so production must only ever be deployed from `main`: a `pnpm run deploy` from another branch is replaced at the next publish.
 
