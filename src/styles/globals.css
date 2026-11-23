@@ -328,12 +328,13 @@ html[data-visitor="idle"] :is(.animate-float, .animate-spin-slow, .animate-bounc
 }
 
 /* Press feedback for small controls with no ledge: shrinks under the finger, on press not release. `scale` is listed
-   for a hover:scale-* grow (the comment pins). */
+   for a hover:scale-* grow (the comment pins), `box-shadow` for a ring that changes colour. */
 @utility tap {
   &[class] {
     transition:
       transform 120ms var(--ease-out-quart),
       scale 200ms var(--ease-out-quart),
+      box-shadow 200ms var(--ease-out-quart),
       background-color 200ms var(--ease-out-quart),
       border-color 200ms var(--ease-out-quart),
       color 200ms var(--ease-out-quart);
