@@ -7,7 +7,7 @@ const languages: ReadonlyArray<{ id: Locale; short: string; name: string }> = [
   { id: "ms", short: "BM", name: "Bahasa Melayu" },
 ];
 
-const chip = "tap inline-flex h-10 min-w-11 items-center justify-center rounded-xl px-2.5 font-display text-body-sm font-bold transition-colors";
+const chip = "tap inline-flex h-10 min-w-11 items-center justify-center rounded-xl px-2.5 font-display text-body-sm font-bold";
 
 /** In the bar, one link to this page in the other language: the bar has no room for both. In the menu (`labelled`),
     both languages under a "Language" caption, the one being read marked. */

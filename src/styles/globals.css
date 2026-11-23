@@ -275,13 +275,21 @@ html[data-visitor="idle"] :is(.animate-float, .animate-spin-slow, .animate-bounc
   font-variant-numeric: tabular-nums slashed-zero;
 }
 
-/* ── Tactile press: element sits on its ledge, drops onto it when pressed. ── */
+/* ── Tactile press: element sits on its ledge, drops onto it when pressed. ──
+   A pressable's transitions are its press utility's, colours included. Each one declares `transition` under `&[class]`,
+   which outranks a single class, so a transition-*, duration-* or ease-* class on the same element does nothing,
+   whatever order Tailwind emits them in; without that, a later transition-colors switched the press off and it snapped.
+   Anything else a pressable animates (a logo's grayscale) goes on a child. Use one press utility per element. */
 
 @utility press {
-  transition:
-    transform 140ms var(--ease-out-quart),
-    box-shadow 140ms var(--ease-out-quart),
-    background-color 200ms var(--ease-out-quart);
+  &[class] {
+    transition:
+      transform 140ms var(--ease-out-quart),
+      box-shadow 140ms var(--ease-out-quart),
+      background-color 200ms var(--ease-out-quart),
+      border-color 200ms var(--ease-out-quart),
+      color 200ms var(--ease-out-quart);
+  }
   /* Touch has no hover; a tap would leave the lift stuck on. */
   @media (hover: hover) and (pointer: fine) {
     &:not(:disabled):hover { transform: translateY(-1px); }
@@ -293,10 +301,14 @@ html[data-visitor="idle"] :is(.animate-float, .animate-spin-slow, .animate-bounc
 /* Duolingo's ledge, for B's buttons: the fill sits on a 4px lip (the box-shadow) and pressing drops it onto the lip.
    Hover brightens by --ledge-hover, only where a pointer can hover. */
 @utility ledge {
-  transition:
-    transform 100ms var(--ease-out-quart),
-    box-shadow 100ms var(--ease-out-quart),
-    filter 200ms var(--ease-out-quart);
+  &[class] {
+    transition:
+      transform 100ms var(--ease-out-quart),
+      box-shadow 100ms var(--ease-out-quart),
+      filter 200ms var(--ease-out-quart),
+      background-color 200ms var(--ease-out-quart),
+      color 200ms var(--ease-out-quart);
+  }
   @media (hover: hover) and (pointer: fine) {
     &:not(:disabled):hover { filter: brightness(var(--ledge-hover, 1.1)); }
   }
@@ -306,18 +318,26 @@ html[data-visitor="idle"] :is(.animate-float, .animate-spin-slow, .animate-bounc
 
 /* Press feedback for text links: dims under the finger, the way a native link does, since the tap flash is off. */
 @utility link-press {
-  transition:
-    opacity 120ms var(--ease-out-quart),
-    color 200ms var(--ease-out-quart);
+  &[class] {
+    transition:
+      opacity 120ms var(--ease-out-quart),
+      color 200ms var(--ease-out-quart),
+      text-decoration-color 200ms var(--ease-out-quart);
+  }
   &:active { opacity: 0.55; }
 }
 
-/* Press feedback for small controls with no ledge: shrinks under the finger, on press not release. */
+/* Press feedback for small controls with no ledge: shrinks under the finger, on press not release. `scale` is listed
+   for a hover:scale-* grow (the comment pins). */
 @utility tap {
-  transition:
-    transform 120ms var(--ease-out-quart),
-    background-color 200ms var(--ease-out-quart),
-    color 200ms var(--ease-out-quart);
+  &[class] {
+    transition:
+      transform 120ms var(--ease-out-quart),
+      scale 200ms var(--ease-out-quart),
+      background-color 200ms var(--ease-out-quart),
+      border-color 200ms var(--ease-out-quart),
+      color 200ms var(--ease-out-quart);
+  }
   &:not(:disabled):active { transform: scale(0.94); }
 }
 

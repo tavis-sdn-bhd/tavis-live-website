@@ -26,7 +26,7 @@ const field: Record<SubjectKey, string> = {
 export function TutorGrid() {
   const [subject, setSubject] = useState<string | null>(null);
   const shown = subject ? tutors.filter((t) => (t.subjects as readonly string[]).includes(subject)) : tutors;
-  const chip = "tap inline-flex min-h-11 items-center rounded-full border-2 px-4 font-display text-[0.8125rem] uppercase tracking-[0.05em] transition-colors";
+  const chip = "tap inline-flex min-h-11 items-center rounded-full border-2 px-4 font-display text-[0.8125rem] uppercase tracking-[0.05em]";
   const on = "border-sky bg-sky/10 text-sky-ink";
   const off = "border-line text-muted hover:border-line-strong hover:text-forest";
 

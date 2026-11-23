@@ -71,15 +71,15 @@ export function Footer({ design }: { design: DesignId }) {
                   <div className="mt-6 flex flex-wrap gap-3 max-sm:grid">
                     {/* Below lg the form waits behind this, so no page ends on most of a screen of empty fields.
                         It is a link to the form, which opens it by :target with no script, as any link to #write does. */}
-                    <a href="#write" className={buttonClass({ tone: "white", className: "link-press lg:hidden group-has-[#write:target]/footer:hidden" })}>
+                    <a href="#write" className={buttonClass({ tone: "white", className: "lg:hidden group-has-[#write:target]/footer:hidden" })}>
                       <PaperPlaneTilt aria-hidden="true" className="size-5" />
                       Write a message
                     </a>
-                    <a href={links.whatsapp} className={buttonClass({ tone: "white", className: "link-press" })}>
+                    <a href={links.whatsapp} className={buttonClass({ tone: "white" })}>
                       <WhatsApp aria-hidden="true" className="size-5" />
                       WhatsApp
                     </a>
-                    <a href={links.email} className={buttonClass({ tone: "white", className: "link-press normal-case! tracking-normal!" })}>
+                    <a href={links.email} className={buttonClass({ tone: "white", className: "normal-case! tracking-normal!" })}>
                       <Envelope aria-hidden="true" className="size-5" />
                       {links.emailLabel}
                     </a>
@@ -140,7 +140,7 @@ export function Footer({ design }: { design: DesignId }) {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={`Tavis on ${label} (opens in a new tab)`}
-                        className="link-press grid size-11 place-items-center rounded-full bg-brand-deep text-brand transition-colors hover:bg-night"
+                        className="tap grid size-11 place-items-center rounded-full bg-brand-deep text-brand hover:bg-night"
                       >
                         <Icon aria-hidden="true" className="size-[1.375rem]" />
                       </a>

@@ -442,9 +442,9 @@ export function PressRow() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`${outlet.name} article about Tavis (opens in a new tab)`}
-                className="tap flex min-h-11 items-center rounded-lg opacity-70 grayscale transition-[filter,opacity] duration-300 hover:opacity-100 hover:grayscale-0"
+                className="tap group/logo flex min-h-11 items-center rounded-lg"
               >
-                <PressLogo outlet={outlet} area={2900} />
+                <PressLogo outlet={outlet} area={2900} className="opacity-70 grayscale transition-[filter,opacity] duration-300 group-hover/logo:opacity-100 group-hover/logo:grayscale-0" />
               </a>
             </li>
           ))}

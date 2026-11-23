@@ -133,7 +133,7 @@ export function Header({ design }: { design: DesignId }) {
                     href={item.href}
                     aria-current={item.current ? "page" : undefined}
                     className={cx(
-                      "tap inline-flex h-10 items-center whitespace-nowrap rounded-xl px-3 font-display text-body-sm font-bold transition-colors",
+                      "tap inline-flex h-10 items-center whitespace-nowrap rounded-xl px-3 font-display text-body-sm font-bold",
                       item.current ? "bg-cream text-forest" : "text-muted hover:bg-cream hover:text-forest",
                     )}
                   >
@@ -150,7 +150,7 @@ export function Header({ design }: { design: DesignId }) {
               href={links.signIn}
               target="_blank"
               rel="noopener noreferrer"
-              className="tap inline-flex h-10 items-center rounded-xl px-3 font-display text-body-sm font-bold text-sky-ink transition-colors hover:bg-cream max-sm:hidden"
+              className="tap inline-flex h-10 items-center rounded-xl px-3 font-display text-body-sm font-bold text-sky-ink hover:bg-cream max-sm:hidden"
             >
               Sign in
               <NewTab />

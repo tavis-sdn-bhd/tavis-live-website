@@ -7,7 +7,7 @@ export function cx(...parts: Array<string | false | null | undefined>) {
 }
 
 /** Secondary text buttons in a row of controls (inbox rows, comment threads). */
-export const quietButton = "tap inline-flex min-h-11 items-center gap-2 rounded-control px-3 font-display text-body-sm transition-colors";
+export const quietButton = "tap inline-flex min-h-11 items-center gap-2 rounded-control px-3 font-display text-body-sm";
 
 /* ── Button ──────────────────────────────────────────────────────────────
    Tactile: every button sits on a coloured ledge and drops onto it when
@@ -183,7 +183,7 @@ export function Segmented<T extends string>({
           type="button"
           aria-pressed={option.value === value}
           onClick={() => onChange(option.value)}
-          className={cx("tap min-h-8 rounded-full px-3 text-small transition-colors", option.value === value ? "bg-forest text-on-forest" : "text-muted hover:text-forest")}
+          className={cx("tap min-h-8 rounded-full px-3 text-small", option.value === value ? "bg-forest text-on-forest" : "text-muted hover:text-forest")}
         >
           {option.label}
           {option.count !== undefined && <span className={cx("nums ms-1.5 text-caption", option.value === value ? "text-on-forest-muted" : "text-muted")}>{option.count}</span>}

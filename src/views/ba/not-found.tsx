@@ -23,7 +23,7 @@ function NotFoundPage() {
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {navOf("ba").map((page) => (
             <li key={page.href} className="flex">
-              <DesignLink href={page.href} className={cx(chunky, "link-press flex w-full flex-col gap-2 p-6 transition-colors hover:border-sky/40 hover:bg-sky-soft/40")}>
+              <DesignLink href={page.href} className={cx(chunky, "press flex w-full flex-col gap-2 p-6 hover:border-sky/40 hover:bg-sky-soft/40")}>
                 <span className="font-display text-body-sm uppercase tracking-[0.06em] text-sky-ink">{page.label}</span>
                 <span className="text-body-sm font-semibold leading-relaxed text-muted">{page.description}</span>
               </DesignLink>
