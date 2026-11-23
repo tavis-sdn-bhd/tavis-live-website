@@ -61,6 +61,9 @@ const untranslated = [
   // The blog is English-only; its views are mirrored only because the twin is mirrored whole.
   "views/ba/blog/",
   "lib/blog.ts",
+  // EmDash's timetable: its content is already in Malay, and its own strings are errors and Malay month names.
+  "lib/timetable-data.ts",
+  "lib/timetable-dates.ts",
 ];
 /** src paths the Malay site doesn't get its own copy of. Pages are written separately, below. */
 const notMirrored = ["ms/", "pages/", "styles/", "middleware.ts", "worker.ts", "live.config.ts"];

@@ -1,63 +1,740 @@
 {
-  "$schema": "https://emdashcms.com/seed.schema.json",
-  "version": "1",
-  "meta": {
-    "name": "Tavis",
-    "description": "The Tavis marketing site",
-    "author": "Cynco"
-  },
-  "settings": {
-    "title": "Tavis",
-    "tagline": "Free practice and online tuition for Form 1–5 students in Malaysia"
-  },
-  "collections": [
+ "$schema": "https://emdashcms.com/seed.schema.json",
+ "version": "1",
+ "meta": {
+  "name": "Tavis",
+  "description": "The Tavis marketing site",
+  "author": "Cynco"
+ },
+ "settings": {
+  "title": "Tavis",
+  "tagline": "Free practice and online tuition for Form 1–5 students in Malaysia",
+  "timezone": "Asia/Kuala_Lumpur"
+ },
+ "collections": [
+  {
+   "slug": "posts",
+   "label": "Blog posts",
+   "labelSingular": "Blog post",
+   "description": "Articles at /blog. Publish a post and the site shows it within a few minutes.",
+   "icon": "article",
+   "supports": [
+    "drafts",
+    "revisions",
+    "scheduling",
+    "search",
+    "seo"
+   ],
+   "urlPattern": "/blog/{slug}",
+   "dateField": "publishedAt",
+   "fields": [
     {
-      "slug": "posts",
-      "label": "Blog posts",
-      "labelSingular": "Blog post",
-      "description": "The Tavis blog. Posts from the old tavis.live are imported by scripts/blog/import.ts.",
-      "icon": "article",
-      "supports": [
-        "drafts",
-        "revisions",
-        "scheduling",
-        "search",
-        "seo"
-      ],
-      "urlPattern": "/blog/{slug}",
-      "dateField": "publishedAt",
-      "fields": [
-        {
-          "slug": "title",
-          "label": "Title",
-          "type": "string",
-          "required": true,
-          "searchable": true
-        },
-        {
-          "slug": "excerpt",
-          "label": "Excerpt",
-          "type": "text",
-          "searchable": true
-        },
-        {
-          "slug": "cover",
-          "label": "Cover image",
-          "type": "image"
-        },
-        {
-          "slug": "card_image",
-          "label": "Card image",
-          "type": "image"
-        },
-        {
-          "slug": "body",
-          "label": "Body",
-          "type": "portableText",
-          "required": true,
-          "searchable": true
-        }
-      ]
+     "slug": "title",
+     "label": "Title",
+     "type": "string",
+     "required": true,
+     "searchable": true
+    },
+    {
+     "slug": "excerpt",
+     "label": "Summary, shown on the blog page and in Google",
+     "type": "text",
+     "searchable": true
+    },
+    {
+     "slug": "cover",
+     "label": "Cover picture, at the top of the post",
+     "type": "image"
+    },
+    {
+     "slug": "card_image",
+     "label": "Blog page picture (optional, the cover is used when empty)",
+     "type": "image"
+    },
+    {
+     "slug": "body",
+     "label": "Article",
+     "type": "portableText",
+     "required": true,
+     "searchable": true
     }
-  ]
+   ],
+   "sortOrder": 1
+  },
+  {
+   "slug": "timetable",
+   "label": "Timetable",
+   "labelSingular": "Form timetable",
+   "description": "One entry per form, with its classes for each weekday. Publish a change and the site shows it within a few minutes.",
+   "icon": "calendar-dots",
+   "sortOrder": 2,
+   "routable": false,
+   "supports": [
+    "drafts",
+    "revisions"
+   ],
+   "titleField": "form",
+   "fields": [
+    {
+     "slug": "form",
+     "label": "Form",
+     "type": "string",
+     "required": true,
+     "unique": true,
+     "validation": {
+      "pattern": "^Form [1-5]$"
+     }
+    },
+    {
+     "slug": "monday",
+     "label": "Monday (Isnin)",
+     "type": "repeater",
+     "validation": {
+      "subFields": [
+       {
+        "slug": "subject",
+        "label": "Subject",
+        "type": "select",
+        "required": true,
+        "options": [
+         "Bahasa Melayu",
+         "English",
+         "Matematik",
+         "Matematik Tambahan",
+         "Sains",
+         "Fizik",
+         "Kimia",
+         "Biologi",
+         "Sejarah",
+         "Perniagaan",
+         "Prinsip Perakaunan"
+        ]
+       },
+       {
+        "slug": "tutor",
+        "label": "Tutor",
+        "type": "string",
+        "required": true
+       },
+       {
+        "slug": "start",
+        "label": "Starts",
+        "type": "select",
+        "required": true,
+        "options": [
+         "2.00pm",
+         "2.15pm",
+         "2.30pm",
+         "2.45pm",
+         "3.00pm",
+         "3.15pm",
+         "3.30pm",
+         "3.45pm",
+         "4.00pm",
+         "4.15pm",
+         "4.30pm",
+         "4.45pm",
+         "5.00pm",
+         "5.15pm",
+         "5.30pm",
+         "5.45pm",
+         "6.00pm",
+         "6.15pm",
+         "6.30pm",
+         "6.45pm",
+         "7.00pm",
+         "7.15pm",
+         "7.30pm",
+         "7.45pm",
+         "8.00pm",
+         "8.15pm",
+         "8.30pm",
+         "8.45pm",
+         "9.00pm",
+         "9.15pm",
+         "9.30pm",
+         "9.45pm",
+         "10.00pm",
+         "10.15pm",
+         "10.30pm",
+         "10.45pm",
+         "11.00pm"
+        ]
+       },
+       {
+        "slug": "end",
+        "label": "Ends",
+        "type": "select",
+        "required": true,
+        "options": [
+         "2.00pm",
+         "2.15pm",
+         "2.30pm",
+         "2.45pm",
+         "3.00pm",
+         "3.15pm",
+         "3.30pm",
+         "3.45pm",
+         "4.00pm",
+         "4.15pm",
+         "4.30pm",
+         "4.45pm",
+         "5.00pm",
+         "5.15pm",
+         "5.30pm",
+         "5.45pm",
+         "6.00pm",
+         "6.15pm",
+         "6.30pm",
+         "6.45pm",
+         "7.00pm",
+         "7.15pm",
+         "7.30pm",
+         "7.45pm",
+         "8.00pm",
+         "8.15pm",
+         "8.30pm",
+         "8.45pm",
+         "9.00pm",
+         "9.15pm",
+         "9.30pm",
+         "9.45pm",
+         "10.00pm",
+         "10.15pm",
+         "10.30pm",
+         "10.45pm",
+         "11.00pm"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "slug": "tuesday",
+     "label": "Tuesday (Selasa)",
+     "type": "repeater",
+     "validation": {
+      "subFields": [
+       {
+        "slug": "subject",
+        "label": "Subject",
+        "type": "select",
+        "required": true,
+        "options": [
+         "Bahasa Melayu",
+         "English",
+         "Matematik",
+         "Matematik Tambahan",
+         "Sains",
+         "Fizik",
+         "Kimia",
+         "Biologi",
+         "Sejarah",
+         "Perniagaan",
+         "Prinsip Perakaunan"
+        ]
+       },
+       {
+        "slug": "tutor",
+        "label": "Tutor",
+        "type": "string",
+        "required": true
+       },
+       {
+        "slug": "start",
+        "label": "Starts",
+        "type": "select",
+        "required": true,
+        "options": [
+         "2.00pm",
+         "2.15pm",
+         "2.30pm",
+         "2.45pm",
+         "3.00pm",
+         "3.15pm",
+         "3.30pm",
+         "3.45pm",
+         "4.00pm",
+         "4.15pm",
+         "4.30pm",
+         "4.45pm",
+         "5.00pm",
+         "5.15pm",
+         "5.30pm",
+         "5.45pm",
+         "6.00pm",
+         "6.15pm",
+         "6.30pm",
+         "6.45pm",
+         "7.00pm",
+         "7.15pm",
+         "7.30pm",
+         "7.45pm",
+         "8.00pm",
+         "8.15pm",
+         "8.30pm",
+         "8.45pm",
+         "9.00pm",
+         "9.15pm",
+         "9.30pm",
+         "9.45pm",
+         "10.00pm",
+         "10.15pm",
+         "10.30pm",
+         "10.45pm",
+         "11.00pm"
+        ]
+       },
+       {
+        "slug": "end",
+        "label": "Ends",
+        "type": "select",
+        "required": true,
+        "options": [
+         "2.00pm",
+         "2.15pm",
+         "2.30pm",
+         "2.45pm",
+         "3.00pm",
+         "3.15pm",
+         "3.30pm",
+         "3.45pm",
+         "4.00pm",
+         "4.15pm",
+         "4.30pm",
+         "4.45pm",
+         "5.00pm",
+         "5.15pm",
+         "5.30pm",
+         "5.45pm",
+         "6.00pm",
+         "6.15pm",
+         "6.30pm",
+         "6.45pm",
+         "7.00pm",
+         "7.15pm",
+         "7.30pm",
+         "7.45pm",
+         "8.00pm",
+         "8.15pm",
+         "8.30pm",
+         "8.45pm",
+         "9.00pm",
+         "9.15pm",
+         "9.30pm",
+         "9.45pm",
+         "10.00pm",
+         "10.15pm",
+         "10.30pm",
+         "10.45pm",
+         "11.00pm"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "slug": "wednesday",
+     "label": "Wednesday (Rabu)",
+     "type": "repeater",
+     "validation": {
+      "subFields": [
+       {
+        "slug": "subject",
+        "label": "Subject",
+        "type": "select",
+        "required": true,
+        "options": [
+         "Bahasa Melayu",
+         "English",
+         "Matematik",
+         "Matematik Tambahan",
+         "Sains",
+         "Fizik",
+         "Kimia",
+         "Biologi",
+         "Sejarah",
+         "Perniagaan",
+         "Prinsip Perakaunan"
+        ]
+       },
+       {
+        "slug": "tutor",
+        "label": "Tutor",
+        "type": "string",
+        "required": true
+       },
+       {
+        "slug": "start",
+        "label": "Starts",
+        "type": "select",
+        "required": true,
+        "options": [
+         "2.00pm",
+         "2.15pm",
+         "2.30pm",
+         "2.45pm",
+         "3.00pm",
+         "3.15pm",
+         "3.30pm",
+         "3.45pm",
+         "4.00pm",
+         "4.15pm",
+         "4.30pm",
+         "4.45pm",
+         "5.00pm",
+         "5.15pm",
+         "5.30pm",
+         "5.45pm",
+         "6.00pm",
+         "6.15pm",
+         "6.30pm",
+         "6.45pm",
+         "7.00pm",
+         "7.15pm",
+         "7.30pm",
+         "7.45pm",
+         "8.00pm",
+         "8.15pm",
+         "8.30pm",
+         "8.45pm",
+         "9.00pm",
+         "9.15pm",
+         "9.30pm",
+         "9.45pm",
+         "10.00pm",
+         "10.15pm",
+         "10.30pm",
+         "10.45pm",
+         "11.00pm"
+        ]
+       },
+       {
+        "slug": "end",
+        "label": "Ends",
+        "type": "select",
+        "required": true,
+        "options": [
+         "2.00pm",
+         "2.15pm",
+         "2.30pm",
+         "2.45pm",
+         "3.00pm",
+         "3.15pm",
+         "3.30pm",
+         "3.45pm",
+         "4.00pm",
+         "4.15pm",
+         "4.30pm",
+         "4.45pm",
+         "5.00pm",
+         "5.15pm",
+         "5.30pm",
+         "5.45pm",
+         "6.00pm",
+         "6.15pm",
+         "6.30pm",
+         "6.45pm",
+         "7.00pm",
+         "7.15pm",
+         "7.30pm",
+         "7.45pm",
+         "8.00pm",
+         "8.15pm",
+         "8.30pm",
+         "8.45pm",
+         "9.00pm",
+         "9.15pm",
+         "9.30pm",
+         "9.45pm",
+         "10.00pm",
+         "10.15pm",
+         "10.30pm",
+         "10.45pm",
+         "11.00pm"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "slug": "thursday",
+     "label": "Thursday (Khamis)",
+     "type": "repeater",
+     "validation": {
+      "subFields": [
+       {
+        "slug": "subject",
+        "label": "Subject",
+        "type": "select",
+        "required": true,
+        "options": [
+         "Bahasa Melayu",
+         "English",
+         "Matematik",
+         "Matematik Tambahan",
+         "Sains",
+         "Fizik",
+         "Kimia",
+         "Biologi",
+         "Sejarah",
+         "Perniagaan",
+         "Prinsip Perakaunan"
+        ]
+       },
+       {
+        "slug": "tutor",
+        "label": "Tutor",
+        "type": "string",
+        "required": true
+       },
+       {
+        "slug": "start",
+        "label": "Starts",
+        "type": "select",
+        "required": true,
+        "options": [
+         "2.00pm",
+         "2.15pm",
+         "2.30pm",
+         "2.45pm",
+         "3.00pm",
+         "3.15pm",
+         "3.30pm",
+         "3.45pm",
+         "4.00pm",
+         "4.15pm",
+         "4.30pm",
+         "4.45pm",
+         "5.00pm",
+         "5.15pm",
+         "5.30pm",
+         "5.45pm",
+         "6.00pm",
+         "6.15pm",
+         "6.30pm",
+         "6.45pm",
+         "7.00pm",
+         "7.15pm",
+         "7.30pm",
+         "7.45pm",
+         "8.00pm",
+         "8.15pm",
+         "8.30pm",
+         "8.45pm",
+         "9.00pm",
+         "9.15pm",
+         "9.30pm",
+         "9.45pm",
+         "10.00pm",
+         "10.15pm",
+         "10.30pm",
+         "10.45pm",
+         "11.00pm"
+        ]
+       },
+       {
+        "slug": "end",
+        "label": "Ends",
+        "type": "select",
+        "required": true,
+        "options": [
+         "2.00pm",
+         "2.15pm",
+         "2.30pm",
+         "2.45pm",
+         "3.00pm",
+         "3.15pm",
+         "3.30pm",
+         "3.45pm",
+         "4.00pm",
+         "4.15pm",
+         "4.30pm",
+         "4.45pm",
+         "5.00pm",
+         "5.15pm",
+         "5.30pm",
+         "5.45pm",
+         "6.00pm",
+         "6.15pm",
+         "6.30pm",
+         "6.45pm",
+         "7.00pm",
+         "7.15pm",
+         "7.30pm",
+         "7.45pm",
+         "8.00pm",
+         "8.15pm",
+         "8.30pm",
+         "8.45pm",
+         "9.00pm",
+         "9.15pm",
+         "9.30pm",
+         "9.45pm",
+         "10.00pm",
+         "10.15pm",
+         "10.30pm",
+         "10.45pm",
+         "11.00pm"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "slug": "friday",
+     "label": "Friday (Jumaat)",
+     "type": "repeater",
+     "validation": {
+      "subFields": [
+       {
+        "slug": "subject",
+        "label": "Subject",
+        "type": "select",
+        "required": true,
+        "options": [
+         "Bahasa Melayu",
+         "English",
+         "Matematik",
+         "Matematik Tambahan",
+         "Sains",
+         "Fizik",
+         "Kimia",
+         "Biologi",
+         "Sejarah",
+         "Perniagaan",
+         "Prinsip Perakaunan"
+        ]
+       },
+       {
+        "slug": "tutor",
+        "label": "Tutor",
+        "type": "string",
+        "required": true
+       },
+       {
+        "slug": "start",
+        "label": "Starts",
+        "type": "select",
+        "required": true,
+        "options": [
+         "2.00pm",
+         "2.15pm",
+         "2.30pm",
+         "2.45pm",
+         "3.00pm",
+         "3.15pm",
+         "3.30pm",
+         "3.45pm",
+         "4.00pm",
+         "4.15pm",
+         "4.30pm",
+         "4.45pm",
+         "5.00pm",
+         "5.15pm",
+         "5.30pm",
+         "5.45pm",
+         "6.00pm",
+         "6.15pm",
+         "6.30pm",
+         "6.45pm",
+         "7.00pm",
+         "7.15pm",
+         "7.30pm",
+         "7.45pm",
+         "8.00pm",
+         "8.15pm",
+         "8.30pm",
+         "8.45pm",
+         "9.00pm",
+         "9.15pm",
+         "9.30pm",
+         "9.45pm",
+         "10.00pm",
+         "10.15pm",
+         "10.30pm",
+         "10.45pm",
+         "11.00pm"
+        ]
+       },
+       {
+        "slug": "end",
+        "label": "Ends",
+        "type": "select",
+        "required": true,
+        "options": [
+         "2.00pm",
+         "2.15pm",
+         "2.30pm",
+         "2.45pm",
+         "3.00pm",
+         "3.15pm",
+         "3.30pm",
+         "3.45pm",
+         "4.00pm",
+         "4.15pm",
+         "4.30pm",
+         "4.45pm",
+         "5.00pm",
+         "5.15pm",
+         "5.30pm",
+         "5.45pm",
+         "6.00pm",
+         "6.15pm",
+         "6.30pm",
+         "6.45pm",
+         "7.00pm",
+         "7.15pm",
+         "7.30pm",
+         "7.45pm",
+         "8.00pm",
+         "8.15pm",
+         "8.30pm",
+         "8.45pm",
+         "9.00pm",
+         "9.15pm",
+         "9.30pm",
+         "9.45pm",
+         "10.00pm",
+         "10.15pm",
+         "10.30pm",
+         "10.45pm",
+         "11.00pm"
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "slug": "holidays",
+   "label": "Public holidays",
+   "labelSingular": "Public holiday",
+   "description": "Weekday holidays shown under their day on the timetable. Publish a change and the site shows it within a few minutes.",
+   "icon": "confetti",
+   "sortOrder": 3,
+   "routable": false,
+   "supports": [
+    "drafts",
+    "revisions"
+   ],
+   "titleField": "title",
+   "dateField": "date",
+   "fields": [
+    {
+     "slug": "title",
+     "label": "Holiday",
+     "type": "string",
+     "required": true
+    },
+    {
+     "slug": "date",
+     "label": "Date",
+     "type": "datetime",
+     "required": true
+    }
+   ]
+  }
+ ]
 }

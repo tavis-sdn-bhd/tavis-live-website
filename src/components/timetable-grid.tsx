@@ -1,14 +1,17 @@
 "use client";
 
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
-import { timetable2027, weekByForm, type Slot } from "@/lib/pages";
+import { createContext, useContext, useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { timetable, timetable2027, type Slot, type Timetable } from "@/lib/pages";
 import { easeOutExpo } from "./motion";
 import { subjectDot, subjectKey, subjectLang } from "./subject";
 import { cx } from "./ui";
 
 type Form = 1 | 2 | 3 | 4 | 5;
 const forms: readonly Form[] = [1, 2, 3, 4, 5];
+
+/** The timetable the grid draws: the transcribed 2027 one, unless a page provides another, as the CMS-backed site does. */
+export const TimetableContext = createContext<Timetable>(timetable);
 
 function ClassSlot({ slot }: { slot: Slot }) {
   return (
@@ -42,7 +45,8 @@ export function TimetableGrid() {
   const [today, setToday] = useState<number | null>(null);
   const id = useId();
   const days = useRef<HTMLDivElement>(null);
-  const week = weekByForm[form];
+  const { weeks, holidays: holidaysByDay } = useContext(TimetableContext);
+  const week = weeks[form];
 
   useEffect(() => {
     const index = weekdayToday();
@@ -114,7 +118,7 @@ export function TimetableGrid() {
       >
         {timetable2027.days.map((day, d) => {
           const classes = week[d] ?? [];
-          const holidays = timetable2027.holidays[d] ?? [];
+          const holidays = holidaysByDay[d] ?? [];
           return (
             <section
               key={day.ms}

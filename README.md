@@ -21,7 +21,7 @@ BA's pages, the blog, `/get` and the 404 page are pre-rendered (`export const pr
 
 Any unknown path returns a 404 page in BA's style, with a link to every page.
 
-Page copy still lives in `src/lib/content.ts` and `src/lib/pages.ts`. It moves into EmDash collections next.
+Tavis's staff edit the blog, the class timetable and its public holidays in EmDash (Editing, below). The rest of the page copy lives in `src/lib/content.ts` and `src/lib/pages.ts`.
 
 ## Languages
 
@@ -61,6 +61,9 @@ The first visit to `/_emdash/admin` runs EmDash's setup. Locally, the dev server
 | `src/views/ba/` | Each page's body, a React island; the blog's views are Astro components in `src/views/ba/blog/` |
 | `src/lib/blog.ts` | The blog's queries, paths, dates and reading time |
 | `scripts/blog/` | The blog's inventory, import and checks |
+| `scripts/cms/` | Applying `seed/seed.json` to a deployed site, and the timetable's one-time import |
+| `plugins/site-rebuild.ts` | The EmDash plugin that rebuilds the site when something is published |
+| `docs/editing-guide.md` | The guide for Tavis's staff |
 | `seed/` | EmDash's seed, the blog inventory and the posts' original images |
 | `src/components/` | The React components the pages share |
 | `src/lib/site.ts` | Pages, titles, and each language's path prefix |
@@ -72,7 +75,7 @@ The first visit to `/_emdash/admin` runs EmDash's setup. Locally, the dev server
 
 The blog is at `/blog`, its later pages at `/blog/page/<n>`, a post at `/blog/<slug>`. Posts live in EmDash's `posts` collection, which `seed/seed.json` defines; EmDash applies it at setup. The pages send no script of their own.
 
-The blog's pages are built with the site, from the posts published in the deployed database at that moment. **A post published, edited or unpublished in the admin shows on the site after the next `pnpm run deploy`**, not before. The build reaches the database over a remote binding (Deploy, below).
+The blog's pages are built with the site, from the posts published in the deployed database at that moment. **A post published, edited or unpublished in the admin shows on the site after the next build**, which the admin starts by itself once Workers Builds is set up (Editing, below). The build reaches the database over a remote binding (Deploy, below).
 
 The 56 posts from the old tavis.live (Webflow) were brought over in three steps, each a script you can rerun:
 
@@ -107,6 +110,53 @@ pnpm run deploy
 ```bash
 pnpm blog:verify --url https://<deployed host>
 ```
+
+## Editing
+
+Tavis's staff work in the admin at `/_emdash/admin`. `docs/editing-guide.md` is their guide. They edit three collections, which `seed/seed.json` defines:
+
+- **Blog posts** (`posts`), the blog.
+- **Timetable** (`timetable`), one entry per form, `Form 1` to `Form 5`, each with a list of classes for every weekday: subject, tutor, start and end. The subjects and times are fixed lists in the seed.
+- **Public holidays** (`holidays`), each a name and a date. The timetable shows a weekday holiday under its day, labelled the Malay way ("8 Mac").
+
+`src/pages/online-tuition.astro` reads the timetable and holidays when the page is built (`src/lib/timetable-data.ts`) and hands them to the shared timetable grid through `TimetableContext`. A form with no published entry keeps its week from `timetable2027` in `src/lib/pages.ts`, and so does the whole grid while the collection is empty. The phone mock-up's upcoming class and the subject lists on other pages stay on `timetable2027`.
+
+The admin hides the built-in pages the site doesn't use (`hiddenNavItems` in `astro.config.mjs`). They stay reachable by URL.
+
+### Publishing rebuilds the site
+
+The pages are built at deploy, so an edit reaches visitors only through a new build. `plugins/site-rebuild.ts` starts one: when anything is published, unpublished, deleted or restored, including a scheduled publish, it calls the Worker's Workers Builds deploy hook. Saving a draft doesn't. How long a build takes on Workers Builds hasn't been measured; time the first one, since the staff guide promises about five minutes. While one is still queued Cloudflare returns it instead of starting another, so a burst of edits costs one or two builds. Workers Builds' free plan allows 3,000 build minutes a month.
+
+Set it up once, with access to the Cloudflare account and to the `tavis-sdn-bhd` GitHub organisation:
+
+1. In Cloudflare, open **Workers & Pages › tavis-live-website › Settings › Builds** and connect the GitHub repository, branch `main`. Leave the build command empty and set the deploy command to `pnpm run deploy`.
+2. The build reads the deployed D1 database, which the API token Workers Builds creates can't. Under **API token**, use a token that also has **D1 › Edit** on the account.
+3. Under **Deploy Hooks**, create a hook named `EmDash publish` for `main` and copy its URL.
+4. In the admin, open **Plugins › site-rebuild › Settings**, paste the URL and save.
+5. Publish any change and check that a build starts under the Worker's **Deployments**.
+
+Without the URL the plugin logs a warning and does nothing. A build that fails tells nobody: the site just keeps its last version. When staff report a change that hasn't appeared, check the Worker's build history under **Deployments**. To be alerted instead, Workers Builds publishes build events through Event Subscriptions to a Queue a Worker reads (Cloudflare's docs, Workers Builds › Event subscriptions). Once the hook is set, every publish deploys `main`, so production must only ever be deployed from `main`: a `pnpm run deploy` from another branch is replaced at the next publish.
+
+### Changing the collections
+
+EmDash reads `seed/seed.json` only when a site is first set up. After changing a collection there, apply it to the deployed site:
+
+```bash
+EMDASH_TOKEN=… pnpm cms:schema --url https://<deployed host>
+```
+
+It creates what is missing, updates labels and select options, and sets the site's timezone to `Asia/Kuala_Lumpur`. The admin's date boxes read and write in that timezone, and EmDash's default is UTC, which would show every holiday a day early. It never deletes a field or changes a field's type, required or unique flag, since EmDash makes those a migration: it stops before writing anything and names the field, and you change it in the admin's **Content Types**. The token needs the `schema:read`, `schema:write`, `settings:read` and `settings:manage` scopes, so an admin's. Locally, `pnpm cms:schema` signs in through the dev bypass.
+
+`pnpm cms:timetable` puts the transcribed 2027 timetable into EmDash. It only adds forms and holidays that are missing, so it never undoes an edit made in the admin. Its token needs `content:read` and `content:write`.
+
+### Rolling this out to production
+
+The build reads the `timetable` and `holidays` collections, and stops when they don't exist, so they come first:
+
+1. `EMDASH_TOKEN=… pnpm cms:schema --url https://<deployed host>`, with `--dry-run` first to see what it will change.
+2. `EMDASH_TOKEN=… pnpm cms:timetable --url https://<deployed host>`.
+3. `pnpm run deploy`.
+4. Set up Workers Builds and the deploy hook (above).
 
 ## Contact form
 

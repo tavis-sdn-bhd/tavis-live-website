@@ -370,6 +370,13 @@ export const weekByForm = Object.fromEntries(
   ]),
 ) as Record<Form, Slot[][]>;
 
+export type Holiday = { readonly date: string; readonly name: string };
+
+/** What the timetable grid draws: each form's week, each day in time order, and each weekday's holidays. */
+export type Timetable = { readonly weeks: Record<Form, Slot[][]>; readonly holidays: readonly (readonly Holiday[])[] };
+
+export const timetable: Timetable = { weeks: weekByForm, holidays: timetable2027.holidays };
+
 const upcomingSlot = timetable2027.forms[5][1][0];
 if (!upcomingSlot) throw new Error("timetable2027: F5 Selasa has no first class");
 

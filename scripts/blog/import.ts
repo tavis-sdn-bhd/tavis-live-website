@@ -10,57 +10,14 @@
 // Locally it signs in through EmDash's dev bypass. Elsewhere it needs an API token with content and media write
 // access, made in the admin under Settings › API tokens, passed as EMDASH_TOKEN.
 //
-// The `posts` collection itself is defined in seed/seed.json, which EmDash applies when the site is set up.
+// The `posts` collection itself is defined in seed/seed.json; `pnpm cms:schema` applies it to a site that lacks it.
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { parseArgs } from "node:util";
+import { api, base, dryRun, signIn } from "../emdash-api.ts";
 import { type BlogInventory, type BlogMedia, type BlogSourcePost, inventoryPath, mediaDir } from "./shared.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const collection = "posts";
-
-const { values: args } = parseArgs({ options: { url: { type: "string" }, "dry-run": { type: "boolean" } } });
-const base = new URL(args.url ?? process.env.EMDASH_URL ?? "http://localhost:4321");
-const dryRun = args["dry-run"] ?? false;
-const local = ["localhost", "127.0.0.1", "[::1]"].includes(base.hostname);
-
-// ── The API ────────────────────────────────────────────────────────────
-
-/** How each request authenticates: the token, or locally the dev bypass's session cookie. */
-let auth: Record<string, string> = {};
-
-async function signIn() {
-  const token = process.env.EMDASH_TOKEN;
-  if (token) {
-    auth = { Authorization: `Bearer ${token}` };
-    return;
-  }
-  if (!local) throw new Error(`Set EMDASH_TOKEN to an API token for ${base.origin}`);
-  // The dev bypass also applies seed/seed.json, so a fresh local database gets the `posts` collection here.
-  const response = await fetch(new URL("/_emdash/api/setup/dev-bypass", base), { method: "POST", headers: { "X-EmDash-Request": "1", Origin: base.origin } });
-  const cookie = response.headers.getSetCookie().find((value) => value.startsWith("astro-session="));
-  if (!response.ok || !cookie) throw new Error(`Dev bypass failed (HTTP ${response.status}). Is \`pnpm dev\` running at ${base.origin}?`);
-  auth = { Cookie: cookie.split(";")[0]! };
-}
-
-type Envelope<T> = { success: true; data: T } | { success: false; error: { code: string; message: string } };
-
-async function api<T>(method: string, route: string, body?: unknown | FormData): Promise<T | null> {
-  const headers: Record<string, string> = { ...auth, "X-EmDash-Request": "1", Origin: base.origin };
-  if (body !== undefined && !(body instanceof FormData)) headers["Content-Type"] = "application/json";
-  const response = await fetch(new URL(`/_emdash/api${route}`, base), {
-    method,
-    headers,
-    body: body === undefined ? undefined : body instanceof FormData ? body : JSON.stringify(body),
-  });
-  if (response.status === 404 && method === "GET") return null;
-  const json = (await response.json().catch(() => null)) as Envelope<T> | null;
-  if (!response.ok || !json?.success) {
-    const error = json && !json.success ? `${json.error.code}: ${json.error.message}` : `HTTP ${response.status}`;
-    throw new Error(`${method} ${route} failed: ${error}`);
-  }
-  return json.data;
-}
 
 // ── Media ──────────────────────────────────────────────────────────────
 
@@ -161,7 +118,7 @@ async function main() {
 
   const schema = await api<{ items: Array<{ slug: string }> }>("GET", "/schema/collections");
   if (!schema?.items.some((item) => item.slug === collection)) {
-    throw new Error(`${base.origin} has no \`${collection}\` collection. It comes from seed/seed.json, which EmDash applies at setup.`);
+    throw new Error(`${base.origin} has no \`${collection}\` collection. Run \`pnpm cms:schema\` against it first.`);
   }
 
   const counts = { created: 0, updated: 0, unchanged: 0 };

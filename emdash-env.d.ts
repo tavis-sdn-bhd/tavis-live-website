@@ -22,8 +22,42 @@ export interface Post {
   terms?: Record<string, TaxonomyTerm[]>;
 }
 
+export interface Timetable {
+  id: string;
+  slug: string | null;
+  status: string;
+  form: string;
+  monday?: { "subject": "Bahasa Melayu" | "English" | "Matematik" | "Matematik Tambahan" | "Sains" | "Fizik" | "Kimia" | "Biologi" | "Sejarah" | "Perniagaan" | "Prinsip Perakaunan"; "tutor": string; "start": "2.00pm" | "2.15pm" | "2.30pm" | "2.45pm" | "3.00pm" | "3.15pm" | "3.30pm" | "3.45pm" | "4.00pm" | "4.15pm" | "4.30pm" | "4.45pm" | "5.00pm" | "5.15pm" | "5.30pm" | "5.45pm" | "6.00pm" | "6.15pm" | "6.30pm" | "6.45pm" | "7.00pm" | "7.15pm" | "7.30pm" | "7.45pm" | "8.00pm" | "8.15pm" | "8.30pm" | "8.45pm" | "9.00pm" | "9.15pm" | "9.30pm" | "9.45pm" | "10.00pm" | "10.15pm" | "10.30pm" | "10.45pm" | "11.00pm"; "end": "2.00pm" | "2.15pm" | "2.30pm" | "2.45pm" | "3.00pm" | "3.15pm" | "3.30pm" | "3.45pm" | "4.00pm" | "4.15pm" | "4.30pm" | "4.45pm" | "5.00pm" | "5.15pm" | "5.30pm" | "5.45pm" | "6.00pm" | "6.15pm" | "6.30pm" | "6.45pm" | "7.00pm" | "7.15pm" | "7.30pm" | "7.45pm" | "8.00pm" | "8.15pm" | "8.30pm" | "8.45pm" | "9.00pm" | "9.15pm" | "9.30pm" | "9.45pm" | "10.00pm" | "10.15pm" | "10.30pm" | "10.45pm" | "11.00pm" }[];
+  tuesday?: { "subject": "Bahasa Melayu" | "English" | "Matematik" | "Matematik Tambahan" | "Sains" | "Fizik" | "Kimia" | "Biologi" | "Sejarah" | "Perniagaan" | "Prinsip Perakaunan"; "tutor": string; "start": "2.00pm" | "2.15pm" | "2.30pm" | "2.45pm" | "3.00pm" | "3.15pm" | "3.30pm" | "3.45pm" | "4.00pm" | "4.15pm" | "4.30pm" | "4.45pm" | "5.00pm" | "5.15pm" | "5.30pm" | "5.45pm" | "6.00pm" | "6.15pm" | "6.30pm" | "6.45pm" | "7.00pm" | "7.15pm" | "7.30pm" | "7.45pm" | "8.00pm" | "8.15pm" | "8.30pm" | "8.45pm" | "9.00pm" | "9.15pm" | "9.30pm" | "9.45pm" | "10.00pm" | "10.15pm" | "10.30pm" | "10.45pm" | "11.00pm"; "end": "2.00pm" | "2.15pm" | "2.30pm" | "2.45pm" | "3.00pm" | "3.15pm" | "3.30pm" | "3.45pm" | "4.00pm" | "4.15pm" | "4.30pm" | "4.45pm" | "5.00pm" | "5.15pm" | "5.30pm" | "5.45pm" | "6.00pm" | "6.15pm" | "6.30pm" | "6.45pm" | "7.00pm" | "7.15pm" | "7.30pm" | "7.45pm" | "8.00pm" | "8.15pm" | "8.30pm" | "8.45pm" | "9.00pm" | "9.15pm" | "9.30pm" | "9.45pm" | "10.00pm" | "10.15pm" | "10.30pm" | "10.45pm" | "11.00pm" }[];
+  wednesday?: { "subject": "Bahasa Melayu" | "English" | "Matematik" | "Matematik Tambahan" | "Sains" | "Fizik" | "Kimia" | "Biologi" | "Sejarah" | "Perniagaan" | "Prinsip Perakaunan"; "tutor": string; "start": "2.00pm" | "2.15pm" | "2.30pm" | "2.45pm" | "3.00pm" | "3.15pm" | "3.30pm" | "3.45pm" | "4.00pm" | "4.15pm" | "4.30pm" | "4.45pm" | "5.00pm" | "5.15pm" | "5.30pm" | "5.45pm" | "6.00pm" | "6.15pm" | "6.30pm" | "6.45pm" | "7.00pm" | "7.15pm" | "7.30pm" | "7.45pm" | "8.00pm" | "8.15pm" | "8.30pm" | "8.45pm" | "9.00pm" | "9.15pm" | "9.30pm" | "9.45pm" | "10.00pm" | "10.15pm" | "10.30pm" | "10.45pm" | "11.00pm"; "end": "2.00pm" | "2.15pm" | "2.30pm" | "2.45pm" | "3.00pm" | "3.15pm" | "3.30pm" | "3.45pm" | "4.00pm" | "4.15pm" | "4.30pm" | "4.45pm" | "5.00pm" | "5.15pm" | "5.30pm" | "5.45pm" | "6.00pm" | "6.15pm" | "6.30pm" | "6.45pm" | "7.00pm" | "7.15pm" | "7.30pm" | "7.45pm" | "8.00pm" | "8.15pm" | "8.30pm" | "8.45pm" | "9.00pm" | "9.15pm" | "9.30pm" | "9.45pm" | "10.00pm" | "10.15pm" | "10.30pm" | "10.45pm" | "11.00pm" }[];
+  thursday?: { "subject": "Bahasa Melayu" | "English" | "Matematik" | "Matematik Tambahan" | "Sains" | "Fizik" | "Kimia" | "Biologi" | "Sejarah" | "Perniagaan" | "Prinsip Perakaunan"; "tutor": string; "start": "2.00pm" | "2.15pm" | "2.30pm" | "2.45pm" | "3.00pm" | "3.15pm" | "3.30pm" | "3.45pm" | "4.00pm" | "4.15pm" | "4.30pm" | "4.45pm" | "5.00pm" | "5.15pm" | "5.30pm" | "5.45pm" | "6.00pm" | "6.15pm" | "6.30pm" | "6.45pm" | "7.00pm" | "7.15pm" | "7.30pm" | "7.45pm" | "8.00pm" | "8.15pm" | "8.30pm" | "8.45pm" | "9.00pm" | "9.15pm" | "9.30pm" | "9.45pm" | "10.00pm" | "10.15pm" | "10.30pm" | "10.45pm" | "11.00pm"; "end": "2.00pm" | "2.15pm" | "2.30pm" | "2.45pm" | "3.00pm" | "3.15pm" | "3.30pm" | "3.45pm" | "4.00pm" | "4.15pm" | "4.30pm" | "4.45pm" | "5.00pm" | "5.15pm" | "5.30pm" | "5.45pm" | "6.00pm" | "6.15pm" | "6.30pm" | "6.45pm" | "7.00pm" | "7.15pm" | "7.30pm" | "7.45pm" | "8.00pm" | "8.15pm" | "8.30pm" | "8.45pm" | "9.00pm" | "9.15pm" | "9.30pm" | "9.45pm" | "10.00pm" | "10.15pm" | "10.30pm" | "10.45pm" | "11.00pm" }[];
+  friday?: { "subject": "Bahasa Melayu" | "English" | "Matematik" | "Matematik Tambahan" | "Sains" | "Fizik" | "Kimia" | "Biologi" | "Sejarah" | "Perniagaan" | "Prinsip Perakaunan"; "tutor": string; "start": "2.00pm" | "2.15pm" | "2.30pm" | "2.45pm" | "3.00pm" | "3.15pm" | "3.30pm" | "3.45pm" | "4.00pm" | "4.15pm" | "4.30pm" | "4.45pm" | "5.00pm" | "5.15pm" | "5.30pm" | "5.45pm" | "6.00pm" | "6.15pm" | "6.30pm" | "6.45pm" | "7.00pm" | "7.15pm" | "7.30pm" | "7.45pm" | "8.00pm" | "8.15pm" | "8.30pm" | "8.45pm" | "9.00pm" | "9.15pm" | "9.30pm" | "9.45pm" | "10.00pm" | "10.15pm" | "10.30pm" | "10.45pm" | "11.00pm"; "end": "2.00pm" | "2.15pm" | "2.30pm" | "2.45pm" | "3.00pm" | "3.15pm" | "3.30pm" | "3.45pm" | "4.00pm" | "4.15pm" | "4.30pm" | "4.45pm" | "5.00pm" | "5.15pm" | "5.30pm" | "5.45pm" | "6.00pm" | "6.15pm" | "6.30pm" | "6.45pm" | "7.00pm" | "7.15pm" | "7.30pm" | "7.45pm" | "8.00pm" | "8.15pm" | "8.30pm" | "8.45pm" | "9.00pm" | "9.15pm" | "9.30pm" | "9.45pm" | "10.00pm" | "10.15pm" | "10.30pm" | "10.45pm" | "11.00pm" }[];
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt: Date | null;
+  byline?: BylineSummary | null;
+  bylines?: ContentBylineCredit[];
+  terms?: Record<string, TaxonomyTerm[]>;
+}
+
+export interface Holiday {
+  id: string;
+  slug: string | null;
+  status: string;
+  title: string;
+  date: string;
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt: Date | null;
+  byline?: BylineSummary | null;
+  bylines?: ContentBylineCredit[];
+  terms?: Record<string, TaxonomyTerm[]>;
+}
+
 declare module "emdash" {
   interface EmDashCollections {
     posts: Post;
+    timetable: Timetable;
+    holidays: Holiday;
   }
 }

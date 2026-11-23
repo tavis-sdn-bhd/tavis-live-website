@@ -5,6 +5,7 @@ import { d1, r2 } from "@emdash-cms/cloudflare";
 import { formsPlugin } from "@emdash-cms/plugin-forms";
 import { defineConfig } from "astro/config";
 import emdash from "emdash/astro";
+import { siteRebuild } from "./plugins/site-rebuild.ts";
 
 export default defineConfig({
   site: "https://www.tavis.live",
@@ -20,7 +21,14 @@ export default defineConfig({
     emdash({
       database: d1({ binding: "DB", session: "auto", coalesce: true }),
       storage: r2({ binding: "MEDIA" }),
-      plugins: [formsPlugin({ defaultSpamProtection: "honeypot" })],
+      plugins: [formsPlugin({ defaultSpamProtection: "honeypot" }), siteRebuild()],
+      // The admin as Tavis's staff use it: their logo, and only what the site shows. Hidden pages stay reachable by URL.
+      admin: {
+        siteName: "Tavis",
+        logo: "/icon.png",
+        favicon: "/icon.png",
+        hiddenNavItems: ["calendar", "comments", "menus", "redirects", "widgets", "sections", "bylines", "import"],
+      },
     }),
   ],
   // No image.domains yet, so the blog's images are served as uploaded, a post's share image included
