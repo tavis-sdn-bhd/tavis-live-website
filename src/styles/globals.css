@@ -498,7 +498,7 @@ html[data-visitor="idle"] :is(.animate-float, .animate-spin-slow, .animate-bounc
   100% { opacity: 1; transform: none; }
 }
 
-:is([data-scene="armed"], [data-scene="play"]) :is(.scene-burst, .scene-pop, .scene-grow, .scene-drop) {
+:is([data-scene="armed"], [data-scene="play"]) :is(.scene-burst, .scene-pop, .scene-grow, .scene-drop, .scene-rise) {
   animation-duration: 0.7s;
   animation-delay: var(--delay, 0ms);
   animation-fill-mode: both;
@@ -508,7 +508,9 @@ html[data-visitor="idle"] :is(.animate-float, .animate-spin-slow, .animate-bounc
 :is([data-scene="armed"], [data-scene="play"]) .scene-pop { animation-name: pop; animation-timing-function: var(--ease-out-quart); }
 :is([data-scene="armed"], [data-scene="play"]) .scene-grow { animation-name: grow-up; transform-origin: bottom; }
 :is([data-scene="armed"], [data-scene="play"]) .scene-drop { animation-name: drop-in; }
-[data-scene="armed"] :is(.scene-burst, .scene-pop, .scene-grow, .scene-drop) { animation-play-state: paused; }
+/* Rises into its frame from below its own height, as a picture standing up out of a card that clips it. */
+:is([data-scene="armed"], [data-scene="play"]) .scene-rise { animation-name: rise; animation-duration: 1s; animation-timing-function: var(--ease-out-expo); }
+[data-scene="armed"] :is(.scene-burst, .scene-pop, .scene-grow, .scene-drop, .scene-rise) { animation-play-state: paused; }
 
 /* A scene's loops rest while it is off screen. */
 [data-scene][data-offscreen] :is(.animate-float, .animate-bounce, .animate-pulse, .animate-ping, .animate-spin-slow) {

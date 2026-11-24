@@ -217,6 +217,7 @@ export const aboutPage = {
     body: "Free practice, real rewards and expert tutors, since 2022.",
   },
   journey: {
+    title: "Our journey.",
     end: "The journey continues.",
     years: [
       { year: "2022", image: { src: "/assets/journey-2022.webp", alt: "Tavis team group photo featured in Focus Malaysia", w: 412, h: 249 } },
