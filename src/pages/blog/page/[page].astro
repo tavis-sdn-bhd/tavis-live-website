@@ -3,6 +3,7 @@ import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
 import Layout from "@/layouts/Ba.astro";
 import BlogIndex from "@/views/ba/blog/BlogIndex.astro";
 import { indexPage, indexPageCount, publishedPosts } from "@/lib/blog";
+import { pageMeta } from "@/lib/site";
 
 // The index from page 2 on; page 1 is ../index.astro.
 export const prerender = true;
@@ -15,8 +16,11 @@ export const getStaticPaths = (async () => {
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
 const { page } = Astro.props;
+// Its own title, so search results tell the index's pages apart; the description and card stay the index's.
+const index = pageMeta("/blog");
+const title = `${index.title.replace(/ — Tavis$/, "")}, page ${page.page} of ${page.pages} — Tavis`;
 ---
 
-<Layout path="/blog">
+<Layout path="/blog" meta={{ title, description: index.description }}>
   <BlogIndex page={page} />
 </Layout>

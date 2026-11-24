@@ -15,8 +15,8 @@
 /paypal-checkout  /online-tuition#pricing  301
 /order-confirmation  /online-tuition#pricing  301
 /apps-page  /get  301
-/log-in  https://app.tavis.live/  301
-/sign-up  https://app.tavis.live/  301
+/log-in  https://app.tavis.live/login  301
+/sign-up  https://app.tavis.live/signup  301
 /user-account  https://app.tavis.live/  301
 /reset-password  https://app.tavis.live/  301
 /update-password  https://app.tavis.live/  301

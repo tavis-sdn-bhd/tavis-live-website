@@ -15,8 +15,8 @@ export const links = {
   instagram: "https://www.instagram.com/tavislive/",
   tiktok: "https://www.tiktok.com/@tavislive",
   youtube: "https://www.youtube.com/@tavislive4018",
-  privacy: "https://web.tavis.live/privacy-policy",
-  terms: "https://web.tavis.live/terms-of-service",
+  privacy: "https://app.tavis.live/privacy-policy",
+  terms: "https://app.tavis.live/terms-conditions",
 } as const;
 
 /** WhatsApp with a prefilled message. The (GA) tag leads so enquiries keep their source, and it is also the greeting,
