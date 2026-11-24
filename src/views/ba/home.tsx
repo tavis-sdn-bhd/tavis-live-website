@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Classroom, Podium } from "@/components/v2/art";
 import { GetTavis } from "@/components/v2/get-button";
 import { HomeHero } from "@/components/v2/hero";
-import { Faq, PressRow, Stats, Testimonials, TuitionPromo, TutorFaces } from "@/components/v2/sections";
+import { Faq, PressRow, TuitionPromo, TutorFaces, Voices } from "@/components/v2/sections";
 import { Button, Feature } from "@/components/v2/ui";
 import { DesignLink } from "@/components/design-link";
 import { AvatarDemo } from "@/components/app-demos/avatar-demo";
@@ -82,8 +82,7 @@ function Home() {
         </Button>
       </TuitionPromo>
 
-      <Stats />
-      <Testimonials />
+      <Voices />
       <Faq set={baParentsFaq} />
     </>
   );

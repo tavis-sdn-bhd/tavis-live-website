@@ -176,6 +176,62 @@ export function Stats() {
 }
 
 
+/** BA's word from students: the headline, the two numbers set quietly under it rather than shouted on a band of
+    their own, and the quotes, each signed with the student's avatar, name and form. Below lg the quotes are a row to
+    swipe with the next one peeking in; from lg they stand three across. The avatars are drawings, so they carry no
+    alt text: the name beside each one says whose it is. */
+export function Voices() {
+  return (
+    <Section id="testimonials">
+      <div className="shell">
+        <Centered title={[testimonials.title, testimonials.accent]} />
+        <dl className="mt-8 flex justify-center gap-12 sm:mt-10 sm:gap-16">
+          {why.stats.map((s, i) => (
+            <div
+              key={s.label}
+              className={cx(
+                "relative flex flex-col-reverse items-center",
+                // A short rule between the two, centred in the gap.
+                i > 0 && "before:absolute before:inset-y-1 before:-left-6 before:w-0.5 before:rounded-full before:bg-line sm:before:-left-8",
+              )}
+            >
+              <dt className="mt-2 text-small font-extrabold uppercase tracking-[0.08em] text-muted">{s.label}</dt>
+              <dd className="font-display text-[clamp(2.25rem,1.9rem+1.4vw,3rem)] leading-none tabular-nums text-brand-ink">
+                <CountUp value={s.value} suffix={s.suffix} />
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <ul
+          aria-label="What students say"
+          className="-mx-[var(--gutter)] mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain scroll-px-[var(--gutter)] px-[var(--gutter)] pb-3 pointer-coarse:[scrollbar-width:none] sm:mt-14 lg:mx-auto lg:grid lg:max-w-[66rem] lg:grid-cols-3 lg:gap-6 lg:overflow-visible lg:px-0 lg:pb-0"
+        >
+          {testimonials.items.map((t) => (
+            <li key={t.name} className="w-[min(85%,22rem)] shrink-0 snap-start lg:w-auto">
+              <figure className={cx(chunky, "flex h-full flex-col p-6 sm:p-7")}>
+                <span aria-hidden="true" className="h-7 font-display text-[3.5rem] leading-[0.9] text-brand">
+                  “
+                </span>
+                {/* Quoted in English on the Malay site too, so a screen reader reads it as English. */}
+                <blockquote lang="en" className="mt-3 flex-1 text-[1.125rem] font-bold leading-snug text-forest">
+                  <p>{t.quote}</p>
+                </blockquote>
+                <figcaption className="mt-7 flex items-center gap-3">
+                  <Image src={t.avatar} alt="" width={200} height={200} sizes="48px" className="size-12 shrink-0 rounded-full outline-1 -outline-offset-1 outline-black/10" />
+                  <span>
+                    <span className="block font-extrabold text-forest">{t.name}</span>
+                    <span className="block text-small font-bold text-muted">{t.form}</span>
+                  </span>
+                </figcaption>
+              </figure>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Section>
+  );
+}
+
 /** Student quotes as speech bubbles, each with an initial in a coloured disc. */
 export function Testimonials() {
   return (

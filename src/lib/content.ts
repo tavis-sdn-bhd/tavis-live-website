@@ -114,7 +114,8 @@ export const why = {
   ],
 } as const;
 
-/** Published on tavis.live, quoted word for word. */
+/** Published on tavis.live, quoted word for word. Each avatar is a drawing made for the site, not a photo of the
+    student. */
 export const testimonials = {
   title: "Students",
   accent: "say it best.",
@@ -123,16 +124,19 @@ export const testimonials = {
       quote: "Of course, receiving the rewards gave me the motivation to keep learning better!",
       name: "Muhammad Shohel",
       form: formRange(3),
+      avatar: "/assets/student-shohel.webp",
     },
     {
       quote: "Initially I worried that I would struggle with online classes, but my tutors really made the classes very enjoyable!",
       name: "Vaishavi",
       form: formRange(5),
+      avatar: "/assets/student-vaishavi.webp",
     },
     {
       quote: "Thanks to Tavis, I managed to get great revision lessons on Science & English, which are two of my weaker subjects.",
       name: "Nurfatehah",
       form: formRange(5),
+      avatar: "/assets/student-nurfatehah.webp",
     },
   ],
 } as const;

@@ -20,7 +20,8 @@ export function CountUp({ value, suffix = "", className }: { value: number; suff
 
   useEffect(() => {
     const el = ref.current;
-    if (!el || reduce || armed.current) return;
+    // Still for reduced motion and for the site's "Pause animations" choice, as the scenes are.
+    if (!el || reduce || armed.current || document.documentElement.dataset.motion === "paused") return;
     const rect = el.getBoundingClientRect();
     if (rect.top > window.innerHeight || rect.bottom < 0) {
       el.textContent = format(0) + suffix;

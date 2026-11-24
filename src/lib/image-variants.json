@@ -101,6 +101,21 @@
     ],
     "full": 298
   },
+  "/assets/student-nurfatehah.webp": {
+    "base": "/variants/student-nurfatehah.f2e3b842",
+    "widths": [],
+    "full": 200
+  },
+  "/assets/student-shohel.webp": {
+    "base": "/variants/student-shohel.9213f5d8",
+    "widths": [],
+    "full": 200
+  },
+  "/assets/student-vaishavi.webp": {
+    "base": "/variants/student-vaishavi.12312054",
+    "widths": [],
+    "full": 200
+  },
   "/assets/tavis-timetable-2027.png": {
     "base": "/variants/tavis-timetable-2027.a18e7dd9",
     "widths": [
