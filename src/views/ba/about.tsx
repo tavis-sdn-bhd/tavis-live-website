@@ -37,7 +37,8 @@ function AboutPage() {
 
       <Section band="sky">
         <div className="shell grid items-center gap-14 md:grid-cols-2 md:gap-16 lg:gap-24">
-          <Scene className="relative mx-auto w-full max-w-[25rem]">
+          {/* Narrower on a phone, so the star and bolt hanging off its sides stay on screen. */}
+          <Scene className="relative mx-auto w-[86%] max-w-[25rem] sm:w-full">
             <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border-2 border-b-[6px] border-line bg-paper">
               <div aria-hidden="true" className="scene-pop absolute bottom-[-24%] left-[5%] aspect-square w-[90%] rounded-full bg-brand" />
               <div className="scene-rise absolute inset-x-0 bottom-0 top-[7%]" style={delay(160)}>
