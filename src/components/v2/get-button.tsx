@@ -2,6 +2,7 @@
 
 import type { ComponentProps, ReactNode } from "react";
 import { links } from "@/lib/content";
+import { useClientValue } from "@/lib/use-client-value";
 import { storeFor, usePlatform } from "@/lib/use-store-link";
 import { StoreBadgeRow } from "../store-badges";
 import { cx, NewTab } from "../ui";
@@ -13,11 +14,15 @@ type GetButtonProps = Omit<ComponentProps<typeof Button>, "href" | "target" | "r
 };
 
 /** "Get Tavis": a phone goes straight to its store. A desktop opens the web app's sign-up form in a new tab, as Sign
-    in opens its sign-in page, or with `webApp` unset scrolls to the download block. */
+    in opens its sign-in page, or with `webApp` unset scrolls to the download block. Until the page hydrates a phone
+    can't be told from a desktop, so a `webApp` button links to /get, which sends a phone to its store as it loads
+    and shows a desktop the download page; otherwise an early tap on a phone would open the sign-up form. */
 export function GetButton({ webApp, children, ...props }: GetButtonProps) {
   const platform = usePlatform();
+  const hydrated = useClientValue(() => true, false);
   if (platform) return <Button {...props} href={storeFor[platform]}>{children}</Button>;
   if (!webApp) return <Button {...props} href="#download">{children}</Button>;
+  if (!hydrated) return <Button {...props} href="/get">{children}</Button>;
   return (
     <Button {...props} href={links.signUp} target="_blank" rel="noopener noreferrer">
       {children}

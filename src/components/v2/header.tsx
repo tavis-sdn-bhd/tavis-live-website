@@ -52,7 +52,7 @@ const barPages: readonly PagePath[] = ["/question-universe", "/rewards", "/onlin
     English's ("Muat turun percuma") needs a wider bar before its last word fits. */
 const ctaCut = home.cta.lastIndexOf(" ");
 const [ctaLead, ctaLast] = ctaCut > 0 ? [home.cta.slice(0, ctaCut), home.cta.slice(ctaCut)] : [home.cta, ""];
-const ctaLastHidden = home.cta.length > 16 ? "max-md:hidden" : "max-[359px]:hidden";
+const ctaLastHidden = home.cta.length > 16 ? "max-md:hidden" : "max-[360px]:hidden";
 
 /** Three bars that fold into a cross: the middle one fades while the outer two turn onto it. */
 function MenuGlyph() {
@@ -121,9 +121,9 @@ export function Header({ design }: { design: DesignId }) {
           pastHero || open ? "border-line" : "border-transparent",
         )}
       >
-        <div className="shell flex h-16 items-center gap-2 max-[359px]:gap-1.5 sm:h-[4.5rem] sm:gap-3">
+        <div className="shell flex h-16 items-center gap-2 max-[360px]:gap-1.5 sm:h-[4.5rem] sm:gap-3">
           <a href={inDesign("/")} className="tap flex min-h-11 shrink-0 items-center rounded-lg" aria-label="Tavis home">
-            <Image src="/assets/tavis-logo.svg" alt="" width={749} height={194} unoptimized priority className="h-7 w-auto max-[359px]:h-6 sm:h-8" />
+            <Image src="/assets/tavis-logo.svg" alt="" width={749} height={194} unoptimized priority className="h-7 w-auto max-[360px]:h-6 sm:h-8" />
           </a>
           <nav aria-label="Primary" className="ml-6 hidden xl:block">
             <ul className="flex items-center gap-1">
@@ -143,7 +143,7 @@ export function Header({ design }: { design: DesignId }) {
               ))}
             </ul>
           </nav>
-          <div className="ml-auto flex shrink-0 items-center gap-2 whitespace-nowrap max-[359px]:gap-1.5 sm:gap-3">
+          <div className="ml-auto flex shrink-0 items-center gap-2 whitespace-nowrap max-[360px]:gap-1.5 sm:gap-3">
             {/* In the bar from 640px; on a phone the bar has no room, so the menu carries it. */}
             <LanguageSwitch className="max-sm:hidden" />
             <a
@@ -158,7 +158,7 @@ export function Header({ design }: { design: DesignId }) {
             {/* The full label from 360px (768px for a long one); narrower, the bar only has room for it without its last word. Below
                 360px the bar tightens too (logo, gaps, the button's padding and tracking), or Malay's "Dapatkan Tavis" pushes
                 the menu button off a 320px screen. */}
-            <GetButton webApp={design === "ba"} size="sm" className="max-[359px]:px-2.5 max-[359px]:tracking-normal xl:min-h-[3.125rem] xl:px-5 xl:text-body-sm">
+            <GetButton webApp={design === "ba"} size="sm" className="max-[360px]:px-2.5 max-[360px]:tracking-normal xl:min-h-[3.125rem] xl:px-5 xl:text-body-sm">
               <span>
                 {ctaLead}
                 <span className={ctaLastHidden}>{ctaLast}</span>
