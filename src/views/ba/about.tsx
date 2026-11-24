@@ -8,7 +8,7 @@ import { SplitHero } from "@/components/v2/hero";
 import { Scene } from "@/components/v2/scene";
 import { PressLogo } from "@/components/v2/sections";
 import { Story, StoryHero } from "@/components/v2/story";
-import { Button, Centered, Headline, Lines, Section, chunky, halfColumnHeadline } from "@/components/v2/ui";
+import { Button, Centered, Headline, Section, chunky, halfColumnHeadline } from "@/components/v2/ui";
 import { aboutPage as page } from "@/lib/pages";
 
 
@@ -61,9 +61,8 @@ function AboutPage() {
           </Scene>
           <div className="text-center md:text-left">
             <Headline band="sky" title={founder.title} className={halfColumnHeadline} />
-            <p className="mt-6 text-[clamp(1.5rem,1.2rem+1.2vw,2.25rem)] font-extrabold leading-[1.1] text-forest">
-              <Lines title={founder.name} names={false} />
-            </p>
+            {/* One line where it fits; where it can't, balanced, so it breaks after "Suhada" and never strands "Mazlan". */}
+            <p className="mt-6 text-[clamp(1.5rem,1.2rem+1.2vw,2.25rem)] font-extrabold leading-[1.1] text-balance text-forest">{founder.name.join(" ")}</p>
           </div>
         </div>
       </Section>
