@@ -1,6 +1,6 @@
 "use client";
 
-import { animate, motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform, type MotionValue, type SpringOptions } from "motion/react";
+import { animate, motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform, useVelocity, type MotionValue, type SpringOptions } from "motion/react";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import { OutfitBack, OutfitBody, OutfitHead, Prop, outfitHasProp, type Outfit } from "./mascot-outfits";
 import { C, LINE, inked, logo, outlined } from "./mascot-palette";
@@ -23,7 +23,7 @@ export type { Outfit } from "./mascot-outfits";
  * each other match.
  */
 
-export type Mood = "idle" | "wave" | "cheer" | "sad" | "think" | "swim";
+export type Mood = "idle" | "wave" | "cheer" | "sad" | "think" | "swim" | "thumbs" | "go";
 
 /**
  * How many Tavis are on screen, not counting the roaming companion. There is
@@ -50,6 +50,8 @@ export function useTaviOnStage() {
 type EyeState = "open" | "happy" | "wink" | "sad";
 type MouthShape = "grin" | "smile" | "frown" | "o";
 type Point = { x: number; y: number };
+/** The sheets' hands: a relaxed mitt, an open palm with the thumb out ("hi"), a fist, and a fist with the thumb up. */
+type Hand = "mitt" | "open" | "fist" | "thumb";
 
 type Pose = {
   eyes: readonly [left: EyeState, right: EyeState];
@@ -58,19 +60,27 @@ type Pose = {
   tilt: number;
   /** Arm angles in degrees from hanging straight down; positive swings the hand toward screen left. */
   arms: readonly [left: number, right: number];
+  hands: readonly [left: Hand, right: Hand];
   /** Yellow strokes by the raised hands. */
   burst: boolean;
 };
 
-/** Each mood as one row. wave and cheer are the sheets' own poses; sad, think and swim are drawn to match. */
+/**
+ * Each mood as one row. wave ("hi"), cheer ("yay"), thumbs ("you can do it") and go ("let's go") are the sheets' own
+ * poses; sad, think and swim are drawn to match.
+ */
 const poses: Record<Mood, Pose> = {
-  idle: { eyes: ["open", "open"], mouth: "smile", tilt: 0, arms: [18, -18], burst: false },
-  wave: { eyes: ["open", "wink"], mouth: "grin", tilt: 4, arms: [162, -18], burst: true },
-  cheer: { eyes: ["happy", "happy"], mouth: "grin", tilt: 0, arms: [146, -146], burst: true },
-  sad: { eyes: ["sad", "sad"], mouth: "frown", tilt: -4, arms: [4, -4], burst: false },
+  idle: { eyes: ["open", "open"], mouth: "smile", tilt: 0, arms: [18, -18], hands: ["mitt", "mitt"], burst: false },
+  wave: { eyes: ["open", "wink"], mouth: "grin", tilt: 4, arms: [162, -18], hands: ["open", "mitt"], burst: true },
+  cheer: { eyes: ["happy", "happy"], mouth: "grin", tilt: 0, arms: [146, -146], hands: ["open", "open"], burst: true },
+  sad: { eyes: ["sad", "sad"], mouth: "frown", tilt: -4, arms: [4, -4], hands: ["mitt", "mitt"], burst: false },
   // Hand to the cheek: "hmm".
-  think: { eyes: ["open", "open"], mouth: "o", tilt: -5, arms: [18, -160], burst: false },
-  swim: { eyes: ["open", "wink"], mouth: "grin", tilt: 0, arms: [58, -58], burst: false },
+  think: { eyes: ["open", "open"], mouth: "o", tilt: -5, arms: [18, -160], hands: ["mitt", "fist"], burst: false },
+  swim: { eyes: ["open", "wink"], mouth: "grin", tilt: 0, arms: [58, -58], hands: ["open", "open"], burst: false },
+  // Thumb up beside the face, the other hand on the hip.
+  thumbs: { eyes: ["open", "wink"], mouth: "grin", tilt: 3, arms: [168, -26], hands: ["thumb", "mitt"], burst: true },
+  // One fist up by the face, the other pumped at the chest.
+  go: { eyes: ["open", "wink"], mouth: "grin", tilt: 2, arms: [150, 60], hands: ["fist", "fist"], burst: true },
 };
 /** The right arm when it holds a prop and its pose would let it hang: across the belly. */
 const HOLD = 18;
@@ -78,9 +88,9 @@ const HOLD = 18;
 const THINK_GAZE = { x: -3, y: -3 };
 
 /**
- * The box takes the drawing from a cheering hand (x −17) to the tail tip (x 264) at the old 260:300 aspect, so
- * callers' layouts keep their shape and renders that clip to the viewBox (the port's OG cards) lose nothing.
- * Swimming arms reach past it; browsers draw the overflow.
+ * The box runs from x −17 (where the first, longer arms' cheering hand reached) to the tail tip (x 264) at the old
+ * 260:300 aspect, so callers' layouts keep their shape and renders that clip to the viewBox (the port's OG cards)
+ * lose nothing. Swimming arms reach past it; browsers draw the overflow.
  */
 const VIEWBOX = "-17 -25 288 332.3";
 /** Mirrors the drawing about the box's centre line (x 127). */
@@ -94,9 +104,12 @@ const joints = {
   neck: { x: 107, y: 180 },
   fin: { x: 172, y: 62 },
   tail: { x: 172, y: 242 },
-  /** On the body's sides, just below the jaw: the arm's root bulges a little past the side, as a shoulder. */
-  leftShoulder: { x: 34, y: 184 },
-  rightShoulder: { x: 182, y: 184 },
+  /**
+   * On the body's sides, level with the jaw: the arm's root bulges a little past the side, as a shoulder. As high as
+   * the sheets', so the short arm still lifts its hand to the eyes.
+   */
+  leftShoulder: { x: 34, y: 177 },
+  rightShoulder: { x: 182, y: 177 },
   feet: { x: 115, y: 288 },
 } satisfies Record<string, Point>;
 
@@ -108,11 +121,35 @@ const at = (p: Point) => ({ originX: `${p.x}px`, originY: `${p.y}px`, transformB
  */
 const rot = (deg: number, p: Point) => `rotate(${deg} ${p.x} ${p.y})`;
 
-/** Damped near critical: an arm swinging up to wave settles at the cheek instead of overshooting past the eye. */
-const armSpring: SpringOptions = { stiffness: 170, damping: 19, mass: 0.9 };
+/**
+ * The arm is a damped rotor about its shoulder. The short arm keeps less of its mass far from the joint, so its
+ * moment of inertia is about 0.6 of the long one's (mass 0.9 → 0.55): with the same stiffness it swings quicker,
+ * ω = √(k/m) ≈ 17.6 rad/s. Damping ratio ζ = c / 2√(km) ≈ 0.67 lets a pose change overshoot about 6%: on the
+ * largest upward swing (sad to thumbs, 164°) that is 10°, which leaves the raised thumb's tip about 24 units from
+ * the eye's centre (ζ ≈ 0.62 let it graze the eye).
+ */
+const armSpring: SpringOptions = { stiffness: 170, damping: 13, mass: 0.55 };
+/**
+ * Flesh on the arm: a fast swing stretches it along its length (the centripetal pull grows with ω², so
+ * `stretchPerOmega2` is per rad²/s²) and it thins to keep its volume, then the stretch rings out on an underdamped
+ * spring (ζ ≈ 0.47), the jiggle that makes a chubby arm read as soft.
+ */
+const flesh = { stretchPerOmega2: 0.0003, maxStretch: 0.1, spring: { stiffness: 420, damping: 13.5, mass: 0.47 } satisfies SpringOptions };
+/** Hand-arc lengths are kept from the long arm, so loops turn the short arm further, and quicker as a pendulum: T ∝ √L. */
+const ARC = 56 / Math.hypot(3.5, 35);
 const headSpring: SpringOptions = { stiffness: 220, damping: 18 };
 /** Softer and bouncier than the head, so the fin lags and settles after it. */
 const finSpring: SpringOptions = { stiffness: 120, damping: 7 };
+
+/**
+ * How far an arm turning at `angle` is stretched by its own swing: 1 at rest, up to 1 + `flesh.maxStretch`.
+ * With reduced motion it stays 1.
+ */
+function useFlesh(angle: MotionValue<number>, reduce: boolean | null) {
+  const speed = useVelocity(angle);
+  const pull = useTransform(speed, (v) => (reduce ? 1 : 1 + Math.min(flesh.maxStretch, flesh.stretchPerOmega2 * ((v * Math.PI) / 180) ** 2)));
+  return useSpring(pull, flesh.spring);
+}
 
 /** A spring that follows `target`; with reduced motion it jumps. */
 function useSprung(target: number, options: SpringOptions, reduce: boolean | null) {
@@ -238,17 +275,56 @@ const soles = "M56 280 C54 285 57 288 62 288 L92 288 C96 288 98 285 98 281 C86 2
 const tail =
   "M166 228 C182 230 196 226 205 216 C206 204 214 194 228 190 C232 189 235 189 236 191 C236 201 232 211 227 219 C239 216 252 220 260 228 C265 234 259 243 248 247 C236 253 222 252 212 247 C200 251 186 254 174 253 L164 250Z";
 
-/** One arm, hanging from its shoulder at (0,0): a chubby limb ending in a mitt. */
+/**
+ * One arm, hanging from its shoulder at (0,0), with +x toward the body. Proportioned on the sheets' relaxed arms:
+ * about 1.4 times as long as it is wide (the first rig's was 2.6), so it ends at the hip rather than the crotch.
+ * A thick root narrows a little, then swells into a round mitt wider than the wrist, tucked toward the body as a
+ * slight bend.
+ */
 const arm = {
-  shape: "M-14.5 0 C-15.5 16 -17 32 -16.5 45 C-16 58 -9 69.5 0.5 69.5 C10 69.5 16.5 59 16.5 47 C16.5 33 15 16 14.5 0 C14.5 -10 -14.5 -10 -14.5 0Z",
-  /** Where the mitt's thumb meets the hand, on the side toward the body. */
-  thumb: "M10.5 53.5 C13.8 50.5 15 46.5 14 42",
-  shine: "M-10.5 13 C-12 23 -12.5 32 -11.5 40",
-  /** The hand's centre: a held prop is drawn here. */
-  hand: { x: 0, y: 56 },
+  shine: "M-12 11 C-13 18 -13.2 24 -12.4 30",
+  /** The mitt's centre: a held prop is drawn here. */
+  hand: { x: 3.5, y: 35 },
 };
-/** The top outline fades to nothing within this radius of the shoulder, so the joint shows no line. */
-const shoulderFade = { from: 13.5, to: 19 } as const;
+
+/**
+ * The whole limb's outline for each hand. Every outline runs the same commands (the outer side, five segments
+ * round the hand, the inner side, the cap over the shoulder), so a change of hand morphs one into the next instead
+ * of swapping drawings. `lines` are the creases inside the hand.
+ */
+const hands: Record<Hand, { outline: string; lines: string }> = {
+  mitt: {
+    outline: "M-17 0 C-17 10 -16.5 16 -17 23 C-17.5 34 -13 50 4 50 C12 50 17 47 19.6 42 C21.6 38.5 22 32.5 21.5 27 C21 23 19 19 18 15 C17 10.5 16.8 5 17 0 C17 -10 -17 -10 -17 0Z",
+    // Where the thumb meets the hand, on the side toward the body.
+    lines: "M15 41.5 C18.5 39 20 35 19.3 30.5",
+  },
+  // Wider and flatter, palm out. Its thumb stands off the outer side, which faces up once the arm is lifted past
+  // horizontal: at the face when raised (wave, cheer), upward when held out (swim), as in the sheets.
+  open: {
+    outline: "M-17 0 C-17 8 -17 14 -18 19 C-24 19.5 -29 22 -27.5 27.5 C-26 33 -22 37 -18.5 37 C-20 44 -16 56 -1 56 C9 56 15 52 18 46 C21 38 18.5 14 17 0 C17 -10 -17 -10 -17 0Z",
+    lines: "M-18.5 37 C-16.3 34.5 -15.6 31 -16 27.5",
+  },
+  // A ball, smaller than the mitt: knuckles at the end and the thumb folded across them.
+  fist: {
+    outline: "M-17 0 C-17 10 -16.5 16 -17 23 C-17.5 33 -16 46 -6 49 C0 51 8 51 13 48.5 C18 46 21.5 41 21.5 35 C21.5 29 20 24 18.5 18 C17.5 13 16.8 6 17 0 C17 -10 -17 -10 -17 0Z",
+    lines: "M-7 46.5 C-6 44 -6.3 41.5 -7.5 40 M1.5 48.5 C2.3 46 2 43.5 0.8 42 M19.5 31 C13 30.5 7 33 3.5 37.5",
+  },
+  // The fist with a big thumb out past it, along the arm and leaning 12° to the outer side, so the raised arm in
+  // `thumbs` (168°) holds it upright.
+  thumb: {
+    outline: "M-17 0 C-17 10 -16.5 16 -17 23 C-17.5 33 -12.5 42 -11 48 C-10 56 -9.5 70.5 -4 70.5 C1.5 70.5 2.5 60 3 52 C10 52.5 22 44 21.5 33 C21 24 16.8 9 17 0 C17 -10 -17 -10 -17 0Z",
+    lines: "M-9.5 50.5 C-5.5 49 -1 49.5 2.5 52 M10.5 51 C10 48.5 10.3 46 11.5 44.5",
+  },
+};
+const handMorph = { duration: 0.16, ease: easeOutExpo } as const;
+/** The right hand, which holds props: the right arm is the left one mirrored. */
+const grip = { x: -arm.hand.x, y: arm.hand.y };
+/**
+ * The top outline fades out over the arm's root, between these depths below the shoulder, so the joint shows no
+ * line while the sides keep theirs almost to the shoulder. (A fade by radius left the root's sides unlined for 22
+ * units, a smudge where a chubby arm crosses the white belly.)
+ */
+const shoulderFade = { from: 2, to: 9 } as const;
 
 /* ── Face ───────────────────────────────────────────────────────────────── */
 
@@ -326,25 +402,38 @@ type ArmPass = "ink" | "fill";
  * hides, which joins the arm's outer edge to the body's outline. `fill`: the arm itself, over the body and head,
  * with a top outline that fades out near the shoulder.
  */
-function Arm({ side, pass, angle, rest, paint, fade, children }: { side: "left" | "right"; pass: ArmPass; angle: MotionValue<number>; rest: number; paint: string; fade: string; children?: ReactNode }) {
+function Arm({ side, pass, hand, reduce, angle, stretch, rest, paint, fade, children }: { side: "left" | "right"; pass: ArmPass; hand: Hand; reduce: boolean | null; angle: MotionValue<number>; stretch: MotionValue<number>; rest: number; paint: string; fade: string; children?: ReactNode }) {
+  const outline = { initial: false, animate: { d: hands[hand].outline }, transition: reduce ? { duration: 0 } : handMorph } as const;
+  // A hand's creases only fit its own outline, so they wait out the morph rather than hang outside the hand.
+  const [settled, setSettled] = useState(hand);
+  useEffect(() => {
+    const t = window.setTimeout(() => setSettled(hand), reduce ? 0 : handMorph.duration * 1000);
+    return () => window.clearTimeout(t);
+  }, [hand, reduce]);
   const shoulder = side === "left" ? joints.leftShoulder : joints.rightShoulder;
+  // Volume kept: a limb stretched by s along its length thins by √s across it. The right arm is mirrored as well,
+  // and the CSS scale replaces the attribute's mirror in a browser, so it carries the sign.
+  const mirror = side === "right" ? -1 : 1;
+  const across = useTransform(stretch, (s) => mirror / Math.sqrt(s));
+  // What the hand holds moves out with the stretched hand, without being stretched itself.
+  const handShift = useTransform(stretch, (s) => (s - 1) * arm.hand.y);
   return (
     <motion.g transform={rot(rest, shoulder)} style={{ ...at(shoulder), rotate: angle }}>
       <g transform={`translate(${shoulder.x} ${shoulder.y})`}>
         {/* The right arm is the left one mirrored, so its thumb also faces the body */}
-        <g transform={side === "right" ? "scale(-1 1)" : undefined}>
+        <motion.g transform={side === "right" ? "scale(-1 1)" : undefined} style={{ ...at({ x: 0, y: 0 }), scaleX: across, scaleY: stretch }}>
           {pass === "ink" ? (
-            <path d={arm.shape} fill={C.ink} stroke={C.ink} strokeWidth={LINE * 2} strokeLinejoin="round" />
+            <motion.path {...outline} fill={C.ink} stroke={C.ink} strokeWidth={LINE * 2} strokeLinejoin="round" />
           ) : (
             <>
-              <path d={arm.shape} fill="none" stroke={C.ink} strokeWidth={LINE * 2} strokeLinejoin="round" mask={fade} />
-              <path d={arm.shape} fill={paint} />
+              <motion.path {...outline} fill="none" stroke={C.ink} strokeWidth={LINE * 2} strokeLinejoin="round" mask={fade} />
+              <motion.path {...outline} fill={paint} />
               <path d={arm.shine} fill="none" stroke={C.white} strokeOpacity={0.5} strokeWidth={3.4} strokeLinecap="round" />
-              <path d={arm.thumb} {...inked} strokeWidth={LINE * 0.8} />
+              {settled === hand && <path d={hands[hand].lines} {...inked} strokeWidth={LINE * 0.8} />}
             </>
           )}
-        </g>
-        {children}
+        </motion.g>
+        {children && <motion.g style={{ y: handShift }}>{children}</motion.g>}
       </g>
     </motion.g>
   );
@@ -401,10 +490,28 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
   // Poses ride springs; loops ride on top. Every layer of a part reads the same values.
   const leftPose = useSprung(leftTarget, armSpring, reduce);
   const rightPose = useSprung(rightTarget, armSpring, reduce);
-  const leftSwing = useLoop(!live ? null : mood === "wave" ? { keyframes: [0, -14, 0], duration: 0.75 } : mood === "cheer" ? { keyframes: [0, 10, 0], duration: 0.62, repeatDelay: 0.22 } : mood === "swim" ? { keyframes: [0, 16, 0], duration: 0.55 } : null);
-  const rightSwing = useLoop(!live ? null : mood === "cheer" ? { keyframes: [0, -10, 0], duration: 0.62, repeatDelay: 0.22 } : mood === "swim" ? { keyframes: [0, -16, 0], duration: 0.55 } : null);
+  // Cheer and swim keep their timing, which the hop and the stroke set; only the free wave swings at the arm's own rate.
+  // A thumbs-up nudges the thumb at the viewer now and then; "let's go" punches both fists in short beats.
+  const leftSwing = useLoop(
+    !live ? null
+    : mood === "wave" ? { keyframes: [0, -14 * ARC, 0], duration: 0.75 / Math.sqrt(ARC) }
+    : mood === "cheer" ? { keyframes: [0, 10 * ARC, 0], duration: 0.62, repeatDelay: 0.22 }
+    : mood === "swim" ? { keyframes: [0, 16 * ARC, 0], duration: 0.55 }
+    : mood === "thumbs" ? { keyframes: [0, 5 * ARC, 0], duration: 0.5, repeatDelay: 1.4 }
+    : mood === "go" ? { keyframes: [0, 9 * ARC, 0], duration: 0.42, repeatDelay: 0.18 }
+    : null,
+  );
+  const rightSwing = useLoop(
+    !live ? null
+    : mood === "cheer" ? { keyframes: [0, -10 * ARC, 0], duration: 0.62, repeatDelay: 0.22 }
+    : mood === "swim" ? { keyframes: [0, -16 * ARC, 0], duration: 0.55 }
+    : mood === "go" ? { keyframes: [0, 6 * ARC, 0], duration: 0.42, repeatDelay: 0.18 }
+    : null,
+  );
   const leftArm = useTransform(() => leftPose.get() + leftSwing.get());
   const rightArm = useTransform(() => rightPose.get() + rightSwing.get());
+  const leftFlesh = useFlesh(leftArm, reduce);
+  const rightFlesh = useFlesh(rightArm, reduce);
   // The prop counter-turns against the arm, so it stays upright in the hand at any angle.
   const propTurn = useTransform(() => -rightArm.get());
   const tilt = useSprung(pose.tilt, headSpring, reduce);
@@ -418,11 +525,11 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
   const fade = paint("fade");
   const arms = (pass: ArmPass) => (
     <>
-      <Arm side="left" pass={pass} angle={leftArm} rest={leftTarget} paint={skin} fade={fade} />
-      <Arm side="right" pass={pass} angle={rightArm} rest={rightTarget} paint={skin} fade={fade}>
+      <Arm side="left" pass={pass} hand={pose.hands[0]} reduce={reduce} angle={leftArm} stretch={leftFlesh} rest={leftTarget} paint={skin} fade={fade} />
+      <Arm side="right" pass={pass} hand={hasProp ? "fist" : pose.hands[1]} reduce={reduce} angle={rightArm} stretch={rightFlesh} rest={rightTarget} paint={skin} fade={fade}>
         {pass === "fill" && hasProp && (
-          <motion.g transform={rot(-rightTarget, arm.hand)} style={{ ...at(arm.hand), rotate: propTurn }}>
-            <g transform={`translate(${arm.hand.x} ${arm.hand.y + 2})`}>
+          <motion.g transform={rot(-rightTarget, grip)} style={{ ...at(grip), rotate: propTurn }}>
+            <g transform={`translate(${grip.x} ${grip.y + 2})`}>
               <Prop outfit={outfit} still={still} />
             </g>
           </motion.g>
@@ -449,11 +556,11 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
           <stop offset={0.88} stopColor={C.skinShade} />
           <stop offset={1} stopColor={C.skinEdge} />
         </radialGradient>
-        {/* In each arm's own coordinates: hides the top outline near the shoulder, shows it further out */}
-        <radialGradient id={id("fadeRamp")} gradientUnits="userSpaceOnUse" cx={0} cy={0} r={shoulderFade.to}>
-          <stop offset={shoulderFade.from / shoulderFade.to} stopColor="#000" />
+        {/* In each arm's own coordinates: hides the top outline over the shoulder, shows it below */}
+        <linearGradient id={id("fadeRamp")} gradientUnits="userSpaceOnUse" x1={0} y1={shoulderFade.from} x2={0} y2={shoulderFade.to}>
+          <stop offset={0} stopColor="#000" />
           <stop offset={1} stopColor="#fff" />
-        </radialGradient>
+        </linearGradient>
         <mask id={id("fade")} maskUnits="userSpaceOnUse" x={-40} y={-40} width={80} height={130}>
           <rect x={-40} y={-40} width={80} height={130} fill={paint("fadeRamp")} />
         </mask>
@@ -542,18 +649,18 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
             <motion.g initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={playful} stroke={C.sun} strokeWidth={5.5} strokeLinecap="round">
               {mood === "cheer" ? (
                 <>
-                  <path d="M-30 112 L-18 112" />
-                  <path d="M-26 88 L-15 96" />
-                  <path d="M-12 68 L-6 81" />
-                  <path d="M246 112 L234 112" />
-                  <path d="M242 88 L231 96" />
-                  <path d="M228 68 L222 81" />
+                  <path d="M-23 118 L-11 118" />
+                  <path d="M-19 94 L-8 102" />
+                  <path d="M-5 74 L1 87" />
+                  <path d="M239 118 L227 118" />
+                  <path d="M235 94 L224 102" />
+                  <path d="M221 74 L215 87" />
                 </>
               ) : (
                 <>
-                  <path d="M-24 100 L-11 103" />
-                  <path d="M-18 76 L-7 87" />
-                  <path d="M0 60 L4 75" />
+                  <path d="M-22 112 L-9 115" />
+                  <path d="M-16 88 L-5 99" />
+                  <path d="M2 72 L6 87" />
                 </>
               )}
             </motion.g>
