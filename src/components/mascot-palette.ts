@@ -1,26 +1,76 @@
-/** Tavi's colours: the brand green family, forest for ink, sun for highlights. */
+/**
+ * Tavi's colours, sampled from the client's Tavvy character sheets: mint skin with a dark green-black
+ * outline, a white face and belly, and forest green for the gear. The belly chip keeps the logo's own green.
+ */
 export const C = {
-  body: "#7ccc8c",
-  shade: "#62b574",
-  deep: "#458d55",
-  light: "#ace6b5",
+  ink: "#0e2621",
+  skin: "#a7e7c5",
+  skinLight: "#b4edd0",
+  skinMid: "#93dfbb",
+  skinShade: "#78d0aa",
+  skinEdge: "#6fcda5",
+  skinSide: "#97dfbc",
+  fin: "#9de1bf",
+  crease: "#3f9e7c",
+  rim: "#d9f8e7",
   white: "#ffffff",
-  whiteShade: "#d4e8d7",
-  eye: "#282828",
-  cheek: "#ff93ab",
-  mouth: "#86283b",
-  tongue: "#ff7b93",
+  whiteShade: "#e3efed",
+  eye: "#231a16",
+  cheek: "#ffb3bb",
+  mouth: "#d4637d",
+  tongue: "#fea0b4",
   brand: "#65cd7d",
-  brandDeep: "#3d9c56",
-  forest: "#363636",
-  forestSoft: "#484848",
-  sun: "#f6c445",
-  sunDeep: "#d69e1a",
-  paper: "#fbf3df",
-  paperShade: "#ead9b0",
-  khaki: "#d8b36a",
-  khakiDeep: "#b98f43",
-  ribbon: "#e2574c",
-  glass: "#ecf7ee",
-  word: "#363636",
+  word: "#595959",
+  shadow: "#2f8c6e",
+  sun: "#ffcc3f",
+  forest: "#24744a",
+  forestDeep: "#185535",
+  forestLight: "#3c9563",
+  cap: "#22332d",
+  capTop: "#2d433b",
+  gold: "#f2b632",
+  goldDeep: "#c98d16",
+  paper: "#fbf6e6",
+  paperShade: "#e8dcbc",
+  khaki: "#dcc08a",
+  khakiDeep: "#bd9a5c",
+  glass: "#e9f8ff",
+  liquid: "#62d36a",
+  pencil: "#ffc93c",
+  eraser: "#f59aa8",
+  metal: "#c9d0d4",
+  map: "#e8f4d8",
+  route: "#7fbf7a",
+  pin: "#e2574c",
+} as const;
+
+/** Outline weight, in viewBox units. Shapes stroke at twice this under their fill (`paint-order: stroke`). */
+export const LINE = 2.8;
+
+/** A closed shape's outline: the stroke sits under the fill, so only the outer half shows. */
+export const outlined = {
+  stroke: C.ink,
+  strokeWidth: LINE * 2,
+  strokeLinejoin: "round",
+  paintOrder: "stroke",
+} as const;
+
+/** An open line drawn on top: creases, edges that stop where a part meets the body. */
+export const inked = {
+  fill: "none",
+  stroke: C.ink,
+  strokeWidth: LINE,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+} as const;
+
+/** The logo's sprout, in a 32-unit box. */
+export const sprout = "M7 8H13C15.5 8 16 10.5 16 12.5C16 10.5 16.5 8 19 8H25V11.5H20.5C18.3 11.5 17.6 13.2 17.6 15.2V25H14.4V15.2C14.4 13.2 13.7 11.5 11.5 11.5H7Z";
+
+/** The Tavis logo, from `public/assets/tavis-logo.svg` (a 749.34 × 193.57 box): the chip, with the sprout cut out, and the wordmark. */
+export const logo = {
+  width: 749.34,
+  height: 193.57,
+  chip: "M162.39,0H31.18A31.27,31.27,0,0,0,0,31.18V162.39a31.27,31.27,0,0,0,31.18,31.18H162.39a31.27,31.27,0,0,0,31.18-31.18V31.18A31.27,31.27,0,0,0,162.39,0ZM24.76,25.44V24.32h.88C25.33,24.68,25,25.06,24.76,25.44Zm86.3,139.7H82.54v-81a60.66,60.66,0,0,1,13.93,21.48c.08.23.29.88.29.9l0,.09s.22-.73.32-1a60.85,60.85,0,0,1,14-21.52ZM164.73,54.91h-30.6c-16.92,0-31.34,17.18-37,32.35-.1.3-.21.61-.32.91,0,0-.21-.61-.31-.91-5.69-15.17-20.1-32.35-37-32.35H28.84V28.43H59.45c17,0,31.39,14.75,37.06,31.56l.29.92.27-.93c5.68-16.82,20.11-31.55,37.06-31.55h30.6Z",
+  word: "M309.65,178.54q-8.43.71-20.72.7c-11.86,0-20.21-2.73-25.4-7s-8.24-11.62-7.95-22.15V72.15H237.9V48.62h17.68V27.42l33.59-13.09V48.62h20.48V72.15H289.17v72.33q0,4.46,2.63,5.85c1.76.94,5.4,1.41,10.95,1.41l6.9-.24ZM441.59,48.62h32.49l31.82,96.66,30.62-96.66h32.06L522.58,176h-35ZM617.28,175.03 600.54,175.03 583.69,175.03 583.69,48.62 600.42,48.62 617.28,48.62 617.28,175.03ZM712.57,86.78A13.92,13.92,0,0,0,706.48,75q-6.09-4.45-16.16-4.45-9.72,0-15.17,3.33t-5.45,9.31q0,4.21,6.21,7.26t21.66,6.43q30.9,6.91,41.32,15.1t10.45,25.75q0,18.74-15.16,30.14t-40,11.41q-29.37,0-45.24-11.23T632,135.23h34.18A16.53,16.53,0,0,0,674,149q7.43,5,20.19,5,10.06,0,15.75-3.45t5.67-9.66q0-4.32-5.49-7.37t-19.32-6q-32.31-7.26-43.19-15.33t-10.88-24.7q0-19,14.11-30.61T688,45.23q26,0,41.89,11.41t15.92,30.14ZM423.75,55.25q-13.77-10-37.51-10-27.39,0-41.56,11.12t-15.2,33.47h32.18q.34-8.53,5.73-13.23t15-4.68q10.75,0,16.5,3.63a11.34,11.34,0,0,1,5.5,8.42,11.87,11.87,0,0,1-1,6.21,7.91,7.91,0,0,1-3.8,4.22,47,47,0,0,1-14.4,4l-22.11,3.06q-18.61,2.68-28.32,13.16T325,142.5q0,16.5,10.77,26.61t28.43,10.13q25.09,0,40.87-18.6l.1-.12,0,.07V176h32.28V82.6Q437.51,65.26,423.75,55.25Zm-19.14,73.67a29.81,29.81,0,0,1-1.28,8.42,18.41,18.41,0,0,1-3.16,6.55q-9.6,11.36-25.76,11.36-7.37,0-11.46-4.33c-2.74-2.89-4.1-6.86-4.1-11.94a14.73,14.73,0,0,1,4.56-11.06q4.56-4.4,13.35-6l12.4-2.35a54.21,54.21,0,0,0,15.45-5.25ZM583.46,14.33h34.05v25.08h-34.05Z",
 } as const;

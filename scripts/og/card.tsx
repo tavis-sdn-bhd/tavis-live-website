@@ -60,7 +60,11 @@ const disc = { right: 70, top: 55, size: 520 } as const;
 async function art(visual: OgVisual) {
   switch (visual.kind) {
     case "tavi": {
-      const markup = renderToStaticMarkup(<Mascot mood={visual.mood} outfit={visual.outfit} decorative />).replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"');
+      // resvg can't read the CSS turns Motion writes ("rotate(146deg)") and drops them; without them the SVG
+      // transform attributes the mascot also writes hold each pose.
+      const markup = renderToStaticMarkup(<Mascot mood={visual.mood} outfit={visual.outfit} decorative />)
+        .replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"')
+        .replace(/transform:[^;"]*;?/g, "");
       return <img src={svgData(markup)} width={390} height={450} style={{ position: "absolute", right: 135, top: 100 }} />;
     }
     case "phone": {
