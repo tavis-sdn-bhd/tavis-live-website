@@ -24,6 +24,8 @@
   /* brand-ink passes contrast only at display sizes; small green text uses this. */
   --color-brand-text: #1d7a3d;
   --color-brand-hover: #73d488;
+  /* BA's green buttons: the logo green lifted 10%, so a button reads as bright as the logo beside its dark lip. */
+  --color-brand-bright: #6fe189;
   /* Between brand and sun in the Shout gradient (v2/ui.tsx) */
   --color-brand-lime: #9ef07a;
 

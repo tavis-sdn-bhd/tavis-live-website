@@ -11,7 +11,7 @@ type Size = "sm" | "md" | "lg";
 
 /* Fill, label and lip. Every label keeps 4.5:1 on its fill at rest and hovered: sky brightens less, white dims. */
 const tones: Record<Tone, string> = {
-  green: "bg-brand text-forest shadow-[0_4px_0_var(--color-brand-ledge)]",
+  green: "bg-brand-bright text-forest shadow-[0_4px_0_var(--color-brand-ledge)] [--ledge-hover:1.05]",
   white: "bg-paper text-sky-ink ring-2 ring-inset ring-line-strong shadow-[0_4px_0_var(--color-line-strong)] [--ledge-hover:0.95]",
   sky: "bg-sky-ink text-white shadow-[0_4px_0_var(--color-sky-ledge)] [--ledge-hover:1.05]",
   red: "bg-wrong-ink text-white shadow-[0_4px_0_var(--color-wrong-ledge)]",
