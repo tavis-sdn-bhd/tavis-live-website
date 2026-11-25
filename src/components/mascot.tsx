@@ -1,9 +1,9 @@
 "use client";
 
-import { AnimatePresence, motion, useInView, useMotionValue, useReducedMotion, useSpring, type MotionValue, type Transition } from "motion/react";
-import { useEffect, useId, useRef, useState, useSyncExternalStore, type RefObject } from "react";
-import { OutfitBack, OutfitBody, OutfitHead, Prop, outfitHasProp, outfitHidesLogo, type Outfit } from "./mascot-outfits";
-import { C } from "./mascot-palette";
+import { animate, motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform, type MotionValue, type SpringOptions } from "motion/react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
+import { OutfitBack, OutfitBody, OutfitHead, Prop, outfitHasProp, type Outfit } from "./mascot-outfits";
+import { C, LINE, inked, logo, outlined } from "./mascot-palette";
 import { cx } from "./ui";
 import { easeOutExpo, playful, standard } from "./motion";
 import { useAmbientStill, useMotionPaused } from "./motion-pause";
@@ -11,17 +11,16 @@ import { useAmbientStill, useMotionPaused } from "./motion-pause";
 export type { Outfit } from "./mascot-outfits";
 
 /**
- * Tavi, the Tavis dolphin, drawn flat in code after the 3D original.
+ * Tavi, the Tavis dolphin, redrawn in code from the client's Tavvy character sheets: a squat egg of a head on a
+ * bean body that tapers to stubby legs, with the face low and to the left.
  *
- * Built like an illustration, not a puppet: resting arms sit behind the body
- * so shoulders never show a joint, and each pose has its own arm drawing that
- * grows out of the shoulder. Pose changes cross-fade those drawings, tilt the
- * head and shift the stance. Colours sit in the brand's green family; eyes use
- * the brand forest instead of black.
- *
- * What keeps it a dolphin and not a shark: a beak that sits proud of the face,
- * a white jaw inset so green wraps the cheeks, a curved fin with a rounded tip,
- * a blowhole, and a two-lobed fluke.
+ * Built as a rig, not a set of drawings. Each arm is one limb that turns about a shoulder on the body's side, below
+ * the jaw, and changing mood swings it there on a spring. The arm's outline is drawn twice: once behind the body,
+ * so its outer edge runs on into the body's outline at any angle, and once on top, fading out toward the shoulder,
+ * so the arm reads against the face and belly while the joint itself shows no line (as in the sheets). A held prop
+ * rides in the hand and stays upright. The head tilts about the neck, the fin follows a beat late, the tail sways,
+ * and the body breathes with the feet planted. One light source shades every mint part, so parts that move over
+ * each other match.
  */
 
 export type Mood = "idle" | "wave" | "cheer" | "sad" | "think" | "swim";
@@ -48,24 +47,86 @@ export function useTaviOnStage() {
   return useSyncExternalStore(subscribeStage, () => onStage > 0, () => false);
 }
 
+type EyeState = "open" | "happy" | "wink" | "sad";
+type MouthShape = "grin" | "smile" | "frown" | "o";
+type Point = { x: number; y: number };
 
-const THINK_GAZE = { x: -3, y: -3.5 };
-
-// Pose arms cross-fade, so the outgoing drawing leaves as fast as the new one arrives: no see-through gap.
-const fade: Transition = { duration: 0.18, ease: easeOutExpo };
-
-/** Motion pivots SVG parts on their bounding box: fractions are (pivot − box start) / box size. */
-const pivots = {
-  head: { originX: 0.48, originY: 0.96 }, // neck (130,184) in x 44–224, y 6–192
-  tail: { originX: 0.07, originY: 0.82 }, // root (172,246) in x 166–254, y 197–257
-  fin: { originX: 0.36, originY: 0.86 }, // base (164,52) in x 142–203, y 2–60
-  raisedLeft: { originX: 0.79, originY: 0.96 }, // shoulder (90,188) in x 31–106, y 94–192
-  raisedRight: { originX: 0.21, originY: 0.96 }, // shoulder (170,188) in x 154–229, y 94–192
+type Pose = {
+  eyes: readonly [left: EyeState, right: EyeState];
+  mouth: MouthShape;
+  /** Head tilt in degrees about the neck; positive turns clockwise. */
+  tilt: number;
+  /** Arm angles in degrees from hanging straight down; positive swings the hand toward screen left. */
+  arms: readonly [left: number, right: number];
+  /** Yellow strokes by the raised hands. */
+  burst: boolean;
 };
+
+/** Each mood as one row. wave and cheer are the sheets' own poses; sad, think and swim are drawn to match. */
+const poses: Record<Mood, Pose> = {
+  idle: { eyes: ["open", "open"], mouth: "smile", tilt: 0, arms: [18, -18], burst: false },
+  wave: { eyes: ["open", "wink"], mouth: "grin", tilt: 4, arms: [162, -18], burst: true },
+  cheer: { eyes: ["happy", "happy"], mouth: "grin", tilt: 0, arms: [146, -146], burst: true },
+  sad: { eyes: ["sad", "sad"], mouth: "frown", tilt: -4, arms: [4, -4], burst: false },
+  // Hand to the cheek: "hmm".
+  think: { eyes: ["open", "open"], mouth: "o", tilt: -5, arms: [18, -160], burst: false },
+  swim: { eyes: ["open", "wink"], mouth: "grin", tilt: 0, arms: [58, -58], burst: false },
+};
+/** The right arm when it holds a prop and its pose would let it hang: across the belly. */
+const HOLD = 18;
+
+const THINK_GAZE = { x: -3, y: -3 };
+
+/**
+ * The box takes the drawing from a cheering hand (x −17) to the tail tip (x 264) at the old 260:300 aspect, so
+ * callers' layouts keep their shape and renders that clip to the viewBox (the port's OG cards) lose nothing.
+ * Swimming arms reach past it; browsers draw the overflow.
+ */
+const VIEWBOX = "-17 -25 288 332.3";
+/** Mirrors the drawing about the box's centre line (x 127). */
+const MIRROR = "translate(254 0) scale(-1 1)";
+/** Turns the belly logo back about its own centre line (x 99.5), so a mirrored Tavi's logo still reads. */
+const LOGO_UNMIRROR = "translate(199 0) scale(-1 1)";
+
+/* ── Joints ─────────────────────────────────────────────────────────────── */
+
+const joints = {
+  neck: { x: 107, y: 180 },
+  fin: { x: 172, y: 62 },
+  tail: { x: 172, y: 242 },
+  /** On the body's sides, just below the jaw: the arm's root bulges a little past the side, as a shoulder. */
+  leftShoulder: { x: 34, y: 184 },
+  rightShoulder: { x: 182, y: 184 },
+  feet: { x: 115, y: 288 },
+} satisfies Record<string, Point>;
+
+/** A CSS transform pivot in drawing units: it resolves in the part's own coordinates (checked in Chrome). */
+const at = (p: Point) => ({ originX: `${p.x}px`, originY: `${p.y}px`, transformBox: "view-box" }) as const;
+/**
+ * The same turn as an SVG attribute. In a browser the animated CSS transform overrides it. resvg can't read CSS
+ * turns, so the port's OG cards strip them and draw each pose from this.
+ */
+const rot = (deg: number, p: Point) => `rotate(${deg} ${p.x} ${p.y})`;
+
+/** Damped near critical: an arm swinging up to wave settles at the cheek instead of overshooting past the eye. */
+const armSpring: SpringOptions = { stiffness: 170, damping: 19, mass: 0.9 };
+const headSpring: SpringOptions = { stiffness: 220, damping: 18 };
+/** Softer and bouncier than the head, so the fin lags and settles after it. */
+const finSpring: SpringOptions = { stiffness: 120, damping: 7 };
+
+/** A spring that follows `target`; with reduced motion it jumps. */
+function useSprung(target: number, options: SpringOptions, reduce: boolean | null) {
+  const value = useSpring(target, options);
+  useEffect(() => {
+    if (reduce) value.jump(target);
+    else value.set(target);
+  }, [target, reduce, value]);
+  return value;
+}
 
 type Props = {
   mood?: Mood;
-  /** Pupils follow the pointer. */
+  /** Eyes follow the pointer. */
   follow?: boolean;
   className?: string;
   title?: string;
@@ -73,10 +134,12 @@ type Props = {
   decorative?: boolean;
   /** What Tavi is wearing. Props are held in the right hand. */
   outfit?: Outfit;
-  /** Pins the pupils to an offset (about ±3.5 per axis), overriding `follow`. */
+  /** Pins the eyes to an offset (about ±3.5 per axis), overriding `follow`. */
   look?: { x: number; y: number };
   /** The scroll companion: doesn't count as Tavi being on stage. */
   roaming?: boolean;
+  /** Which way Tavi faces. The drawing faces left; `right` mirrors it, with the belly logo turned back to read. */
+  facing?: "left" | "right";
 };
 
 function useBlink(enabled: boolean) {
@@ -105,20 +168,21 @@ function useBlink(enabled: boolean) {
 type Gaze = { x: MotionValue<number>; y: MotionValue<number> };
 
 /**
- * Pupil offset as springs. Pointer moves write motion values directly, so
+ * Eye offset as springs. Pointer moves write motion values directly, so
  * following the cursor never re-renders the SVG. `fixed` pins the gaze
  * (e.g. looking up while thinking).
  */
-function useGaze(follow: boolean, ref: RefObject<SVGSVGElement | null>, fixed: { x: number; y: number } | null): Gaze {
+/** `flip` is -1 when the drawing is mirrored: the eyes move in drawing units, so screen x runs backwards there. */
+function useGaze(follow: boolean, ref: RefObject<SVGSVGElement | null>, fixed: { x: number; y: number } | null, flip: 1 | -1): Gaze {
   const tx = useMotionValue(0);
   const ty = useMotionValue(0);
-  // Pupils chase a moving pointer, so they land without overshoot: a bouncy spring reads as jitter.
+  // Eyes chase a moving pointer, so they land without overshoot: a bouncy spring reads as jitter.
   const x = useSpring(tx, standard);
   const y = useSpring(ty, standard);
 
   useEffect(() => {
     if (fixed) {
-      tx.set(fixed.x);
+      tx.set(fixed.x * flip);
       ty.set(fixed.y);
       return;
     }
@@ -131,11 +195,11 @@ function useGaze(follow: boolean, ref: RefObject<SVGSVGElement | null>, fixed: {
       const el = ref.current;
       if (!el) return;
       rect ??= el.getBoundingClientRect();
-      const dx = e.clientX - (rect.left + rect.width / 2);
-      const dy = e.clientY - (rect.top + rect.height * 0.33);
+      const dx = e.clientX - (rect.left + rect.width * 0.4);
+      const dy = e.clientY - (rect.top + rect.height * 0.43);
       const d = Math.hypot(dx, dy) || 1;
       const k = Math.min(1, d / 260);
-      tx.set((dx / d) * 3.4 * k);
+      tx.set((dx / d) * 3.4 * k * flip);
       ty.set((dy / d) * 2.8 * k);
     };
     window.addEventListener("pointermove", onMove, { passive: true });
@@ -146,62 +210,173 @@ function useGaze(follow: boolean, ref: RefObject<SVGSVGElement | null>, fixed: {
       window.removeEventListener("scroll", invalidate);
       window.removeEventListener("resize", invalidate);
     };
-  }, [follow, ref, fixed?.x, fixed?.y, tx, ty]);
+  }, [follow, ref, fixed?.x, fixed?.y, flip, tx, ty]);
 
   return { x, y };
 }
 
-/* ── Arms: one drawing per pose ─────────────────────────────────────────── */
+/* ── Shapes ─────────────────────────────────────────────────────────────── */
 
-/** Resting arm, tucked behind the torso so the shoulder reads as one shape. */
-const restLeft = "M104 180 C82 180 60 192 52 214 C48 228 56 238 66 234 C78 230 92 216 100 204Z";
-const restRight = "M156 180 C178 180 200 192 208 214 C212 228 204 238 194 234 C182 230 168 216 160 204Z";
-/** Raised arm: grows from the side of the chest up past the cheek to a round hand. */
-const raisedLeft = "M102 186 C92 192 80 186 70 172 C58 156 44 136 36 118 C31 104 43 94 53 102 C61 110 70 128 80 146 C88 160 98 170 106 176Z";
-const raisedRight = "M158 186 C168 192 180 186 190 172 C202 156 216 136 224 118 C229 104 217 94 207 102 C199 110 190 128 180 146 C172 160 162 170 154 176Z";
-/** Holding something in front of the belly; the prop is drawn over the hand at the grip. */
-const holdRight = "M186 176 C206 180 220 200 216 218 C212 232 196 238 182 234 C172 231 170 222 178 218 C188 214 198 208 198 198 C196 190 190 184 182 182Z";
-const grip = { hold: "translate(172 214) scale(1.3)", raised: "translate(214 90) scale(1.2)" } as const;
-/** Hand to chin. */
-const thinkRight = "M172 220 C190 210 194 190 184 180 C176 172 160 174 150 180 C142 185 145 194 154 193 C162 192 168 190 170 198Z";
+/**
+ * A squat egg, widest low at the cheeks. Its underside hides in the body; on the left it lifts into a jaw that
+ * ends above the resting arm, so the throat below is the body's and the arm passes in front of it.
+ */
+const headShape =
+  "M105 42 C155 42 194 72 201 110 C205 132 203 152 194 168 C176 188 150 194 108 194 C82 194 64 191 59 184 C56 178 55 172 50 169 C42 165 32 166 24 168 C14 154 9 132 13 110 C20 72 56 42 105 42Z";
+/** The head's outline stops where the jaw meets the shoulders; the arms and body carry it on from there. */
+const headEdge = "M23.5 169 C14 154 9 132 13 110 C20 72 56 42 105 42 C155 42 194 72 201 110 C205 132 203 152 194 168";
+/** White muzzle and chin, running on into the belly; it keeps off both shoulders, so the arms come out from under mint. */
+const faceWhite =
+  "M21 141 C28 135 44 133 55 136.5 C58 142 62 145 67 144 C88 139 112 140 130 149 C135 148.5 139 146.5 141 143.5 C150 140 156 139 162 141 C166 152 160 166 156 176 C154 182 153 188 152 194 L62 194 C59 190 57 184 56 178 C55 173 52 170 47 168 C38 164 28 156 21 141Z";
+const fin = "M114 52 C126 36 146 22 166 17 C174 15 178 19 176 27 C173 38 172 52 176 68Z";
+/** A bean that tapers from under the head to two stubby legs. */
+const body =
+  "M28 150 L190 150 C196 180 190 212 182 232 C178 242 176 252 176 262 C176 270 178 276 179 280 C181 285 178 288 173 288 L139 288 C135 288 133 285 133 281 C132 272 131 262 127 256 C121 251 111 251 104 256 C100 262 99 272 98 281 C98 285 96 288 92 288 L62 288 C57 288 54 285 56 280 C58 276 59 270 59 262 C58 252 54 244 47 236 C35 218 27 196 26 176 C25.5 168 26 158 28 150Z";
+const belly =
+  "M36 150 L156 150 C152 180 150 210 151 236 C152 252 156 262 159 272 C161 280 161 286 160 288.3 L139 288 C135 288 133 285 133 281 C132 272 131 262 127 256 C121 251 111 251 104 256 C100 262 99 272 98 281 C98 285 96 288 92 288 L62 288 C57 288 54 285 56 280 C58 276 59 270 59 262 C58 252 54 244 48 237 C41 222 37 196 37 176Z";
+const soles = "M56 280 C54 285 57 288 62 288 L92 288 C96 288 98 285 98 281 C86 276 68 276 56 280Z M133 281 C133 285 135 288 139 288 L160 288.3 L160 278 C151 276 140 277 133 281Z";
+const tail =
+  "M166 228 C182 230 196 226 205 216 C206 204 214 194 228 190 C232 189 235 189 236 191 C236 201 232 211 227 219 C239 216 252 220 260 228 C265 234 259 243 248 247 C236 253 222 252 212 247 C200 251 186 254 174 253 L164 250Z";
 
-function Eye({ cx, state, gaze }: { cx: number; state: "open" | "closed" | "happy"; gaze: Gaze }) {
+/** One arm, hanging from its shoulder at (0,0): a chubby limb ending in a mitt. */
+const arm = {
+  shape: "M-14.5 0 C-15.5 16 -17 32 -16.5 45 C-16 58 -9 69.5 0.5 69.5 C10 69.5 16.5 59 16.5 47 C16.5 33 15 16 14.5 0 C14.5 -10 -14.5 -10 -14.5 0Z",
+  /** Where the mitt's thumb meets the hand, on the side toward the body. */
+  thumb: "M10.5 53.5 C13.8 50.5 15 46.5 14 42",
+  shine: "M-10.5 13 C-12 23 -12.5 32 -11.5 40",
+  /** The hand's centre: a held prop is drawn here. */
+  hand: { x: 0, y: 56 },
+};
+/** The top outline fades to nothing within this radius of the shoulder, so the joint shows no line. */
+const shoulderFade = { from: 13.5, to: 19 } as const;
+
+/* ── Face ───────────────────────────────────────────────────────────────── */
+
+const eyes = { left: { x: 56, y: 118 }, right: { x: 142, y: 122 } } as const;
+
+function Eye({ x, y, state, closed, gaze, side }: { x: number; y: number; state: EyeState; closed: boolean; gaze: Gaze; side: "left" | "right" }) {
   if (state === "happy") {
-    return <path d={`M${cx - 11} 99 Q${cx} 85 ${cx + 11} 99`} fill="none" stroke={C.eye} strokeWidth="5" strokeLinecap="round" />;
+    return <path d={`M${x - 10} ${y + 3.5} Q${x} ${y - 11.5} ${x + 10} ${y + 3.5}`} fill="none" stroke={C.eye} strokeWidth={4.6} strokeLinecap="round" />;
   }
+  if (state === "wink") {
+    return (
+      <path
+        d={`M${x + 9} ${y - 7.5} Q${x - 3} ${y - 3} ${x - 11} ${y + 2} Q${x - 2} ${y + 5} ${x + 10.5} ${y + 9}`}
+        fill="none"
+        stroke={C.eye}
+        strokeWidth={4.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    );
+  }
+  // A worried brow: its inner end, toward the beak, sits higher.
+  const brow = side === "left" ? `M${x - 11} ${y - 14} L${x + 9} ${y - 20}` : `M${x - 9} ${y - 20} L${x + 11} ${y - 14}`;
   return (
-    <motion.g animate={{ scaleY: state === "closed" ? 0.08 : 1 }} transition={{ duration: 0.08, ease: easeOutExpo }}>
-      <ellipse cx={cx} cy={96} rx={11.5} ry={13.5} fill={C.eye} />
+    <>
       <motion.g style={{ x: gaze.x, y: gaze.y }}>
-        <circle cx={cx - 3.8} cy={90.5} r={5} fill={C.white} />
-        <circle cx={cx + 4} cy={101.5} r={2} fill={C.white} opacity={0.85} />
+        <motion.g animate={{ scaleY: closed ? 0.08 : 1 }} transition={{ duration: 0.08, ease: easeOutExpo }}>
+          <ellipse cx={x} cy={y} rx={10} ry={11.8} fill={C.eye} />
+          <circle cx={x - 3} cy={y - 5.2} r={3.9} fill={C.white} />
+          <circle cx={x + 3.6} cy={y + 5.4} r={1.6} fill={C.white} opacity={0.85} />
+        </motion.g>
       </motion.g>
-    </motion.g>
+      {state === "sad" && <path d={brow} fill="none" stroke={C.crease} strokeWidth={3.4} strokeLinecap="round" />}
+    </>
   );
 }
 
-function Mouth({ mood }: { mood: Mood }) {
-  if (mood === "sad") return <path d="M116 166 Q130 155 144 166" fill="none" stroke={C.mouth} strokeWidth="4.5" strokeLinecap="round" />;
-  if (mood === "think") return <ellipse cx={140} cy={160} rx={5.5} ry={4.5} fill={C.mouth} />;
-  if (mood === "idle")
-    return (
-      <g>
-        <path d="M104 150 Q130 180 156 150 Q130 157 104 150Z" fill={C.mouth} />
-        <path d="M116 162 Q130 156 144 162 Q138 172 130 172 Q122 172 116 162Z" fill={C.tongue} />
-      </g>
-    );
+const mouthTop = "M67 144 C88 139 112 140 130 149";
+/** Open mouths share one structure, so a change of mood opens or closes the mouth instead of swapping it. */
+const openMouths = {
+  grin: {
+    lip: `${mouthTop} C127 166 113 178 97 178 C80 178 69 163 67 144Z`,
+    tongue: "M75 164 C84 153 112 152 122 163 C116 173 107 178 97 178 C87 178 80 172 75 164Z",
+  },
+  smile: {
+    lip: `${mouthTop} C125 158 113 166 98 166 C82 166 71 157 67 144Z`,
+    tongue: "M79 157 C87 151 108 150 116 156 C110 162 104 166 98 166 C90 166 84 162 79 157Z",
+  },
+};
+const mouthMove = { duration: 0.28, ease: easeOutExpo } as const;
+
+function Mouth({ shape }: { shape: MouthShape }) {
+  if (shape === "frown") return <path d="M82 159 Q99 147 116 159" {...inked} />;
+  if (shape === "o") return <ellipse cx={101} cy={155} rx={5.5} ry={6.5} fill={C.mouth} {...outlined} strokeWidth={LINE * 1.6} />;
+  const open = openMouths[shape];
   return (
     <g>
-      <path d="M100 149 Q130 192 160 149 Q130 158 100 149Z" fill={C.mouth} />
-      <path d="M113 167 Q130 158 147 167 Q141 181 130 181 Q119 181 113 167Z" fill={C.tongue} />
+      <motion.path initial={false} animate={{ d: open.lip }} transition={mouthMove} fill={C.mouth} />
+      <motion.path initial={false} animate={{ d: open.tongue }} transition={mouthMove} fill={C.tongue} />
+      <motion.path initial={false} animate={{ d: open.lip }} transition={mouthMove} {...inked} strokeWidth={LINE * 0.86} />
+      <path d="M55 136.5 C58 142 62 145 67 144 M130 149 C135 148.5 139 146.5 141 143.5" {...inked} strokeWidth={LINE * 0.86} />
+      <circle cx={55} cy={136.3} r={1.9} fill={C.ink} />
+      <circle cx={141.1} cy={143.3} r={1.9} fill={C.ink} />
     </g>
   );
 }
 
-export function Mascot({ mood = "idle", follow = false, className, title = "Tavi, the Tavis dolphin", decorative = false, outfit = "none", look, roaming = false }: Props) {
+/* ── Limbs ──────────────────────────────────────────────────────────────── */
+
+type ArmPass = "ink" | "fill";
+
+/**
+ * One arm, drawn in one of its two passes. Both passes read the same motion values, so they never part.
+ * `ink`: the outline as a solid shape, placed behind the body, so outside the body it rims the arm and inside it
+ * hides, which joins the arm's outer edge to the body's outline. `fill`: the arm itself, over the body and head,
+ * with a top outline that fades out near the shoulder.
+ */
+function Arm({ side, pass, angle, rest, paint, fade, children }: { side: "left" | "right"; pass: ArmPass; angle: MotionValue<number>; rest: number; paint: string; fade: string; children?: ReactNode }) {
+  const shoulder = side === "left" ? joints.leftShoulder : joints.rightShoulder;
+  return (
+    <motion.g transform={rot(rest, shoulder)} style={{ ...at(shoulder), rotate: angle }}>
+      <g transform={`translate(${shoulder.x} ${shoulder.y})`}>
+        {/* The right arm is the left one mirrored, so its thumb also faces the body */}
+        <g transform={side === "right" ? "scale(-1 1)" : undefined}>
+          {pass === "ink" ? (
+            <path d={arm.shape} fill={C.ink} stroke={C.ink} strokeWidth={LINE * 2} strokeLinejoin="round" />
+          ) : (
+            <>
+              <path d={arm.shape} fill="none" stroke={C.ink} strokeWidth={LINE * 2} strokeLinejoin="round" mask={fade} />
+              <path d={arm.shape} fill={paint} />
+              <path d={arm.shine} fill="none" stroke={C.white} strokeOpacity={0.5} strokeWidth={3.4} strokeLinecap="round" />
+              <path d={arm.thumb} {...inked} strokeWidth={LINE * 0.8} />
+            </>
+          )}
+        </g>
+        {children}
+      </g>
+    </motion.g>
+  );
+}
+
+type Loop = { keyframes: number[]; duration: number; repeatDelay?: number } | null;
+
+/** A looping offset, as a motion value that every layer can read. `null` settles it back to 0. */
+function useLoop(loop: Loop) {
+  const value = useMotionValue(0);
+  const key = loop ? `${loop.keyframes.join()}/${loop.duration}/${loop.repeatDelay ?? 0}` : "";
+  useEffect(() => {
+    const controls = loop
+      ? animate(value, loop.keyframes, { duration: loop.duration, repeat: Infinity, repeatDelay: loop.repeatDelay ?? 0, ease: "easeInOut" })
+      : animate(value, 0, playful);
+    return () => controls.stop();
+    // `key` stands for `loop`: a new object each render with the same numbers is the same loop.
+  }, [key, value]);
+  return value;
+}
+
+/* ── Tavi ───────────────────────────────────────────────────────────────── */
+
+export function Mascot({ mood = "idle", follow = false, className, title = "Tavi, the Tavis dolphin", decorative = false, outfit = "none", look, roaming = false, facing = "left" }: Props) {
   const reduce = useReducedMotion();
   const ref = useRef<SVGSVGElement>(null);
   const titleId = useId();
+  const uid = useId().replace(/[^\w-]/g, "");
+  // Gradient and mask ids are per instance: a page holds many Tavis, and some sit in hidden subtrees.
+  const id = (name: string) => `${uid}-${name}`;
+  // Not a template literal: the port's i18n scanner reads a template with a word in it as copy to translate.
+  const paint = (name: string) => "url(#" + id(name) + ")";
   // Loops and listeners only run while Tavi is on screen and the visitor is around and hasn't paused animations.
   // A resting Tavi holds its pose and keeps blinking (not when paused), which costs a few frames every few seconds.
   const inView = useInView(ref);
@@ -209,184 +384,182 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
   const paused = useMotionPaused();
   const still = ambientStill || !inView;
   const blink = useBlink(!reduce && !paused && inView && mood !== "cheer");
-  const gaze = useGaze(follow && !still, ref, look ?? (mood === "think" ? THINK_GAZE : null));
+  const mirrored = facing === "right";
+  const gaze = useGaze(follow && !still, ref, look ?? (mood === "think" ? THINK_GAZE : null), mirrored ? -1 : 1);
   useEffect(() => (roaming || !inView ? undefined : enterStage()), [roaming, inView]);
 
-  const leftEye = blink ? "closed" : mood === "cheer" ? "happy" : "open";
-  const rightEye = blink ? "closed" : mood === "cheer" || mood === "wave" ? "happy" : "open";
-  const headTilt = mood === "wave" ? 5 : mood === "think" ? -6 : mood === "sad" ? -3 : 0;
-
-  const leftArm = mood === "wave" || mood === "cheer" ? "raised" : "rest";
+  const pose = poses[mood];
   const hasProp = outfitHasProp(outfit);
-  const rightArm = mood === "cheer" ? "raised" : mood === "think" ? "think" : hasProp ? "hold" : "rest";
+  const holding = hasProp && Math.abs(pose.arms[1]) < 30;
+  const leftTarget = pose.arms[0];
+  const rightTarget = holding ? HOLD : pose.arms[1];
+  const finTarget = -pose.tilt * 0.8 + (mood === "sad" ? -8 : 0);
+  const live = !still && !reduce;
+  const cheering = live && mood === "cheer";
+  const hop = { duration: 0.62, repeat: Infinity, repeatDelay: 0.22, ease: "easeOut" } as const;
+
+  // Poses ride springs; loops ride on top. Every layer of a part reads the same values.
+  const leftPose = useSprung(leftTarget, armSpring, reduce);
+  const rightPose = useSprung(rightTarget, armSpring, reduce);
+  const leftSwing = useLoop(!live ? null : mood === "wave" ? { keyframes: [0, -14, 0], duration: 0.75 } : mood === "cheer" ? { keyframes: [0, 10, 0], duration: 0.62, repeatDelay: 0.22 } : mood === "swim" ? { keyframes: [0, 16, 0], duration: 0.55 } : null);
+  const rightSwing = useLoop(!live ? null : mood === "cheer" ? { keyframes: [0, -10, 0], duration: 0.62, repeatDelay: 0.22 } : mood === "swim" ? { keyframes: [0, -16, 0], duration: 0.55 } : null);
+  const leftArm = useTransform(() => leftPose.get() + leftSwing.get());
+  const rightArm = useTransform(() => rightPose.get() + rightSwing.get());
+  // The prop counter-turns against the arm, so it stays upright in the hand at any angle.
+  const propTurn = useTransform(() => -rightArm.get());
+  const tilt = useSprung(pose.tilt, headSpring, reduce);
+  const finTurn = useSprung(finTarget, finSpring, reduce);
+  // Breathing: the body swells from the feet while everything above it rises with the chest.
+  const breath = useLoop(live && mood !== "cheer" && mood !== "swim" ? { keyframes: [0, 1, 0], duration: 3.2 } : null);
+  const chestRise = useTransform(breath, (b) => -1.8 * b);
+  const swell = useTransform(breath, (b) => 1 + 0.014 * b);
+
+  const skin = paint("skin");
+  const fade = paint("fade");
+  const arms = (pass: ArmPass) => (
+    <>
+      <Arm side="left" pass={pass} angle={leftArm} rest={leftTarget} paint={skin} fade={fade} />
+      <Arm side="right" pass={pass} angle={rightArm} rest={rightTarget} paint={skin} fade={fade}>
+        {pass === "fill" && hasProp && (
+          <motion.g transform={rot(-rightTarget, arm.hand)} style={{ ...at(arm.hand), rotate: propTurn }}>
+            <g transform={`translate(${arm.hand.x} ${arm.hand.y + 2})`}>
+              <Prop outfit={outfit} still={still} />
+            </g>
+          </motion.g>
+        )}
+      </Arm>
+    </>
+  );
 
   return (
     <svg
       ref={ref}
-      viewBox="0 0 260 300"
+      viewBox={VIEWBOX}
       overflow="visible"
       className={cx("select-none", className)}
       {...(decorative ? { "aria-hidden": true } : { role: "img", "aria-labelledby": titleId })}
     >
       {!decorative && <title id={titleId}>{title}</title>}
+      <defs>
+        {/* One light from the upper left for every mint part, in drawing units, so parts that move over each other match */}
+        <radialGradient id={id("skin")} gradientUnits="userSpaceOnUse" cx={82} cy={78} r={205}>
+          <stop offset={0} stopColor={C.skinLight} />
+          <stop offset={0.35} stopColor={C.skin} />
+          <stop offset={0.68} stopColor={C.skinMid} />
+          <stop offset={0.88} stopColor={C.skinShade} />
+          <stop offset={1} stopColor={C.skinEdge} />
+        </radialGradient>
+        {/* In each arm's own coordinates: hides the top outline near the shoulder, shows it further out */}
+        <radialGradient id={id("fadeRamp")} gradientUnits="userSpaceOnUse" cx={0} cy={0} r={shoulderFade.to}>
+          <stop offset={shoulderFade.from / shoulderFade.to} stopColor="#000" />
+          <stop offset={1} stopColor="#fff" />
+        </radialGradient>
+        <mask id={id("fade")} maskUnits="userSpaceOnUse" x={-40} y={-40} width={80} height={130}>
+          <rect x={-40} y={-40} width={80} height={130} fill={paint("fadeRamp")} />
+        </mask>
+      </defs>
 
-      {/* Every loop needs a resting target: an empty `animate` would leave a repeating animation running. */}
-      <motion.g
-        animate={
-          still
-            ? { y: mood === "sad" ? 4 : 0, transition: playful }
-            : mood === "cheer"
-              ? { y: [0, -14, 0], transition: { duration: 0.6, repeat: Infinity, repeatDelay: 0.25, ease: "easeOut" } }
-              : mood === "sad"
-                ? { y: 4, transition: playful }
-                : { y: [0, -2.5, 0], transition: { duration: 3, repeat: Infinity, ease: "easeInOut" } }
-        }
-      >
-        {/* Tail */}
-        <motion.g
-          style={pivots.tail}
-          animate={still ? { rotate: 0 } : mood === "swim" ? { rotate: [-10, 14, -10] } : { rotate: [0, 7, 0] }}
-          transition={still ? playful : { duration: mood === "swim" ? 0.55 : 2.4, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <path d="M168 236 C190 248 206 242 216 226 L228 232 C218 254 192 262 166 254Z" fill={C.shade} />
-          <path
-            transform="translate(222 228) rotate(37) scale(0.85)"
-            d="M0 4 C-4 -2 -12 -8 -24 -10 C-32 -11 -34 -16 -28 -20 C-18 -24 -6 -20 0 -12 C6 -20 18 -24 28 -20 C34 -16 32 -11 24 -10 C12 -8 4 -2 0 4Z"
-            fill={C.shade}
+      <g transform={mirrored ? MIRROR : undefined}>
+        {mood !== "swim" && (
+          <motion.ellipse
+            cx={116}
+            cy={288}
+            rx={86}
+            ry={8}
+            fill={C.shadow}
+            fillOpacity={0.13}
+            style={at(joints.feet)}
+            animate={cheering ? { scaleX: [1, 0.78, 1] } : { scaleX: 1 }}
+            transition={cheering ? hop : playful}
           />
-        </motion.g>
-
-        {/* Resting arms sit behind the torso */}
-        <AnimatePresence initial={false}>
-          {leftArm === "rest" && (
-            <motion.path key="rest-left" d={restLeft} fill={C.shade} initial={{ opacity: 0 }} animate={{ opacity: 1, rotate: mood === "sad" ? -6 : mood === "swim" ? 14 : 0 }} exit={{ opacity: 0 }} transition={fade} />
-          )}
-          {rightArm === "rest" && (
-            <motion.path key="rest-right" d={restRight} fill={C.shade} initial={{ opacity: 0 }} animate={{ opacity: 1, rotate: mood === "sad" ? 6 : mood === "swim" ? -14 : 0 }} exit={{ opacity: 0 }} transition={fade} />
-          )}
-        </AnimatePresence>
-
-        {/* Feet, planted with a little stance */}
-        <g>
-          <ellipse cx={107} cy={273} rx={22} ry={14} fill={C.whiteShade} transform="rotate(-8 107 273)" />
-          <ellipse cx={153} cy={273} rx={22} ry={14} fill={C.whiteShade} transform="rotate(8 153 273)" />
-          <ellipse cx={105} cy={268} rx={15} ry={7} fill={C.white} transform="rotate(-8 105 268)" />
-          <ellipse cx={155} cy={268} rx={15} ry={7} fill={C.white} transform="rotate(8 155 268)" />
-        </g>
-
-        <OutfitBack outfit={outfit} />
-
-        {/* Body: soft pear, white front */}
-        <path d="M88 160 C70 186 62 222 70 246 C78 266 102 272 130 272 C158 272 182 266 190 246 C198 222 190 186 172 160Z" fill={C.body} />
-        <path d="M172 168 C190 194 196 230 186 252 C178 266 160 271 146 272 C170 266 184 248 184 224 C184 200 178 182 168 166Z" fill={C.shade} />
-        <path d="M96 176 C84 202 84 236 96 254 C106 266 154 266 164 254 C176 236 176 202 164 176 C150 186 110 186 96 176Z" fill={C.white} />
-        <path d="M92 236 C102 260 158 260 168 236 C164 262 150 266 130 266 C110 266 96 262 92 236Z" fill={C.whiteShade} />
-
-        {!outfitHidesLogo(outfit) && (
-          <g transform="translate(98 210)">
-            <rect width={21} height={21} rx={5} fill={C.brand} />
-            <path
-              transform="scale(0.66)"
-              d="M7 8H13C15.5 8 16 10.5 16 12.5C16 10.5 16.5 8 19 8H25V11.5H20.5C18.3 11.5 17.6 13.2 17.6 15.2V25H14.4V15.2C14.4 13.2 13.7 11.5 11.5 11.5H7Z"
-              fill={C.white}
-            />
-            {!hasProp && (
-              <text x={25} y={16} fontFamily="var(--font-display)" fontSize={16} fill={C.word}>
-                tavis
-              </text>
-            )}
-          </g>
         )}
 
-        <OutfitBody outfit={outfit} />
+        {/* Every loop needs a resting target: an empty `animate` would leave a repeating animation running. */}
+        <motion.g
+          animate={cheering ? { y: [0, -16, 0] } : mood === "swim" && live ? { y: [0, -4, 0] } : { y: 0 }}
+          transition={cheering ? hop : mood === "swim" && live ? { duration: 0.55, repeat: Infinity, ease: "easeInOut" } : playful}
+        >
+          <motion.g
+            style={at(joints.tail)}
+            animate={!live ? { rotate: 0 } : mood === "swim" ? { rotate: [-9, 12, -9] } : cheering ? { rotate: [0, 9, 0] } : { rotate: [0, 6, 0] }}
+            transition={!live ? playful : mood === "swim" ? { duration: 0.55, repeat: Infinity, ease: "easeInOut" } : cheering ? hop : { duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <path d={tail} fill={skin} {...outlined} />
+            <path d="M170 251 C188 251 202 248 212 244 C204 249 188 254 172 254.5Z" fill={C.white} />
+            <path d="M214 200 C219 195 224 192 229 191" fill="none" stroke={C.white} strokeOpacity={0.6} strokeWidth={3} strokeLinecap="round" />
+          </motion.g>
 
-        {/* Head */}
-        <motion.g style={pivots.head} animate={{ rotate: headTilt, y: mood === "sad" ? 3 : 0 }} transition={playful}>
-          <motion.path
-            d="M142 36 C150 16 172 4 196 2 C204 2 206 8 200 12 C188 22 182 40 184 60Z"
-            fill={C.shade}
-            style={pivots.fin}
-            animate={{ rotate: mood === "sad" ? -10 : 0 }}
-            transition={playful}
-          />
-          <ellipse cx={130} cy={104} rx={86} ry={82} fill={C.body} />
-          <ellipse cx={90} cy={52} rx={24} ry={11} fill={C.light} transform="rotate(-24 90 52)" />
+          <OutfitBack outfit={outfit} />
 
-          {/* White lower jaw, continuous with the chest */}
-          <path d="M78 136 C92 148 110 152 130 152 C150 152 168 148 182 136 C184 172 160 194 130 194 C100 194 76 172 78 136Z" fill={C.white} />
+          <motion.g style={{ y: chestRise }}>{arms("ink")}</motion.g>
 
-          {/* Beak, with a crease where it meets the forehead */}
-          <ellipse cx={130} cy={135} rx={36} ry={19} fill={C.whiteShade} />
-          <ellipse cx={130} cy={129} rx={36} ry={19} fill={C.body} />
-          <path d="M97 122 Q130 100 163 122" fill="none" stroke={C.shade} strokeWidth={4} strokeLinecap="round" />
-          <ellipse cx={116} cy={121} rx={12} ry={4} fill={C.light} />
-          <path d="M112 34 Q120 29 128 34" fill="none" stroke={C.deep} strokeWidth={3.5} strokeLinecap="round" />
-
-          <Eye cx={96} state={leftEye} gaze={gaze} />
-          <Eye cx={164} state={rightEye} gaze={gaze} />
-          {mood === "sad" && (
-            <g stroke={C.deep} strokeWidth={4.5} strokeLinecap="round">
-              <path d="M82 74 L104 69" />
-              <path d="M156 69 L178 74" />
+          <motion.g style={{ ...at(joints.feet), scaleY: swell }}>
+            <path d={body} fill={skin} {...outlined} />
+            <path d={belly} fill={C.white} />
+            <path d={soles} fill={C.whiteShade} />
+            <path d="M81 253 C94 250 111 250 126 254" {...inked} />
+            {/* The real logo as paths, so it reads the same in every renderer, fonts or not */}
+            <g transform={`${mirrored ? LOGO_UNMIRROR : ""} translate(55 204) scale(${23 / logo.height})`}>
+              <path d={logo.chip} fill={C.brand} />
+              <path d={logo.word} fill={C.word} />
             </g>
-          )}
+            <OutfitBody outfit={outfit} />
+          </motion.g>
 
-          <ellipse cx={76} cy={130} rx={12} ry={7.5} fill={C.cheek} opacity={0.8} />
-          <ellipse cx={184} cy={130} rx={12} ry={7.5} fill={C.cheek} opacity={0.8} />
+          <motion.g style={{ y: chestRise }}>
+            <motion.g transform={rot(pose.tilt, joints.neck)} style={{ ...at(joints.neck), rotate: tilt }} animate={{ y: mood === "sad" ? 3 : 0 }} transition={playful}>
+              <motion.g transform={rot(finTarget, joints.fin)} style={{ ...at(joints.fin), rotate: finTurn }}>
+                <motion.g style={at(joints.fin)} animate={cheering ? { rotate: [0, -7, 3, 0] } : { rotate: 0 }} transition={cheering ? hop : playful}>
+                  <path d={fin} fill={C.fin} {...outlined} />
+                  <path d="M148 31 C156 25 164 21 171 21" fill="none" stroke={C.white} strokeOpacity={0.6} strokeWidth={4} strokeLinecap="round" />
+                </motion.g>
+              </motion.g>
+              <path d={headShape} fill={skin} />
+              <path d={faceWhite} fill={C.white} />
+              <path d="M20 128 C18 100 34 72 62 56" fill="none" stroke={C.rim} strokeWidth={5} strokeLinecap="round" opacity={0.85} />
+              <path d={headEdge} {...inked} />
+              <ellipse cx={80} cy={62} rx={20} ry={7} fill={C.white} fillOpacity={0.6} transform="rotate(-14 80 62)" />
+              <ellipse cx={54} cy={76} rx={3.5} ry={2.2} fill={C.white} fillOpacity={0.6} transform="rotate(-34 54 76)" />
 
-          <Mouth mood={mood} />
-          <OutfitHead outfit={outfit} />
-        </motion.g>
+              {/* Beak: a soft bump above the mouth with a crease along its top */}
+              <path d="M74 131 C77 117 116 115 120 134 C108 126 86 125 74 131Z" fill={C.skinMid} />
+              <path d="M76 130 Q97 118 118 133" fill="none" stroke={C.crease} strokeWidth={2.4} strokeLinecap="round" />
 
-        {/* Pose arms, in front */}
-        <AnimatePresence initial={false}>
-          {leftArm === "raised" && (
-            <motion.g key="raised-left" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={fade}>
-              <motion.path
-                d={raisedLeft}
-                fill={C.body}
-                style={pivots.raisedLeft}
-                animate={mood === "wave" && !still ? { rotate: [0, -12, 0] } : { rotate: 0 }}
-                transition={mood === "wave" && !still ? { duration: 0.8, repeat: Infinity, ease: "easeInOut" } : playful}
-              />
-              <ellipse cx={44} cy={104} rx={5} ry={3} fill={C.light} transform="rotate(-40 44 104)" />
+              <Eye {...eyes.left} side="left" state={pose.eyes[0]} closed={blink} gaze={gaze} />
+              <Eye {...eyes.right} side="right" state={pose.eyes[1]} closed={blink} gaze={gaze} />
+
+              <ellipse cx={34} cy={134} rx={10} ry={6.5} fill={C.cheek} opacity={0.9} />
+              <ellipse cx={166} cy={141} rx={10.5} ry={7} fill={C.cheek} opacity={0.9} />
+
+              <Mouth shape={pose.mouth} />
+              <OutfitHead outfit={outfit} />
+            </motion.g>
+
+            {arms("fill")}
+          </motion.g>
+
+          {pose.burst && (
+            <motion.g initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={playful} stroke={C.sun} strokeWidth={5.5} strokeLinecap="round">
+              {mood === "cheer" ? (
+                <>
+                  <path d="M-30 112 L-18 112" />
+                  <path d="M-26 88 L-15 96" />
+                  <path d="M-12 68 L-6 81" />
+                  <path d="M246 112 L234 112" />
+                  <path d="M242 88 L231 96" />
+                  <path d="M228 68 L222 81" />
+                </>
+              ) : (
+                <>
+                  <path d="M-24 100 L-11 103" />
+                  <path d="M-18 76 L-7 87" />
+                  <path d="M0 60 L4 75" />
+                </>
+              )}
             </motion.g>
           )}
-          {rightArm === "raised" && (
-            <motion.path key="raised-right" d={raisedRight} fill={C.shade} style={pivots.raisedRight} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={fade} />
-          )}
-          {rightArm === "hold" && (
-            <motion.path key="hold-right" d={holdRight} fill={C.shade} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={fade} />
-          )}
-          {rightArm === "think" && (
-            <motion.path key="think-right" d={thinkRight} fill={C.shade} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={fade} />
-          )}
-        </AnimatePresence>
-
-        {/* Held prop, in front of the hand */}
-        {hasProp && (rightArm === "hold" || rightArm === "raised") && (
-          <motion.g key={rightArm} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={fade}>
-            <g transform={grip[rightArm]}>
-              <Prop outfit={outfit} still={still} />
-            </g>
-          </motion.g>
-        )}
-
-        {(mood === "wave" || mood === "cheer") && (
-          <motion.g
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={playful}
-            stroke="#f6c445"
-            strokeWidth="7"
-            strokeLinecap="round"
-          >
-            <path d="M8 104 L22 110" />
-            <path d="M14 78 L26 92" />
-            <path d="M36 62 L40 78" />
-          </motion.g>
-        )}
-      </motion.g>
+        </motion.g>
+      </g>
     </svg>
   );
 }
