@@ -3,7 +3,7 @@ import { DesignLink } from "../design-link";
 import { cx } from "../ui";
 
 /* Variant B's building blocks. Duolingo's grammar: a chunky uppercase button on
-   a 4px ledge, a short lowercase green headline, one grey sentence, one big
+   a 4px ledge, a short green headline (lowercase in B), one grey sentence, one big
    picture, and a lot of white around each idea. */
 
 type Tone = "green" | "white" | "sky" | "red";
@@ -71,8 +71,12 @@ const bodyTone: Record<Band, string> = {
 /** A title as the copy writes it: one string, or the lines it is authored in. */
 export type Title = string | readonly string[];
 
-/** Names a lowercase headline keeps capitalised, so they never read as typos: Malaysia, Malaysian, Form (as in
-    "Form 1–5") and KSSM. "Tavis" is left to lowercase, as the wordmark is. */
+/** Design B keeps Duolingo's lowercase headlines; BA sets them in sentence case, as the copy writes them. Add this to a
+    headline that both designs share. */
+export const bLowercase = "in-data-[design=b]:lowercase";
+
+/** Names a lowercase headline (design B's) keeps capitalised, so they never read as typos: Malaysia, Malaysian, Form
+    (as in "Form 1–5") and KSSM. "Tavis" is left to lowercase, as the wordmark is. */
 const properNoun = /(\bMalaysia\S*|\bForm(?=\u00a0)|\bKSSM\b)/;
 
 function keepNames(line: string) {
@@ -94,13 +98,13 @@ export function Lines({ title, names = true }: { title: Title; /** Keep proper n
 /** The sentence under a headline: 18px on phones, 20px from tablets. Balanced, so its last line is never a word or two. */
 export const lede = "text-[clamp(1.125rem,1rem+0.5vw,1.25rem)] font-semibold leading-relaxed text-balance";
 
-/** Lowercase green headline, set big and black. Copy is shared with variant A, so the case is styling, not text.
+/** Green headline, set big and black: sentence case in BA, as the copy writes it, and lowercase in B (`bLowercase`).
     A section headline stays under the subpage h1 (`SplitHero`) at every width, so the page title is the largest
     type on its page; a design whose h1 is larger sets `--headline` (B, in `layout.tsx`). `closing` is the download
     band's, set at full size. */
 export function Headline({ title, as: Tag = "h2", band = "white", closing, className }: { title: Title; as?: "h1" | "h2"; band?: Band; closing?: boolean; className?: string }) {
   return (
-    <Tag className={cx(closing ? "text-[clamp(2.125rem,1.4rem+3.6vw,4.5rem)]" : "text-[length:var(--headline,clamp(2.125rem,1.8rem+1.9vw,3.5rem))]", "leading-[0.98] lowercase text-balance [overflow-wrap:break-word]", headlineTone[band], className)}>
+    <Tag className={cx(closing ? "text-[clamp(2.125rem,1.4rem+3.6vw,4.5rem)]" : "text-[length:var(--headline,clamp(2.125rem,1.8rem+1.9vw,3.5rem))]", "leading-[0.98] text-balance [overflow-wrap:break-word]", bLowercase, headlineTone[band], className)}>
       <Lines title={title} />
     </Tag>
   );

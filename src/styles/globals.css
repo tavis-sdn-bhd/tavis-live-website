@@ -425,16 +425,16 @@ html[data-visitor="idle"] :is(.animate-float, .animate-spin-slow, .animate-bounc
 
 }
 
-/* ── Variant B (/v2): one rounded family at heavy weights, Duolingo-style. Shared
+/* ── Variant B (/v2) and BA: one family at heavy weights, Duolingo-style. Shared
    components that ask for display, sans or mono type get it too, so they fit in. ── */
 @layer base {
-  /* Nunito Variable comes from @fontsource-variable/nunito, imported by layouts/Ba.astro. */
+  /* Figtree Variable comes from @fontsource-variable/figtree, imported by layouts/Ba.astro. */
   .v2 {
-    --font-round: "Nunito Variable", ui-rounded, ui-sans-serif, system-ui, sans-serif;
-    --font-display: var(--font-round);
-    --font-sans: var(--font-round);
-    --font-mono: var(--font-round);
-    font-family: var(--font-round);
+    --font-v2: "Figtree Variable", ui-sans-serif, system-ui, sans-serif;
+    --font-display: var(--font-v2);
+    --font-sans: var(--font-v2);
+    --font-mono: var(--font-v2);
+    font-family: var(--font-v2);
     letter-spacing: 0;
   }
   .v2 :is(h1, h2, h3, h4) {

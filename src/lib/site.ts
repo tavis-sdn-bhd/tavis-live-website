@@ -54,7 +54,7 @@ const pages = {
     label: "About",
     title: "Our story, from 2022 to today — Tavis",
     description:
-      "How Tavis grew from 2022 to 2026, meet co-founder Dr. Suhada Binti Mazlan, and see where Tavis has been featured in the Malaysian press.",
+      "How Tavis grew from 2022 to 2026, meet co-founder Dr Nurul Suhada Mazalan, and see where Tavis has been featured in the Malaysian press.",
   },
   // The download QR code's target, outside every design: phones go to their store, anything else sees the badges.
   "/get": {

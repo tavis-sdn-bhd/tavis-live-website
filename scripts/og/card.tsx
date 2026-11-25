@@ -8,7 +8,7 @@ import { Mascot } from "@/components/mascot";
 import { type OgCard, type OgVisual, ogSize, plain } from "@/og/cards";
 
 /*
- * Renders a page's Open Graph card in design BA's look: Nunito Black, a green accent line, art on a soft sky disc, and
+ * Renders a page's Open Graph card in design BA's look: Figtree Black, a green accent line, art on a soft sky disc, and
  * the solid ledge shadow BA puts under its phones and buttons. scripts/og-cards.tsx runs this in Node before dev and
  * build, so none of it runs on the Worker. Satori decodes PNG but not WebP, so photos are cut from public/assets at
  * exactly the pixels they are drawn at; phone screens are PNGs beside this file. The cards themselves are
@@ -25,15 +25,15 @@ const ledge = "rgba(30, 37, 45, 0.9)";
 const muted = "#595959";
 
 const here = join(process.cwd(), "scripts/og");
-const fontDir = join(process.cwd(), "node_modules/@fontsource/nunito/files");
+const fontDir = join(process.cwd(), "node_modules/@fontsource/figtree/files");
 
-// Satori reads WOFF but not WOFF2; the site's variable Nunito ships only WOFF2, so the static cuts come from @fontsource/nunito.
+// Satori reads WOFF but not WOFF2; the site's variable Figtree ships only WOFF2, so the static cuts come from @fontsource/figtree.
 const fonts = Promise.all([
-  readFile(join(fontDir, "nunito-latin-900-normal.woff")),
-  readFile(join(fontDir, "nunito-latin-800-normal.woff")),
+  readFile(join(fontDir, "figtree-latin-900-normal.woff")),
+  readFile(join(fontDir, "figtree-latin-800-normal.woff")),
 ]).then(([black, extraBold]) => [
-  { name: "Nunito", data: black, weight: 900 as const, style: "normal" as const },
-  { name: "Nunito", data: extraBold, weight: 800 as const, style: "normal" as const },
+  { name: "Figtree", data: black, weight: 900 as const, style: "normal" as const },
+  { name: "Figtree", data: extraBold, weight: 800 as const, style: "normal" as const },
 ]);
 
 function pngData(bytes: Buffer) {
@@ -103,7 +103,7 @@ async function art(visual: OgVisual) {
 
 const column = 560;
 
-/** Nunito Black runs about 0.56em per character: the longest line fills the column, between 54 and 92px. */
+/** Figtree Black runs about 0.56em per character: the longest line fills the column, between 54 and 92px. */
 function headlineSize(lines: readonly string[]) {
   const longest = Math.max(...lines.map((line) => line.length));
   return Math.max(54, Math.min(92, Math.floor(column / (longest * 0.56))));
@@ -116,7 +116,7 @@ export async function renderOgCard({ title, accent, visual }: OgCard, cta: strin
   const logo = await readFile(join(process.cwd(), "public/assets/tavis-logo.svg"), "utf8");
 
   const svg = await satori(
-    <div style={{ position: "relative", display: "flex", width: "100%", height: "100%", background: "#ffffff", fontFamily: "Nunito", color: ink }}>
+    <div style={{ position: "relative", display: "flex", width: "100%", height: "100%", background: "#ffffff", fontFamily: "Figtree", color: ink }}>
       <div style={{ position: "absolute", right: disc.right, top: disc.top, width: disc.size, height: disc.size, borderRadius: disc.size / 2, background: skySoft }} />
       {await art(visual)}
       <div style={{ position: "absolute", left: 80, top: 70, bottom: 70, width: column, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>

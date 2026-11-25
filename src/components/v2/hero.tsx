@@ -5,7 +5,7 @@ import { Bolt, Floaters, Star } from "./art";
 import { CoinArt, CurlsCoin, GlassesTumble, PonytailFly, TavisMark, TudungLeap, UniformCheer } from "./cast";
 import { Scene } from "./scene";
 import { SubjectIcon } from "./subject-icon";
-import { Lines, lede, type Title } from "./ui";
+import { Lines, bLowercase, lede, type Title } from "./ui";
 
 const delay = (ms: number) => ({ "--delay": `${ms}ms` }) as CSSProperties;
 
@@ -109,7 +109,7 @@ export function PageHero({
     <section id="top" className="pt-10 sm:pt-14">
       <div className="shell pb-12 text-center sm:pb-16">
         <TaviDisc outfit={outfit} mood={mood} className="mx-auto w-[min(70%,20rem)]" />
-        <h1 className="intro-fade mx-auto mt-8 max-w-[52rem] text-[clamp(2.75rem,1.5rem+4.4vw,5.25rem)] leading-[0.98] lowercase text-brand-ink" style={delay(200)}>
+        <h1 className={cx("intro-fade mx-auto mt-8 max-w-[52rem] text-[clamp(2.75rem,1.5rem+4.4vw,5.25rem)] leading-[0.98] text-brand-ink", bLowercase)} style={delay(200)}>
           <Lines title={title} />
         </h1>
         <p className={cx("intro-fade mx-auto mt-6 max-w-[34rem] text-muted", lede)} style={delay(300)}>
@@ -153,7 +153,7 @@ export function SplitHero({ title, body, actions, art }: { title: Title; body: s
       <div className="shell">
         <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
           <div className="text-center lg:text-left">
-            <h1 className="intro-fade text-[clamp(2.375rem,1.6rem+2.6vw,3.875rem)] leading-[1] lowercase text-brand-ink text-balance" style={delay(120)}>
+            <h1 className={cx("intro-fade text-[clamp(2.375rem,1.6rem+2.6vw,3.875rem)] leading-[1] text-brand-ink text-balance", bLowercase)} style={delay(120)}>
               <Lines title={title} />
             </h1>
             <p className={cx("intro-fade mx-auto mt-6 max-w-[30rem] text-muted lg:mx-0", lede)} style={delay(220)}>

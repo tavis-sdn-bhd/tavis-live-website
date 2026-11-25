@@ -10,7 +10,7 @@ function NotFoundPage() {
   return (
     <section data-band="white" className="shell pb-[clamp(5rem,3rem+7vw,9rem)] pt-[clamp(7rem,5rem+6vw,10rem)] text-center">
       <TaviDisc mood="sad" outfit="school" className="mx-auto w-[min(16rem,62vw)]" />
-      <h1 className="mx-auto mt-8 max-w-[40rem] text-[clamp(2.5rem,1.5rem+4vw,4.5rem)] leading-[0.98] lowercase text-brand-ink text-balance">
+      <h1 className="mx-auto mt-8 max-w-[40rem] text-[clamp(2.5rem,1.5rem+4vw,4.5rem)] leading-[0.98] text-brand-ink text-balance">
         This page is missing.
       </h1>
       <p className={cx("mx-auto mt-6 max-w-[32rem] text-muted", lede)}>The link may be old, or the page has moved. Start from home, or pick a page below.</p>

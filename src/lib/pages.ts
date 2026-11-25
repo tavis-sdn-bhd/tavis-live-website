@@ -230,8 +230,23 @@ export const aboutPage = {
   },
   founder: {
     title: "Meet our co-founder.",
-    name: ["Dr. Suhada", "Binti Mazlan"],
-    image: { src: "/assets/dr-suhada.webp", alt: "Dr. Suhada Binti Mazlan, Tavis co-founder", w: 534, h: 949 },
+    name: ["Dr Nurul Suhada", "Mazalan"],
+    image: { src: "/assets/dr-suhada.webp", alt: "Dr Nurul Suhada Mazalan, Tavis co-founder", w: 534, h: 949 },
+    /* Her bio as Tavis sent it in November 2026, in three parts so her belief can stand apart as the callout. Three
+       edits for grammar: "co-founder" in lower case, "TAVIS" as "Tavis", and a comma before "where". */
+    bio: {
+      start: "Dr Nurul Suhada Mazalan has spent the past 10 years in education, from teaching in classrooms to developing learning materials and shaping learning experiences.",
+      belief: "She believes that education is not just about what students learn, but about helping them discover their potential.",
+      /* The phrase in the belief the callout lights up, word for word, in both languages. */
+      beliefKey: "discover their potential",
+      work: "Through her involvement in AI-driven education research with the EIKEN Foundation of Japan and as co-founder of Tavis, she hopes to bridge education and technology in ways that make learning more accessible, meaningful and human, where technology supports teachers, empowers learners and never loses sight of the people behind every learning journey.",
+    },
+    /* The row of facts under her name, each one from the bio. */
+    facts: [
+      { value: "10 years", label: "in education" },
+      { value: "AI research", label: "EIKEN Foundation of Japan" },
+      { value: "Co-founder", label: "of Tavis" },
+    ],
   },
   press: {
     title: "Featured in.",

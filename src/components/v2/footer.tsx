@@ -6,7 +6,7 @@ import { PauseMotionToggle } from "../motion-pause";
 import { Envelope, Facebook, Instagram, PaperPlaneTilt, TikTok, WhatsApp, YouTube } from "../icons";
 import { NewTab, cx } from "../ui";
 import { DownloadBand } from "./sections";
-import { buttonClass } from "./ui";
+import { bLowercase, buttonClass } from "./ui";
 
 /** The address breaks only after a comma, so no line splits a name or strands the dot, the postcode or the city. */
 const address = `${company.legalName} · ${company.street}, ${company.postalCode} ${company.city}`.replace(/([^,]) /g, "$1\u00a0");
@@ -66,7 +66,7 @@ export function Footer({ design }: { design: DesignId }) {
             <div className="grid gap-x-12 gap-y-12 lg:flex-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:content-center lg:items-center xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] xl:gap-x-20">
               <div className="md:flex md:flex-wrap md:items-start md:gap-x-10 md:gap-y-12 lg:block">
                 <div className="md:min-w-[22rem] md:flex-1">
-                  <h2 className="text-[clamp(2.5rem,1.75rem+2.4vw,3.5rem)] leading-[0.95] lowercase text-night lg:text-[clamp(2.25rem,3.6vw,3.5rem)]">Write to us.</h2>
+                  <h2 className={cx("text-[clamp(2.5rem,1.75rem+2.4vw,3.5rem)] leading-[0.95] text-night lg:text-[clamp(2.25rem,3.6vw,3.5rem)]", bLowercase)}>Write to us.</h2>
                   <p className="mt-4 max-w-[22rem] font-semibold">Send us a message and we’ll reply by email, or reach us directly.</p>
                   <div className="mt-6 flex flex-wrap gap-3 max-sm:grid">
                     {/* Below lg the form waits behind this, so no page ends on most of a screen of empty fields.
