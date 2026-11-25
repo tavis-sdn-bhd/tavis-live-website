@@ -44,15 +44,18 @@ const pageTiles: Partial<Record<PagePath | "/blog", { icon: ComponentType<SVGPro
   "/about": { icon: BookOpen, fill: "bg-brand text-forest" },
 };
 
-/** The pages the bar lists on wide screens: the student's way in, and the parents'. The rest (tutors, the blog, about)
-    are a step away: in the menu, the footer and the pages that lead to them. */
-const barPages: readonly PagePath[] = ["/question-universe", "/rewards", "/online-tuition", "/parents"];
+/** The pages the bar lists on wide screens: the student's way in, the parents', and who is behind Tavis. The rest
+    (tutors, the blog) are a step away: in the menu, the footer and the pages that lead to them. */
+const barPages: readonly PagePath[] = ["/question-universe", "/rewards", "/online-tuition", "/parents", "/about"];
 
 /** The header's Get Tavis label, split before its last word so a narrow bar can drop it ("free"). A label longer than
-    English's ("Muat turun percuma") needs a wider bar before its last word fits. */
+    English's ("Muat turun percuma") needs a wider bar before its last word fits. From xl the page list takes the room,
+    so a long label drops its last word again and keeps the bar's small type: the button stays as tall as English's. */
 const ctaCut = home.cta.lastIndexOf(" ");
 const [ctaLead, ctaLast] = ctaCut > 0 ? [home.cta.slice(0, ctaCut), home.cta.slice(ctaCut)] : [home.cta, ""];
-const ctaLastHidden = home.cta.length > 16 ? "max-md:hidden" : "max-[360px]:hidden";
+const longCta = home.cta.length > 16;
+const ctaLastHidden = longCta ? "max-md:hidden xl:hidden" : "max-[360px]:hidden";
+const ctaWide = longCta ? "xl:min-h-[3.125rem]" : "xl:min-h-[3.125rem] xl:px-5 xl:text-body-sm";
 
 /** Three bars that fold into a cross: the middle one fades while the outer two turn onto it. */
 function MenuGlyph() {
@@ -125,7 +128,7 @@ export function Header({ design }: { design: DesignId }) {
           <a href={inDesign("/")} className="tap flex min-h-11 shrink-0 items-center rounded-lg" aria-label="Tavis home">
             <Image src="/assets/tavis-logo.svg" alt="" width={749} height={194} unoptimized priority className="h-7 w-auto max-[360px]:h-6 sm:h-8" />
           </a>
-          <nav aria-label="Primary" className="ml-6 hidden xl:block">
+          <nav aria-label="Primary" className="ml-4 hidden xl:block">
             <ul className="flex items-center gap-1">
               {barItems.map((item) => (
                 <li key={item.href}>
@@ -133,7 +136,7 @@ export function Header({ design }: { design: DesignId }) {
                     href={item.href}
                     aria-current={item.current ? "page" : undefined}
                     className={cx(
-                      "tap inline-flex h-10 items-center whitespace-nowrap rounded-xl px-3 font-display text-body-sm font-bold",
+                      "tap inline-flex h-10 items-center whitespace-nowrap rounded-xl px-2.5 font-display text-body-sm font-bold",
                       item.current ? "bg-cream text-forest" : "text-muted hover:bg-cream hover:text-forest",
                     )}
                   >
@@ -158,7 +161,7 @@ export function Header({ design }: { design: DesignId }) {
             {/* The full label from 360px (768px for a long one); narrower, the bar only has room for it without its last word. Below
                 360px the bar tightens too (logo, gaps, the button's padding and tracking), or Malay's "Dapatkan Tavis" pushes
                 the menu button off a 320px screen. */}
-            <GetButton webApp={design === "ba"} size="sm" className="max-[360px]:px-2.5 max-[360px]:tracking-normal xl:min-h-[3.125rem] xl:px-5 xl:text-body-sm">
+            <GetButton webApp={design === "ba"} size="sm" className={cx("max-[360px]:px-2.5 max-[360px]:tracking-normal", ctaWide)}>
               <span>
                 {ctaLead}
                 <span className={ctaLastHidden}>{ctaLast}</span>
