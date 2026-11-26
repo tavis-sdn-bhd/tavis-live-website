@@ -117,7 +117,7 @@
     "Revisit key facts and concepts as part of your revision.": "Ulang semula fakta dan konsep penting semasa ulang kaji.",
     "Make revision count": "Ulang kaji yang berkesan",
     "Use a quick study session to strengthen your recall.": "Gunakan sesi belajar yang singkat untuk menguatkan ingatan.",
-    "Tavis Science Learning Card with a concise explanation of microalgae technology": "Learning Card Sains Tavis dengan penerangan ringkas tentang teknologi mikroalga",
+    "Tavis Science Learning Card on normal flora, with a diagram of where they live in the body": "Learning Card Sains Tavis tentang flora normal, dengan rajah tempat ia hidup dalam badan",
     "Practise, earn,": "Berlatih, kumpul mata,",
     "climb the ranking.": "naik ranking.",
     "Every correct answer earns points. See how you rank, then redeem your points for rewards.": "Setiap jawapan betul memberi mata. Lihat kedudukan anda, kemudian tebus mata untuk ganjaran.",
@@ -390,7 +390,7 @@
     "Live classes, from ${ringgit(lowestRate)} a month.": "Kelas langsung, dari ${ringgit(lowestRate)} sebulan.",
     "Longer plans cost less per month, from ${ringgit(monthlyRate)} down to ${ringgit(lowestRate)}.": "Pelan yang lebih panjang lebih murah sebulan, dari ${ringgit(monthlyRate)} hingga serendah ${ringgit(lowestRate)}.",
     "Send us a message and we’ll reply by email, or reach us directly.": "Hantar mesej kepada kami dan kami akan membalas melalui e-mel, atau hubungi kami terus.",
-    "Question Universe listing Form 5 subjects to practise, with Sains ready to start": "Question Universe menyenaraikan subjek Tingkatan 5 untuk latihan, dengan Sains sedia untuk dimulakan"
+    "Normal flora in humans: Lactobacillus and Streptococcus, found in the upper respiratory tract, the intestines and the urethra": "Flora normal dalam manusia: Lactobacillus dan Streptococcus, yang ditemukan dalam saluran pernafasan atas, usus dan uretra"
   },
   "keep": [
     "${copy ? \"b\" : \"a\"}-${item.key}",
@@ -542,7 +542,16 @@
     "YouTube",
     "Zoom",
     "Live",
-    "calc${lead(\"100%\")}"
+    "calc${lead(\"100%\")}",
+    "Normal Flora in Humans",
+    "Normal flora are microorganisms found in organisms, including humans and animals, that do not cause",
+    "disease. Observe some normal flora in different parts of the human body.",
+    "Lactobacillus sp.",
+    "Streptococcus sp.",
+    "Upper Respiratory Tract",
+    "Digestive Tract (Intestines)",
+    "Urethra",
+    "Helvetica, Arial, sans-serif"
   ],
   "files": {}
 }

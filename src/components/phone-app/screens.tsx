@@ -8,6 +8,8 @@ import { useClientValue } from "@/lib/use-client-value";
 import { minutes, upcomingClass, timetable2027, weekByForm } from "@/lib/pages";
 import { learningCard as card, optionState, q6, q17, q17Answer, type OptionKey } from "@/lib/questions";
 import { Bacteriophage } from "../bacteriophage";
+import { NormalFlora } from "../normal-flora";
+import { SubjectArt, type ArtSubject } from "./subject-art";
 import { Coin } from "../coin";
 import { Count } from "../stageshow/motion/Count";
 import { Check, Close, Flag } from "../icons";
@@ -17,6 +19,7 @@ import { BrandPlate } from "../ticket";
 import { subjectDot, subjectKey, subjectLang } from "../subject";
 import { cx } from "../ui";
 import { looks, useApp } from "./state";
+import { ShopHeader, ShopHint, saveButton, shop, ShopItem, ShopPill, ShopPrice, hijabs, shopTabs, type ShopTab } from "./shop";
 
 /* ── App palette ─────────────────────────────────────────────────────────
    The real app's tile colours; everything else uses site tokens
@@ -107,12 +110,6 @@ export const Pencil = () => (
     <path d="M4 20l1.2-4.6 3.4 3.4Z" fill="#f4e2c0" />
   </svg>
 );
-export const Lock = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
-    <rect x="5" y="10" width="14" height="11" rx="2.5" />
-    <path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="#fff" strokeWidth="3" />
-  </svg>
-);
 function CrownBadge({ className }: { className?: string }) {
   return (
     <svg aria-hidden="true" viewBox="0 0 32 32" className={className}>
@@ -137,7 +134,7 @@ const Chevron = ({ className = "text-app-ink/60" }: { className?: string }) => (
 );
 
 /** `light` for a dark screen: white text and a white press. */
-function BackBar({ title, right, light }: { title?: string; right?: ReactNode; light?: boolean }) {
+function BackBar({ title, right, light, plain }: { title?: string; right?: ReactNode; light?: boolean; /** The app's lighter title, as on Learning Cards. */ plain?: boolean }) {
   const { back } = useApp();
   return (
     <div className={cx("flex h-[52px] items-center gap-3 px-4", light ? "text-white" : "text-app-ink")}>
@@ -147,7 +144,7 @@ function BackBar({ title, right, light }: { title?: string; right?: ReactNode; l
         </svg>
       </Press>
       {title && (
-        <span {...screenTitle} className="font-display text-[20px] outline-none">
+        <span {...screenTitle} className={cx("text-[20px] outline-none", plain ? "font-normal" : "font-display")}>
           {title}
         </span>
       )}
@@ -364,14 +361,62 @@ export function HomeScreen() {
 
 /* ── Question Universe ────────────────────────────────────────────────── */
 
-const subjects = ["Sains", "Matematik", "Bahasa Melayu", "English", "Sejarah", "Biologi"] as const;
+/** Form 5's subjects in the app's order, from the client's screenshot. Biologi and Kimia are read off the two icons
+    cut by its foot. */
+const subjects: readonly ArtSubject[] = ["Sejarah", "Sains", "Matematik", "Prinsip Perakaunan", "Biologi", "Kimia"];
+const forms = [2, 3, 4, 5] as const;
 
+/** Question Universe, to the client's screenshot: pick a form, then a subject. Sains opens its question; the rest,
+    and the other forms, hand off to the app. The leaderboard sits under the grid. */
 export function UniverseScreen() {
-  const { go, handoff, answers } = useApp();
+  const { go, handoff } = useApp();
   return (
-    <Screen title="Question Universe" subtitle="Unlimited free practice · Form 5">
-      <div className="mt-5 grid gap-3.5 px-5">
-        <Press onClick={() => go("leaderboard")} className={cx(leaderboard.field, "flex items-center gap-3.5 rounded-[20px] p-4 text-left text-white")}>
+    <Screen tabbed bg="bg-[#f2f2f2]" className="font-normal">
+      <div className="mt-[29px] min-h-full rounded-t-[28px] bg-paper px-[15px] pb-6 pt-6">
+        <p {...screenTitle} className="px-[3px] text-[19px] font-medium text-[#252d3a] outline-none">
+          Select Form
+        </p>
+        <div className="mt-[22px] grid grid-cols-4 gap-[10px]">
+          {forms.map((f) => {
+            const on = f === 5;
+            return (
+              <Press
+                key={f}
+                onClick={() => (on ? undefined : handoff(`Form ${f} questions are waiting in the app.`))}
+                pressed={on}
+                className={cx("flex h-[97px] flex-col items-center justify-center gap-[14px] rounded-[16px]", on ? "bg-[#e3f6e5] text-[#3a7a44]" : "bg-[#f2f3f5] text-[#252d3a]")}
+              >
+                {on ? (
+                  <svg aria-hidden="true" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#3a7a44" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="9.6" />
+                    <path d="m6.8 11.2 2.8 2.8 5.6-5.8" />
+                  </svg>
+                ) : (
+                  <span aria-hidden="true" className="size-[22px] rounded-full border-[1.5px] border-[#cfd3d8] bg-paper" />
+                )}
+                <span className="text-[16px]">Form {f}</span>
+              </Press>
+            );
+          })}
+        </div>
+        <p className="mt-[34px] px-[10px] text-[19px] font-medium text-[#252d3a]">Select Subject</p>
+        <div className="mt-[20px] grid grid-cols-2 gap-x-[21px] gap-y-[20px] px-[10px]">
+          {subjects.map((name) => {
+            const live = name === "Sains";
+            return (
+              <Press
+                key={name}
+                onClick={() => (live ? go("question") : handoff(`${name} questions are waiting in the app.`))}
+                target={live ? "sains" : undefined}
+                className="flex h-[135px] flex-col items-center rounded-[20px] bg-[#f2f3f5] px-3 pt-[26px] text-center"
+              >
+                <SubjectArt subject={name} className="size-[50px]" />
+                <span className="mt-[18px] text-[16.5px] leading-[1.3] text-[#252d3a]">F5 {name}</span>
+              </Press>
+            );
+          })}
+        </div>
+        <Press onClick={() => go("leaderboard")} className={cx(leaderboard.field, "mx-[10px] mt-6 flex w-[calc(100%-20px)] items-center gap-3.5 rounded-[20px] p-4 text-left text-white")}>
           <span className="grid size-11 place-items-center rounded-2xl bg-white/15">
             <CrownBadge className="size-7" />
           </span>
@@ -381,26 +426,6 @@ export function UniverseScreen() {
           </span>
           <Chevron className="text-white/70" />
         </Press>
-        {subjects.map((s, i) => {
-          const live = i === 0;
-          return (
-            <Press
-              key={s}
-              onClick={() => (live ? go("question") : handoff(`${s} questions are waiting in the app.`))}
-              target={live ? "sains" : undefined}
-              className="flex items-center gap-3.5 rounded-[20px] bg-paper p-4 text-left shadow-[0_2px_10px_rgb(0_0_0/0.05)]"
-            >
-              <span className={cx("grid size-11 place-items-center rounded-2xl", live ? "bg-mint" : "bg-cream")}>
-                <span className={cx("size-3 rounded-full", subjectDot[subjectKey(s)])} />
-              </span>
-              <span className="flex-1">
-                <span className="block font-display text-[17px] text-app-ink">F5 {s}</span>
-                {live && <span className="block text-[13px] text-app-muted">{`Question ${q17.number} of ${q17.of}${answers.length ? " · answered" : ""}`}</span>}
-              </span>
-              <span className={cx("rounded-full px-3 py-1.5 font-display text-[13px]", live ? "bg-brand text-forest" : "bg-cream text-app-muted")}>{live ? "Start" : "Open"}</span>
-            </Press>
-          );
-        })}
       </div>
     </Screen>
   );
@@ -707,48 +732,53 @@ export function RewardsScreen() {
 
 /* ── Learning card ────────────────────────────────────────────────────── */
 
+/** The app's Learning Card, to the client's screenshot: the chapter in the header, the EN/BM switch and progress in
+    the app's orange, and the card with its diagram; the next card's top shows below. */
 export function CardsScreen() {
   const { handoff } = useApp();
   const [saved, setSaved] = useState(false);
   return (
-    <Screen>
+    <Screen bg="bg-[#f5f5f5]" className="font-normal">
       <BackBar
-        title={`${card.form} ${card.subject}`}
+        plain
+        title={`${card.chapter}. ${card.chapterTitle}`}
         right={
-          <span className="flex rounded-full bg-paper p-1 text-[14px]">
-            <Press onClick={() => handoff("English cards are in the app.")} className={cx("relative rounded-full px-3 py-1.5 text-app-muted", hit)}>
+          <span className="flex rounded-full bg-[#eef0f4] p-[3px] text-[15px] font-medium">
+            <Press onClick={() => handoff("English cards are in the app.")} className={cx("relative rounded-full px-[14px] py-[5px] text-[#4a5263]", hit)}>
               EN
             </Press>
-            <span className="rounded-full bg-brand px-3 py-1.5 text-forest">BM</span>
+            <span className="rounded-full bg-[#e69522] px-[14px] py-[5px] text-white">BM</span>
           </span>
         }
       />
-      <div className="px-5">
-        <div className="flex justify-between text-[14px]">
-          <span className="font-display text-app-ink">
+      <div className="px-[21px]">
+        <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-[#e69522]">
+          {card.form} {card.subject} · {card.formName} · Chapter {card.chapter}
+        </p>
+        <div className="mt-1 flex justify-between text-[14px]">
+          <span className="font-normal text-[#3d4552]">
             Card {card.index} of {card.total}
           </span>
           <span className="text-app-muted">{card.total - card.index} left</span>
         </div>
-        <div className="mt-2 h-[5px] rounded-full bg-line">
-          <div className="h-full rounded-full bg-sun-ledge" style={{ width: `${(card.index / card.total) * 100}%` }} />
+        <div className="mt-2 h-[5px] rounded-full bg-[#ecebf0]">
+          <div className="h-full rounded-full bg-[#e69522]" style={{ width: `${Math.max(8, (card.index / card.total) * 100)}%` }} />
         </div>
-        <motion.article initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="relative mt-4 min-h-[520px] rounded-[28px] bg-paper px-7 pb-8 pt-7">
-          <Press onClick={() => setSaved((s) => !s)} label="Save card" pressed={saved} className={cx("absolute right-6 top-6 text-app-muted", hit)}>
-            <svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" className={cx("transition-transform", saved ? "scale-110 fill-coral stroke-coral" : "fill-none stroke-current")} strokeWidth="1.8">
+        <motion.article initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="relative mt-4 h-[600px] rounded-[28px] bg-paper px-4 pt-[64px]">
+          <Press onClick={() => setSaved((s) => !s)} label="Save card" pressed={saved} className={cx("absolute right-6 top-6 text-[#a5aaad]", hit)}>
+            <svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" className={cx("transition-transform", saved ? "scale-110 fill-coral stroke-coral" : "fill-none stroke-current")} strokeWidth="1.6">
               <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" />
             </svg>
           </Press>
-          <div aria-hidden="true" className="mx-auto mt-16 grid size-[100px] place-items-center rounded-[28px] bg-hist/20 font-display text-[48px] text-forest">
-            T
-          </div>
-          <p lang="ms" className="mt-12 font-display text-[28px] leading-[1.2] text-app-ink">
+          <NormalFlora className="block h-auto w-full" />
+          <p lang="ms" className="mt-8 px-2 text-[28px] font-semibold leading-[1.2] tracking-[-0.01em] text-[#252d3a]">
             {card.title}
           </p>
-          <p lang="ms" className="mt-3 text-[17px] leading-[1.5] text-app-muted">
+          <p lang="ms" className="mt-3 px-2 text-[17px] font-normal leading-[1.6] text-[#5b6270]">
             {card.body}
           </p>
         </motion.article>
+        <div aria-hidden="true" className="mt-4 h-[120px] rounded-t-[28px] bg-paper" />
       </div>
     </Screen>
   );
@@ -855,51 +885,79 @@ export function HistoryScreen() {
 /** Shoe prices as listed in the app's avatar shop. */
 export const shoePrices = [2500, 3500, 3500, 5000, 5000] as const;
 
+/** The tabs the editor fills; the rest hand off. */
+const filled: ReadonlySet<ShopTab> = new Set(["character", "hijab", "shoes"]);
+
+/** The avatar editor, drawn to the client's screenshots of it (see shop.tsx). Character, Hijab and Shoes open; Top,
+    Bottom and Accessories hand off to the app, as no screenshot shows what they hold. */
+
 export function MeScreen() {
   const { look, setLook, say, handoff, points } = useApp();
+  const [tab, setTab] = useState<ShopTab>(look === "green" ? "hijab" : "character");
+  const locked = (price: number) => (price > points ? say(`${(price - points).toLocaleString("en-MY")} more points to unlock.`) : handoff("Unlock outfits for your avatar in the app."));
   return (
-    <Screen tabbed>
-      <div className="flex items-center justify-between px-5 pt-3">
-        <p {...screenTitle} className="font-display text-[28px] text-app-ink outline-none">
-          Me
-        </p>
-        <Press onClick={() => say("Avatar saved.")} className="rounded-full bg-brand-text px-6 py-2.5 font-display text-[16px] text-white">
-          Save
-        </Press>
+    <Screen tabbed bg="bg-[#f2f2f2]" className="font-normal">
+      <p {...screenTitle} className="sr-only">
+        Me
+      </p>
+      <div className="pt-2">
+        <ShopHeader
+          save={
+            <Press onClick={() => say("Avatar saved.")} color={shop.save} className={saveButton}>
+              Save
+            </Press>
+          }
+        />
       </div>
-      <div className="relative mt-2 grid h-[330px] place-items-center">
+      <ShopHint />
+      <div className="relative mt-[14px] grid h-[300px] place-items-center">
         <AnimatePresence mode="wait">
           <motion.div key={look} initial={{ opacity: 0, y: 12, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.3 }}>
-            <Student look={look} label={looks[look]} className="h-[310px] w-auto" />
+            <Student look={look} label={looks[look]} className="h-[290px] w-auto" />
           </motion.div>
         </AnimatePresence>
       </div>
-      <div className="rounded-t-[32px] bg-paper px-5 pb-4 pt-5">
-        <p className="font-display text-[16px] text-app-ink">Outfit</p>
-        <div className="mt-2 grid grid-cols-3 gap-3">
-          {(Object.keys(looks) as Look[]).map((id) => (
-            <Press key={id} onClick={() => setLook(id)} target={`look-${id}`} crop pressed={id === look} className={cx("flex h-[92px] w-full items-start justify-center overflow-hidden rounded-[20px]", id === look ? "bg-mint ring-2 ring-brand" : "bg-cream")}>
-              <Student look={id} label={looks[id]} className="mt-2 h-[200px] w-auto" />
+      <div className="rounded-t-[32px] bg-paper pb-4 pt-[11px]">
+        <div className="flex gap-[17px] overflow-x-auto px-[21px] [scrollbar-width:none]">
+          {shopTabs.map((t) => (
+            <Press key={t.id} onClick={() => (filled.has(t.id) ? setTab(t.id) : handoff(`${t.label} for your avatar are in the app.`))} pressed={t.id === tab} className="shrink-0">
+              <ShopPill id={t.id} label={t.label} on={t.id === tab} />
             </Press>
           ))}
         </div>
-        <p className="mt-5 font-display text-[16px] text-app-ink">Shoes</p>
-        <div className="mt-2 grid grid-cols-5 gap-2">
-          {shoePrices.map((p, i) => (
-            <Press
-              key={i}
-              onClick={() => (p > points ? say(`${(p - points).toLocaleString("en-MY")} more points to unlock.`) : handoff("Unlock outfits for your avatar in the app."))}
-              className="text-center"
-            >
-              <span className="relative mx-auto grid size-[56px] place-items-center rounded-full bg-[#a49a9a]/70">
-                <Shoe />
-                <span className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full bg-sun-ledge">
-                  <Lock />
-                </span>
-              </span>
-              <span className="mt-1 block text-[11px] text-app-ink">{p} Pts</span>
-            </Press>
-          ))}
+        <div className="mx-auto mt-[16px] grid w-[253px] grid-cols-3 gap-x-[29px] gap-y-[18px]">
+          {tab === "hijab"
+            ? hijabs.map((h) => (
+                <Press key={h.tone} onClick={() => (h.owned ? setLook("green") : locked(h.price))} pressed={h.owned && look === "green"} label={`${h.tone} tudung and baju kurung, ${h.price} points${h.owned ? "" : ", locked"}`}>
+                  <ShopItem shape="round" state={h.owned ? (look === "green" ? "on" : "owned") : "locked"}>
+                    <span className="grid size-full justify-center pt-[4px]">
+                      <Student look="green" tone={h.tone} className="h-[62px] w-auto" />
+                    </span>
+                  </ShopItem>
+                  <ShopPrice>{h.price} Pts</ShopPrice>
+                </Press>
+              ))
+            : tab === "shoes"
+              ? shoePrices.map((p, i) => (
+                  <Press key={i} onClick={() => locked(p)} label={`Shoes, ${p} points, locked`}>
+                    <ShopItem shape="round" state="locked">
+                      <span className="grid size-full place-items-center pl-px pt-px">
+                        <Shoe />
+                      </span>
+                    </ShopItem>
+                    <ShopPrice>{p} Pts</ShopPrice>
+                  </Press>
+                ))
+              : (["pink", "blue"] as const).map((id) => (
+                  <Press key={id} onClick={() => setLook(id)} target={`look-${id}`} crop pressed={id === look} label={looks[id]}>
+                    <ShopItem shape="square" state={id === look ? "on" : "owned"}>
+                      <span className="grid size-full justify-center pt-[3px]">
+                        <Student look={id} small className="h-[62px] w-auto" />
+                      </span>
+                    </ShopItem>
+                    <ShopPrice>Free</ShopPrice>
+                  </Press>
+                ))}
         </div>
       </div>
     </Screen>
@@ -925,7 +983,7 @@ function Podium() {
       {podium.map((p) => (
         <div key={p.place} className="relative flex flex-col items-center">
           {p.place === 1 && <CrownBadge className="mb-1 size-9" />}
-          <Student look={p.look} className={cx("w-auto text-white/30", p.place === 1 ? "h-[118px]" : "h-[96px]")} />
+          <Student look={p.look} small className={cx("w-auto text-white/30", p.place === 1 ? "h-[118px]" : "h-[96px]")} />
           <p className="mt-1.5 max-w-full truncate px-1 font-display text-[15px] text-white">{p.name}</p>
           <p className="mt-1 rounded-full bg-white/15 px-2.5 py-0.5 text-[12px] tabular-nums tracking-[0.04em] text-white/90">{p.points} Pts</p>
           <div className={cx(leaderboard.step, "mt-2.5 grid w-full place-items-start justify-center rounded-t-[6px] pt-4 font-display text-[56px] leading-none text-white")} style={{ height: p.height }}>
@@ -1015,11 +1073,11 @@ export function ExplanationScreen() {
     if (top > box.scrollTop) box.scrollTo({ top, behavior: first || reduce ? "instant" : "smooth" });
   }, [pick, reduce]);
   const option =
-    "flex w-full items-center justify-between gap-3 rounded-[18px] border-2 py-3.5 pl-4 pr-[13px] text-left font-display text-[16px] leading-[1.3] transition-[background-color,border-color,color,scale] duration-150 active:scale-[0.98] data-pressed:scale-[0.98]";
+    "flex w-full items-center justify-between gap-3 rounded-[14px] border-2 py-[15px] pl-4 pr-[13px] text-left text-[17px] font-normal leading-[1.3] transition-[background-color,border-color,color,scale] duration-150 active:scale-[0.98] data-pressed:scale-[0.98]";
   const idle = "border-line bg-paper text-app-ink";
   const open = reduce ? { duration: 0 } : ({ type: "spring", stiffness: 300, damping: 36 } as const);
   return (
-    <div className="absolute inset-0 bg-[#d9dcdb]">
+    <div className="absolute inset-0 bg-[#d9dcdb] font-normal">
       <div className="absolute inset-x-0 top-0 z-10 pt-[54px]">
         <QuizBar
           onClose={back}
@@ -1036,13 +1094,13 @@ export function ExplanationScreen() {
       <div ref={scroller} data-crop {...fade} className={cx(quizScroller, "pb-[240px]")}>
         {/* At least the screen's height under the bar (874 − 114 − 12), so no grey shows at its foot */}
         <div className="mt-3 min-h-[748px] rounded-t-[28px] bg-paper px-5 pb-10 pt-5">
-          <p {...screenTitle} className="text-[16px] text-app-muted outline-none">
+          <p {...screenTitle} className="text-[17px] font-light tracking-[0.02em] text-[#273037] outline-none">
             Question {q6.number}
           </p>
-          <p lang="ms" className="mt-1 font-display text-[17px] leading-[1.3] text-app-ink">
+          <p lang="ms" className="mt-1 text-[18px] font-medium leading-[1.32] text-[#273037]">
             {q6.stem.ms}
           </p>
-          <p lang="en" className="mt-1 font-display text-[15px] leading-[1.35] text-app-ink/75">
+          <p lang="en" className="text-[18px] font-medium leading-[1.32] text-[#273037]">
             {q6.stem.en}
           </p>
           <button
@@ -1050,7 +1108,7 @@ export function ExplanationScreen() {
             disabled={pick !== null}
             onClick={() => pickQ6(q6.wrong.key)}
             data-target={`q6-${q6.wrong.key}`}
-            className={cx(option, "mt-4", wrong ? "border-wrong bg-wrong-soft text-wrong-ink" : idle)}
+            className={cx(option, "mt-4", wrong ? "border-[#e5484d] bg-[#feebf1] text-[#d23c3c]" : idle)}
           >
             <span>
               {q6.wrong.key}. <span lang="ms">{q6.wrong.ms}</span> / {q6.wrong.en}
@@ -1061,14 +1119,20 @@ export function ExplanationScreen() {
             {wrong && (
               <motion.div key="why" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} transition={open} className="overflow-hidden">
                 <div ref={why} className="pt-3.5">
-                  <div className="rounded-[18px] border border-wrong/25 p-4">
-                    <p className="flex items-center gap-2 font-display text-[15px] text-wrong-ink">
+                  <div className="rounded-[14px] border-2 border-[#ffe3e3] p-4">
+                    <p className="flex items-center gap-2 text-[16px] text-[#d23c3c]">
                       <span aria-hidden="true" className="grid size-[18px] place-items-center rounded-full border-[1.5px] border-current text-[11px] leading-none">
                         i
                       </span>
-                      Why {q6.wrong.key} is wrong
+                      Why {q6.wrong.key} is wrong:
                     </p>
-                    <p className="mt-3 text-[14px] leading-[1.45] text-app-muted">
+                    <span aria-hidden="true" className="mt-3 inline-flex h-[44px] items-center gap-6 rounded-[12px] border-[1.5px] border-[#a9adb3] px-4 text-[15px] text-[#d23c3c]">
+                      Hide Explanation
+                      <svg width="14" height="8" viewBox="0 0 14 8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 7l6-6 6 6" />
+                      </svg>
+                    </span>
+                    <p className="mt-3 text-[14px] leading-[1.5] text-[#5b6270]">
                       <span lang="ms">{q6.why.ms}</span> / {q6.why.en}
                     </p>
                   </div>
@@ -1081,7 +1145,7 @@ export function ExplanationScreen() {
             disabled={pick !== null}
             onClick={() => pickQ6(q6.right.key)}
             data-target={`q6-${q6.right.key}`}
-            className={cx(option, "mt-3.5", pick !== null ? "border-brand bg-correct-soft text-correct-ink" : idle)}
+            className={cx(option, "mt-3.5", pick !== null ? "border-[#5cb85c] bg-[#e1f7e0] text-[#2f7a3a]" : idle)}
           >
             <span>
               {q6.right.key}. <span lang="ms">{q6.right.ms}</span> / {q6.right.en}

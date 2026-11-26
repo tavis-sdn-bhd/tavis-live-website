@@ -88,6 +88,16 @@
     scale: 1;
   }
 
+  /* A tab's grid swapping for another: a fade, nothing moves */
+  & .ad-swap {
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  & .ad-swap[data-on] {
+    opacity: 1;
+  }
+
   & .ad-tile {
     transition:
       background-color 0.15s ease,
@@ -108,6 +118,65 @@
   & .ad-lock[data-open] {
     opacity: 0;
     scale: 0.4;
+  }
+
+  /* ---- The Question Universe, explanation and Learning Card demos ---- */
+
+  /* A screen pushed in from the right, as the app's navigation does, and slid back out */
+  & .ad-push {
+    transform: translateX(100%);
+    box-shadow: -12px 0 24px rgb(0 0 0 / 0);
+    transition:
+      transform 0.45s cubic-bezier(0.3, 0.75, 0.1, 1),
+      box-shadow 0.45s ease;
+  }
+
+  & .ad-push[data-open] {
+    transform: translateX(0);
+    box-shadow: -12px 0 24px rgb(0 0 0 / 0.08);
+  }
+
+  /* A box that opens to its own height, pushing nothing but what sits under it */
+  & .ad-reveal {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+      grid-template-rows 0.45s cubic-bezier(0.3, 0.75, 0.1, 1),
+      opacity 0.25s ease;
+  }
+
+  & .ad-reveal[data-on] {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+
+  /* Text inside an opening box: it fades in once the box has mostly opened, so no line is sliced by the growing edge */
+  & .ad-reveal-late[data-on] {
+    transition:
+      grid-template-rows 0.45s cubic-bezier(0.3, 0.75, 0.1, 1),
+      opacity 0.3s ease 0.2s;
+  }
+
+  /* A card thrown off the top, and the next rising from where it waited below */
+  & .ad-card {
+    transition:
+      transform 0.42s cubic-bezier(0.4, 0, 1, 1),
+      opacity 0.42s ease;
+  }
+
+  & .ad-card[data-gone] {
+    transform: translateY(-115%) rotate(-3deg);
+    opacity: 0;
+  }
+
+  & .ad-card-next {
+    transform: translateY(calc(100% + 16px));
+    transition: transform 0.5s cubic-bezier(0.3, 0.75, 0.1, 1) 0.08s;
+  }
+
+  & .ad-card-next[data-on] {
+    transform: translateY(0);
   }
 }
 

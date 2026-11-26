@@ -36,7 +36,7 @@ export const questionUniverse = {
       { title: "Refresh your memory", body: "Revisit key facts and concepts as part of your revision." },
       { title: "Make revision count", body: "Use a quick study session to strengthen your recall." },
     ],
-    screen: { scene: "cards", alt: "Tavis Science Learning Card with a concise explanation of microalgae technology" },
+    screen: { scene: "cards", alt: "Tavis Science Learning Card on normal flora, with a diagram of where they live in the body" },
   },
   gamification: {
     id: "points-ranking",
@@ -472,7 +472,6 @@ export const baQuestionUniverse = {
     id: "practice",
     title: questionUniverse.universe.title,
     body: questionUniverse.universe.body,
-    screen: { scene: "universe", alt: "Question Universe listing Form 5 subjects to practise, with Sains ready to start" },
   },
   subjects: {
     id: "subjects",

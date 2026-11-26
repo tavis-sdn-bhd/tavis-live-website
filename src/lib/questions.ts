@@ -56,12 +56,15 @@ export const q6 = {
   },
 } as const;
 
-/** F5 Sains learning card 6 of 63, from the app. */
+/** F5 Sains learning card 2 of 29, chapter 1, from the client's screenshot of the app. */
 export const learningCard = {
   subject: "Sains",
   form: "F5",
-  index: 6,
-  total: 63,
-  title: "Teknologi Emisi Negatif Mikroalga",
-  body: "Loji mikroalga digunakan dalam Teknologi Emisi Negatif untuk menyerap gas karbon dioksida dari atmosfera melalui fotosintesis bagi mengurangkan kesan gas rumah hijau.",
+  formName: "Form 5",
+  chapter: 1,
+  chapterTitle: "Mikroorganisma",
+  index: 2,
+  total: 29,
+  title: "Flora normal",
+  body: "Flora normal merupakan mikroorganisma yang ditemukan pada organisma termasuklah manusia dan haiwan dan tidak menyebabkan penyakit.",
 } as const;
