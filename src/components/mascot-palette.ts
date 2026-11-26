@@ -26,6 +26,8 @@ export const C = {
   forest: "#24744a",
   forestDeep: "#185535",
   forestLight: "#3c9563",
+  pocket: "#b7dcc1",
+  frame: "#1f4a37",
   cap: "#22332d",
   capTop: "#2d433b",
   gold: "#f2b632",

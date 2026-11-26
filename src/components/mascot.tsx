@@ -1,8 +1,8 @@
 "use client";
 
-import { animate, motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform, useVelocity, type Easing, type MotionValue, type SpringOptions } from "motion/react";
+import { animate, motion, useInView, useMotionValue, useMotionValueEvent, useReducedMotion, useSpring, useTransform, useVelocity, type Easing, type MotionValue, type SpringOptions } from "motion/react";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
-import { OutfitBack, OutfitBody, OutfitHead, Prop, outfitHasProp, type Outfit } from "./mascot-outfits";
+import { OutfitBack, OutfitBody, OutfitHead, Prop, outfitHasProp, outfitHasSleeves, type Outfit } from "./mascot-outfits";
 import { C, LINE, inked, logo, outlined } from "./mascot-palette";
 import { cx } from "./ui";
 import { easeOutExpo, playful, standard } from "./motion";
@@ -84,6 +84,16 @@ const poses: Record<Mood, Pose> = {
 };
 /** The right arm when it holds a prop and its pose would let it hang: across the belly. */
 const HOLD = 18;
+/**
+ * Moods whose right hand is busy (at the face, or punching across the chest), recast for a full right hand: the
+ * left hand takes the gesture, so Tavi never thinks with a flask against its face or swings it over the logo.
+ */
+const holdingPoses: Partial<Record<Mood, Pick<Pose, "arms" | "hands" | "tilt">>> = {
+  // The head leans into the hand, which also swings the white chin away from the raised arm's root.
+  think: { arms: [176, HOLD], hands: ["fist", "fist"], tilt: 4 },
+  // The free fist still goes up; the full one stays down rather than swing the prop across the belly logo.
+  go: { arms: [150, HOLD], hands: ["fist", "fist"], tilt: 2 },
+};
 
 const THINK_GAZE = { x: -3, y: -3 };
 
@@ -262,15 +272,19 @@ const headShape =
   "M105 42 C155 42 194 72 201 110 C205 132 203 152 194 168 C176 188 150 194 108 194 C82 194 64 191 59 184 C56 178 55 172 50 169 C42 165 32 166 24 168 C14 154 9 132 13 110 C20 72 56 42 105 42Z";
 /** The head's outline stops where the jaw meets the shoulders; the arms and body carry it on from there. */
 const headEdge = "M23.5 169 C14 154 9 132 13 110 C20 72 56 42 105 42 C155 42 194 72 201 110 C205 132 203 152 194 168";
-/** White muzzle and chin, running on into the belly; it keeps off both shoulders, so the arms come out from under mint. */
+/**
+ * White muzzle and chin, running on into the belly. It keeps more than an arm's half-width (21 units) off both
+ * shoulders, so the arm's root, which has no outline, always lies on mint.
+ */
 const faceWhite =
-  "M21 141 C28 135 44 133 55 136.5 C58 142 62 145 67 144 C88 139 112 140 130 149 C135 148.5 139 146.5 141 143.5 C150 140 156 139 162 141 C166 152 160 166 156 176 C154 182 153 188 152 194 L62 194 C59 190 57 184 56 178 C55 173 52 170 47 168 C38 164 28 156 21 141Z";
+  "M21 141 C28 135 44 133 55 136.5 C58 142 62 145 67 144 C88 139 112 140 130 149 C135 148.5 139 146.5 141 143.5 C150 140 156 139 162 141 C166 152 160 166 156 176 C154 182 153 188 152 194 L62 194 C59 190 57 184 56 178 C55.5 172 54.5 168 52 163.5 C48 157 38 152 21 141Z";
 const fin = "M114 52 C126 36 146 22 166 17 C174 15 178 19 176 27 C173 38 172 52 176 68Z";
 /** A bean that tapers from under the head to two stubby legs. */
 const body =
   "M28 150 L190 150 C196 180 190 212 182 232 C178 242 176 252 176 262 C176 270 178 276 179 280 C181 285 178 288 173 288 L139 288 C135 288 133 285 133 281 C132 272 131 262 127 256 C121 251 111 251 104 256 C100 262 99 272 98 281 C98 285 96 288 92 288 L62 288 C57 288 54 285 56 280 C58 276 59 270 59 262 C58 252 54 244 47 236 C35 218 27 196 26 176 C25.5 168 26 158 28 150Z";
+/** The near side stays mint round the left shoulder, as the chin does, and the belly widens below it. */
 const belly =
-  "M36 150 L156 150 C152 180 150 210 151 236 C152 252 156 262 159 272 C161 280 161 286 160 288.3 L139 288 C135 288 133 285 133 281 C132 272 131 262 127 256 C121 251 111 251 104 256 C100 262 99 272 98 281 C98 285 96 288 92 288 L62 288 C57 288 54 285 56 280 C58 276 59 270 59 262 C58 252 54 244 48 237 C41 222 37 196 37 176Z";
+  "M54 150 L156 150 C152 180 150 210 151 236 C152 252 156 262 159 272 C161 280 161 286 160 288.3 L139 288 C135 288 133 285 133 281 C132 272 131 262 127 256 C121 251 111 251 104 256 C100 262 99 272 98 281 C98 285 96 288 92 288 L62 288 C57 288 54 285 56 280 C58 276 59 270 59 262 C58 252 54 244 48 237 C44 228 45 214 48 204 C51 194 54.5 184 55 175 C55.2 168 54.6 158 54 150Z";
 const soles = "M56 280 C54 285 57 288 62 288 L92 288 C96 288 98 285 98 281 C86 276 68 276 56 280Z M133 281 C133 285 135 288 139 288 L160 288.3 L160 278 C151 276 140 277 133 281Z";
 const tail =
   "M166 228 C182 230 196 226 205 216 C206 204 214 194 228 190 C232 189 235 189 236 191 C236 201 232 211 227 219 C239 216 252 220 260 228 C265 234 259 243 248 247 C236 253 222 252 212 247 C200 251 186 254 174 253 L164 250Z";
@@ -309,13 +323,24 @@ const hands: Record<Hand, { outline: string; lines: string }> = {
     outline: "M-17 0 C-17 10 -16.5 16 -17 23 C-17.5 33 -16 46 -6 49 C0 51 8 51 13 48.5 C18 46 21.5 41 21.5 35 C21.5 29 20 24 18.5 18 C17.5 13 16.8 6 17 0 C17 -10 -17 -10 -17 0Z",
     lines: "M-7 46.5 C-6 44 -6.3 41.5 -7.5 40 M1.5 48.5 C2.3 46 2 43.5 0.8 42 M19.5 31 C13 30.5 7 33 3.5 37.5",
   },
-  // The fist with a big thumb out past it, along the arm and leaning 12° to the outer side, so the raised arm in
-  // `thumbs` (168°) holds it upright.
+  // The full fist with a short, fat thumb standing off its end on the outer side, so the raised arm in `thumbs`
+  // (168°) holds it up beside the face. Longer and thinner, it read as a pointing finger.
   thumb: {
-    outline: "M-17 0 C-17 10 -16.5 16 -17 23 C-17.5 33 -12.5 42 -11 48 C-10 56 -9.5 70.5 -4 70.5 C1.5 70.5 2.5 60 3 52 C10 52.5 22 44 21.5 33 C21 24 16.8 9 17 0 C17 -10 -17 -10 -17 0Z",
-    lines: "M-9.5 50.5 C-5.5 49 -1 49.5 2.5 52 M10.5 51 C10 48.5 10.3 46 11.5 44.5",
+    outline: "M-17 0 C-17 10 -16.5 16 -17 23 C-17.5 33 -16 44 -9.5 48.5 C-10.5 54 -9 62 -2.5 62 C3 62 4.5 55.5 3.5 50 C12 51.5 21.5 44 21.5 34 C21.5 24 16.8 9 17 0 C17 -10 -17 -10 -17 0Z",
+    lines: "M-8 49 C-4.5 47.5 0 48 3.5 50 M11 49 C10.6 46.6 11 44.6 12.2 43",
   },
 };
+/**
+ * The fingers of a fist that holds something, drawn over the prop so it sits in the hand rather than on it. The
+ * top edge is where they close over the prop; the rest follows the fist's own outline.
+ */
+const fingers = {
+  outline: "M-15.5 33 C-9 30 12 29.5 20.8 33 C21.8 40.5 18 46 13 48.5 C8 51 0 51 -6 49 C-13 46.5 -16 40 -15.5 33Z",
+  lines: "M-6 48.6 C-5.2 45.5 -5.4 42.5 -6.6 40 M3.8 50 C4.5 47 4.4 44 3.2 41.5",
+};
+/** A sleeve covers the arm down to here: above every hand's thumb, so it fits whichever hand is showing. */
+const SLEEVE = 17;
+const cuff = "M-17 16.6 C-7 19.8 8 19.8 18 16.6";
 const handMorph = { duration: 0.16, ease: easeOutExpo } as const;
 /** The right hand, which holds props: the right arm is the left one mirrored. */
 const grip = { x: -arm.hand.x, y: arm.hand.y };
@@ -397,12 +422,66 @@ function Mouth({ shape }: { shape: MouthShape }) {
 type ArmPass = "ink" | "fill";
 
 /**
+ * The arm's transform, inverted, as a `gradientTransform`: a gradient in the arm's own units then lands where the
+ * body's light falls, so the arm is shaded as the body under it is and its unlined root shows no seam.
+ */
+const armLight = (deg: number, shoulder: Point, scaleX: number, scaleY: number) =>
+  `scale(${1 / scaleX} ${1 / scaleY}) rotate(${-deg}) translate(${-shoulder.x} ${-shoulder.y})`;
+
+/** The one light from the upper left, in drawing units. */
+const light = { cx: 82, cy: 78, r: 205 } as const;
+function SkinStops() {
+  return (
+    <>
+      <stop offset={0} stopColor={C.skinLight} />
+      <stop offset={0.35} stopColor={C.skin} />
+      <stop offset={0.68} stopColor={C.skinMid} />
+      <stop offset={0.88} stopColor={C.skinShade} />
+      <stop offset={1} stopColor={C.skinEdge} />
+    </>
+  );
+}
+
+/**
+ * One arm's light: the body's gradient, carried back through the arm's turn and stretch. React writes the attribute
+ * once; after that the motion values own it, so a change of pose can't paint the target's light on the old angle,
+ * and a swing never re-renders.
+ */
+function ArmLight({ id, shoulder, angle, across, stretch }: { id: string; shoulder: Point; angle: MotionValue<number>; across: MotionValue<number>; stretch: MotionValue<number> }) {
+  const ref = useRef<SVGRadialGradientElement>(null);
+  const lit = useTransform(() => armLight(angle.get(), shoulder, across.get(), stretch.get()));
+  const [initial] = useState(() => lit.get());
+  useMotionValueEvent(lit, "change", (t) => ref.current?.setAttribute("gradientTransform", t));
+  return (
+    <defs>
+      <radialGradient ref={ref} id={id} gradientUnits="userSpaceOnUse" {...light} gradientTransform={initial}>
+        <SkinStops />
+      </radialGradient>
+    </defs>
+  );
+}
+
+type ArmLook = {
+  /** Id for this arm's light. */
+  skin: string;
+  /** The mask that fades the top outline out over the shoulder. */
+  fade: string;
+  /**
+   * A clip for the sleeve, when the outfit has one. A sleeve is a set-in piece of cloth, so it keeps its whole
+   * outline, a seam over the shoulder, instead of fading into the body.
+   */
+  sleeve: string | null;
+};
+
+/**
  * One arm, drawn in one of its two passes. Both passes read the same motion values, so they never part.
  * `ink`: the outline as a solid shape, placed behind the body, so outside the body it rims the arm and inside it
  * hides, which joins the arm's outer edge to the body's outline. `fill`: the arm itself, over the body and head,
- * with a top outline that fades out near the shoulder.
+ * with a top outline that fades out near the shoulder. The root has no line of its own, so the body round each
+ * shoulder is mint and the arm is lit as the body is: the root melts into the side. A held prop (`children`) rides
+ * in the hand with the fingers closed over it.
  */
-function Arm({ side, pass, hand, reduce, angle, stretch, rest, paint, fade, children }: { side: "left" | "right"; pass: ArmPass; hand: Hand; reduce: boolean | null; angle: MotionValue<number>; stretch: MotionValue<number>; rest: number; paint: string; fade: string; children?: ReactNode }) {
+function Arm({ side, pass, hand, reduce, angle, stretch, rest, look, children }: { side: "left" | "right"; pass: ArmPass; hand: Hand; reduce: boolean | null; angle: MotionValue<number>; stretch: MotionValue<number>; rest: number; look: ArmLook; children?: ReactNode }) {
   const outline = { initial: false, animate: { d: hands[hand].outline }, transition: reduce ? { duration: 0 } : handMorph } as const;
   // A hand's creases only fit its own outline, so they wait out the morph rather than hang outside the hand.
   const [settled, setSettled] = useState(hand);
@@ -417,23 +496,42 @@ function Arm({ side, pass, hand, reduce, angle, stretch, rest, paint, fade, chil
   const across = useTransform(stretch, (s) => mirror / Math.sqrt(s));
   // What the hand holds moves out with the stretched hand, without being stretched itself.
   const handShift = useTransform(stretch, (s) => (s - 1) * arm.hand.y);
+  const limb = { transform: side === "right" ? "scale(-1 1)" : undefined, style: { ...at({ x: 0, y: 0 }), scaleX: across, scaleY: stretch } };
+  const paint = "url(#" + look.skin + ")";
   return (
     <motion.g transform={rot(rest, shoulder)} style={{ ...at(shoulder), rotate: angle }}>
+      {pass === "fill" && <ArmLight id={look.skin} shoulder={shoulder} angle={angle} across={across} stretch={stretch} />}
       <g transform={`translate(${shoulder.x} ${shoulder.y})`}>
         {/* The right arm is the left one mirrored, so its thumb also faces the body */}
-        <motion.g transform={side === "right" ? "scale(-1 1)" : undefined} style={{ ...at({ x: 0, y: 0 }), scaleX: across, scaleY: stretch }}>
+        <motion.g {...limb}>
           {pass === "ink" ? (
             <motion.path {...outline} fill={C.ink} stroke={C.ink} strokeWidth={LINE * 2} strokeLinejoin="round" />
           ) : (
             <>
-              <motion.path {...outline} fill="none" stroke={C.ink} strokeWidth={LINE * 2} strokeLinejoin="round" mask={fade} />
+              <motion.path {...outline} fill="none" stroke={C.ink} strokeWidth={LINE * 2} strokeLinejoin="round" mask={look.sleeve ? undefined : look.fade} />
               <motion.path {...outline} fill={paint} />
               <path d={arm.shine} fill="none" stroke={C.white} strokeOpacity={0.5} strokeWidth={3.4} strokeLinecap="round" />
-              {settled === hand && <path d={hands[hand].lines} {...inked} strokeWidth={LINE * 0.8} />}
+              {look.sleeve && (
+                <>
+                  <g clipPath={look.sleeve}>
+                    <motion.path {...outline} fill={C.white} />
+                  </g>
+                  <path d={cuff} {...inked} strokeWidth={LINE * 0.8} />
+                </>
+              )}
+              {settled === hand && !children && <path d={hands[hand].lines} {...inked} strokeWidth={LINE * 0.8} />}
             </>
           )}
         </motion.g>
-        {children && <motion.g style={{ y: handShift }}>{children}</motion.g>}
+        {children && (
+          <>
+            <motion.g style={{ y: handShift }}>{children}</motion.g>
+            <motion.g {...limb}>
+              <path d={fingers.outline} fill={paint} {...outlined} />
+              <path d={fingers.lines} {...inked} strokeWidth={LINE * 0.8} />
+            </motion.g>
+          </>
+        )}
       </g>
     </motion.g>
   );
@@ -495,8 +593,8 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
   const gaze = useGaze(follow && !still, ref, look ?? (mood === "think" ? THINK_GAZE : null), mirrored ? -1 : 1);
   useEffect(() => (roaming || !inView ? undefined : enterStage()), [roaming, inView]);
 
-  const pose = poses[mood];
   const hasProp = outfitHasProp(outfit);
+  const pose = { ...poses[mood], ...(hasProp ? holdingPoses[mood] : undefined) };
   const holding = hasProp && Math.abs(pose.arms[1]) < 30;
   const leftTarget = pose.arms[0];
   const rightTarget = holding ? HOLD : pose.arms[1];
@@ -526,7 +624,7 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
     !live ? null
     : mood === "cheer" ? { keyframes: [0, -10 * ARC, 0], duration: 0.62, repeatDelay: 0.22 }
     : mood === "swim" ? swimLoop(12 * ARC)
-    : mood === "go" ? { keyframes: [0, 6 * ARC, 0], duration: 0.42, repeatDelay: 0.18 }
+    : mood === "go" && !holding ? { keyframes: [0, 6 * ARC, 0], duration: 0.42, repeatDelay: 0.18 }
     : null,
   );
   const leftArm = useTransform(() => leftPose.get() + leftSwing.get());
@@ -543,11 +641,11 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
   const swell = useTransform(breath, (b) => 1 + 0.014 * b);
 
   const skin = paint("skin");
-  const fade = paint("fade");
+  const armLook = (side: "left" | "right"): ArmLook => ({ skin: id("skin-" + side), fade: paint("fade"), sleeve: outfitHasSleeves(outfit) ? paint("sleeve") : null });
   const arms = (pass: ArmPass) => (
     <>
-      <Arm side="left" pass={pass} hand={pose.hands[0]} reduce={reduce} angle={leftArm} stretch={leftFlesh} rest={leftTarget} paint={skin} fade={fade} />
-      <Arm side="right" pass={pass} hand={hasProp ? "fist" : pose.hands[1]} reduce={reduce} angle={rightArm} stretch={rightFlesh} rest={rightTarget} paint={skin} fade={fade}>
+      <Arm side="left" pass={pass} hand={pose.hands[0]} reduce={reduce} angle={leftArm} stretch={leftFlesh} rest={leftTarget} look={armLook("left")} />
+      <Arm side="right" pass={pass} hand={hasProp ? "fist" : pose.hands[1]} reduce={reduce} angle={rightArm} stretch={rightFlesh} rest={rightTarget} look={armLook("right")}>
         {pass === "fill" && hasProp && (
           <motion.g transform={rot(-rightTarget, grip)} style={{ ...at(grip), rotate: propTurn }}>
             <g transform={`translate(${grip.x} ${grip.y + 2})`}>
@@ -570,12 +668,8 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
       {!decorative && <title id={titleId}>{title}</title>}
       <defs>
         {/* One light from the upper left for every mint part, in drawing units, so parts that move over each other match */}
-        <radialGradient id={id("skin")} gradientUnits="userSpaceOnUse" cx={82} cy={78} r={205}>
-          <stop offset={0} stopColor={C.skinLight} />
-          <stop offset={0.35} stopColor={C.skin} />
-          <stop offset={0.68} stopColor={C.skinMid} />
-          <stop offset={0.88} stopColor={C.skinShade} />
-          <stop offset={1} stopColor={C.skinEdge} />
+        <radialGradient id={id("skin")} gradientUnits="userSpaceOnUse" {...light}>
+          <SkinStops />
         </radialGradient>
         {/* In each arm's own coordinates: hides the top outline over the shoulder, shows it below */}
         <linearGradient id={id("fadeRamp")} gradientUnits="userSpaceOnUse" x1={0} y1={shoulderFade.from} x2={0} y2={shoulderFade.to}>
@@ -585,6 +679,10 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
         <mask id={id("fade")} maskUnits="userSpaceOnUse" x={-40} y={-40} width={80} height={130}>
           <rect x={-40} y={-40} width={80} height={130} fill={paint("fadeRamp")} />
         </mask>
+        {/* In each arm's own coordinates, like the fade: the arm above the cuff */}
+        <clipPath id={id("sleeve")} clipPathUnits="userSpaceOnUse">
+          <path d={`M-40 -40 H40 V${SLEEVE} H-40Z`} />
+        </clipPath>
       </defs>
 
       <g transform={mirrored ? MIRROR : undefined}>
