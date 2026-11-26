@@ -27,22 +27,19 @@ function Sprout({ x, y, size, fill = C.white }: { x: number; y: number; size: nu
 }
 
 /**
- * The school backpack, after the sheets: worn on the back, so in the 3/4 view it shows past the body's right side,
- * a padded bag with a grab loop on top, a zip round its crown and a pale front pocket with the sprout. The strap
- * is on the body layer.
+ * The school backpack, after the sheets: a padded bag worn high on the back, so in the 3/4 view it shows past the
+ * body's right side from the shoulder to the waist. One rounded shape with a light top edge, and a darker pocket on
+ * its side carrying the white sprout. The tail, coming out below it, is drawn over its foot.
  */
 export function OutfitBack({ outfit }: { outfit: Outfit }) {
   if (outfit !== "school") return null;
   return (
     <g>
-      <path d="M204.5 167 C204 155 218 153.5 219.5 166" fill="none" stroke={C.ink} strokeWidth={7.6} strokeLinecap="round" />
-      <path d="M204.5 167 C204 155 218 153.5 219.5 166" fill="none" stroke={C.forest} strokeWidth={3.8} strokeLinecap="round" />
-      <path d="M170 166 C182 157 206 156 217 167 C226 177 230 199 230 222 C230 240 225 254 212 258 C199 261 185 259 174 254Z" fill={C.forest} {...gear} />
-      <path d="M186 166 C198 161 211 163 219 172 C224 180 227 192 228 204" fill="none" stroke={C.forestDeep} strokeWidth={2.6} strokeLinecap="round" />
-      <path d="M190 164 C199 161 207 162 213 166" fill="none" stroke={C.white} strokeOpacity={0.3} strokeWidth={3.4} strokeLinecap="round" />
-      <path d="M200 210 C211 205 223 207 228 214 C230 228 229 242 223 250 C215 254 205 254 199 250 C196 238 196 222 200 210Z" fill={C.pocket} {...thin} />
-      <path d="M199 219 C208 214 220 214 228.6 219" fill="none" stroke={C.ink} strokeWidth={2} strokeLinecap="round" />
-      <Sprout x={205} y={226} size={16} fill={C.forest} />
+      <path d="M172 154 C172 146 178 141 188 141 L232 141 C243 141 249 148 249 159 L249 219 C249 230 243 236 232 236 L184 236 C177 236 172 232 172 225Z" fill={C.forestLight} {...gear} />
+      <path d="M204 147.5 L232 147.5 C237.5 147.5 241.5 150 242.8 154.5" fill="none" stroke={C.white} strokeOpacity={0.35} strokeWidth={3.2} strokeLinecap="round" />
+      <path d="M212 172 C212 167.6 214.6 165 219 165 L236 165 C240.4 165 243 167.6 243 172 L243 201 C243 205.4 240.4 208 236 208 L219 208 C214.6 208 212 205.4 212 201Z" fill={C.forest} {...thin} />
+      <path d="M212 175 L243 175" stroke={C.ink} strokeWidth={2} />
+      <Sprout x={216.5} y={177} size={22} />
     </g>
   );
 }
@@ -56,15 +53,6 @@ const coat = {
 
 export function OutfitBody({ outfit }: { outfit: Outfit }) {
   switch (outfit) {
-    case "school":
-      // The strap comes out from under the jaw, inside the right arm, runs down the chest past a slider and wraps
-      // round the side to the bag, narrowing as it turns away.
-      return (
-        <g>
-          <path d="M148.5 182 L163 182 C164.5 195 168.5 206 175 214 C178.5 218.5 182 220.5 185.6 222 L183.3 228.5 C176 227 168 222 162 214 C155 205 150 195 148.5 182Z" fill={C.forest} {...thin} />
-          <path d="M151.4 199.6 L166.4 197.2 L168.9 204.2 L154.4 207.2Z" fill={C.forestDeep} {...thin} strokeWidth={1.6} />
-        </g>
-      );
     case "science":
       return (
         <g>
@@ -80,6 +68,35 @@ export function OutfitBody({ outfit }: { outfit: Outfit }) {
     default:
       return null;
   }
+}
+
+/** The straps' centre lines. Each is drawn as an even band, outlined like the body. */
+const straps = {
+  // Over the near shoulder from the head's outline, hugging the top of the arm, and away to the back under it.
+  near: "M6 147 C19 155 27 166 30 180 C32 190 30 199 20 208",
+  // Over the far shoulder from the head's outline, hugging the top of the arm, and away to the back under it.
+  far: "M210 147 C196 153 186 162 181 175 C177 186 178 196 194 207",
+};
+const strapWidth = 10;
+
+/**
+ * The backpack's shoulder straps, as in the sheets: an even band over each shoulder, hugging the top of the arm, with
+ * nothing across the chest. Tavi has no neck, so the shoulders are the lower sides of the head. The straps are drawn
+ * over the arms, as a strap lies over the top of the shoulder, and stay out of the hands' reach. `clip` is the head
+ * (turned as it is) and body together, so each strap turns away to the back exactly at the outline.
+ */
+export function OutfitStraps({ outfit, clip }: { outfit: Outfit; clip: string }) {
+  if (outfit !== "school") return null;
+  return (
+    <g clipPath={clip} fill="none">
+      {[straps.near, straps.far].map((d) => (
+        <g key={d}>
+          <path d={d} stroke={C.ink} strokeWidth={strapWidth + 2 * LINE} />
+          <path d={d} stroke={C.forest} strokeWidth={strapWidth} />
+        </g>
+      ))}
+    </g>
+  );
 }
 
 const goggles =

@@ -2,8 +2,9 @@
 
 import { animate, motion, useInView, useMotionValue, useMotionValueEvent, useReducedMotion, useSpring, useTransform, useVelocity, type Easing, type MotionValue, type SpringOptions } from "motion/react";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
-import { OutfitBack, OutfitBody, OutfitHead, Prop, outfitHasProp, outfitHasSleeves, type Outfit } from "./mascot-outfits";
+import { OutfitBack, OutfitBody, OutfitHead, OutfitStraps, Prop, outfitHasProp, outfitHasSleeves, type Outfit } from "./mascot-outfits";
 import { C, LINE, inked, logo, outlined } from "./mascot-palette";
+import { contains, points, type Point } from "./mascot-silhouette";
 import { cx } from "./ui";
 import { easeOutExpo, playful, standard } from "./motion";
 import { useAmbientStill, useMotionPaused } from "./motion-pause";
@@ -49,7 +50,6 @@ export function useTaviOnStage() {
 
 type EyeState = "open" | "happy" | "wink" | "sad";
 type MouthShape = "grin" | "smile" | "frown" | "o";
-type Point = { x: number; y: number };
 /** The sheets' hands: a relaxed mitt, an open palm with the thumb out ("hi"), a fist, and a fist with the thumb up. */
 type Hand = "mitt" | "open" | "fist" | "thumb";
 
@@ -277,15 +277,19 @@ const headEdge = "M23.5 169 C14 154 9 132 13 110 C20 72 56 42 105 42 C155 42 194
  * shoulders, so the arm's root, which has no outline, always lies on mint.
  */
 const faceWhite =
-  "M21 141 C28 135 44 133 55 136.5 C58 142 62 145 67 144 C88 139 112 140 130 149 C135 148.5 139 146.5 141 143.5 C150 140 156 139 162 141 C166 152 160 166 156 176 C154 182 153 188 152 194 L62 194 C59 190 57 184 56 178 C55.5 172 54.5 168 52 163.5 C48 157 38 152 21 141Z";
+  "M21 141 C28 135 44 133 55 136.5 C58 142 62 145 67 144 C88 139 112 140 130 149 C135 148.5 139 146.5 141 143.5 C150 140 156 139 162 141 C166 152 160 166 158 176 C157.5 182 157.5 188 158 194 L62 194 C59 190 57 184 56 178 C55.5 172 54.5 168 52 163.5 C48 157 38 152 21 141Z";
 const fin = "M114 52 C126 36 146 22 166 17 C174 15 178 19 176 27 C173 38 172 52 176 68Z";
 /** A bean that tapers from under the head to two stubby legs. */
 const body =
   "M28 150 L190 150 C196 180 190 212 182 232 C178 242 176 252 176 262 C176 270 178 276 179 280 C181 285 178 288 173 288 L139 288 C135 288 133 285 133 281 C132 272 131 262 127 256 C121 251 111 251 104 256 C100 262 99 272 98 281 C98 285 96 288 92 288 L62 288 C57 288 54 285 56 280 C58 276 59 270 59 262 C58 252 54 244 47 236 C35 218 27 196 26 176 C25.5 168 26 158 28 150Z";
-/** The near side stays mint round the left shoulder, as the chin does, and the belly widens below it. */
+/**
+ * The near side stays mint round the left shoulder, as the chin does, and the belly widens below it. The far side
+ * stays mint round the right shoulder, then sweeps out over the hip to the body's edge, so both legs are white, as in
+ * the sheets.
+ */
 const belly =
-  "M54 150 L156 150 C152 180 150 210 151 236 C152 252 156 262 159 272 C161 280 161 286 160 288.3 L139 288 C135 288 133 285 133 281 C132 272 131 262 127 256 C121 251 111 251 104 256 C100 262 99 272 98 281 C98 285 96 288 92 288 L62 288 C57 288 54 285 56 280 C58 276 59 270 59 262 C58 252 54 244 48 237 C44 228 45 214 48 204 C51 194 54.5 184 55 175 C55.2 168 54.6 158 54 150Z";
-const soles = "M56 280 C54 285 57 288 62 288 L92 288 C96 288 98 285 98 281 C86 276 68 276 56 280Z M133 281 C133 285 135 288 139 288 L160 288.3 L160 278 C151 276 140 277 133 281Z";
+  "M54 150 L158 150 C158 168 157 186 159 200 C161 214 170 226 182 232 C178 242 176 252 176 262 C176 270 178 276 179 280 C181 285 178 288 173 288 L139 288 C135 288 133 285 133 281 C132 272 131 262 127 256 C121 251 111 251 104 256 C100 262 99 272 98 281 C98 285 96 288 92 288 L62 288 C57 288 54 285 56 280 C58 276 59 270 59 262 C58 252 54 244 48 237 C44 228 45 214 48 204 C51 194 54.5 184 55 175 C55.2 168 54.6 158 54 150Z";
+const soles = "M56 280 C54 285 57 288 62 288 L92 288 C96 288 98 285 98 281 C86 276 68 276 56 280Z M133 281 C133 285 135 288 139 288 L173 288 C178 288 181 285 179 280 C166 276 145 276 133 281Z";
 const tail =
   "M166 228 C182 230 196 226 205 216 C206 204 214 194 228 190 C232 189 235 189 236 191 C236 201 232 211 227 219 C239 216 252 220 260 228 C265 234 259 243 248 247 C236 253 222 252 212 247 C200 251 186 254 174 253 L164 250Z";
 
@@ -344,12 +348,94 @@ const cuff = "M-17 16.6 C-7 19.8 8 19.8 18 16.6";
 const handMorph = { duration: 0.16, ease: easeOutExpo } as const;
 /** The right hand, which holds props: the right arm is the left one mirrored. */
 const grip = { x: -arm.hand.x, y: arm.hand.y };
+/** A stretch of an arm's side, in depths below the shoulder, over which its top outline fades in. */
+type Fade = { from: number; to: number };
 /**
  * The top outline fades out over the arm's root, between these depths below the shoulder, so the joint shows no
  * line while the sides keep theirs almost to the shoulder. (A fade by radius left the root's sides unlined for 22
  * units, a smudge where a chubby arm crosses the white belly.)
  */
-const shoulderFade = { from: 2, to: 9 } as const;
+const shoulderFade: Fade = { from: 2, to: 9 };
+
+/*
+ * Armpits. Over the body each side of an arm has only its top outline, which shoulderFade starts 9 below the
+ * shoulder. A side that runs off the body soon after has the ink behind the body to line it from there on, so the
+ * stretch in between is a line drawn on into the body past the armpit: on an arm held out (swim at 58°) it is 7 to 24
+ * units long and reads as a broken stroke. So a side that leaves the body before the hand stays unlined until it
+ * leaves, and the armpit is the meeting of the arm's line and the body's, as in the sheets. A side that stays over
+ * the body down to the hand (a hanging arm's inner side, a raised one over the face) is the arm in front of the body
+ * and keeps its line.
+ */
+
+/** The body and head, the parts an arm's root lies on. */
+const silhouette = [points(body), points(headShape)];
+const onBody = (p: Point) => silhouette.some((shape) => contains(shape, p));
+
+/**
+ * Each hand's outline, both sides walked down from the shoulder, in the arm's own units: `outer` (x < 0) is the side
+ * away from the body when the arm hangs, `inner` the side against it. Every outline starts at the outer side's root
+ * and ends with the cap over the shoulder, which starts at the inner side's root.
+ */
+const sides = Object.fromEntries(
+  (Object.keys(hands) as Hand[]).map((h) => {
+    const outline = points(hands[h].outline);
+    const outer: Point[] = [];
+    for (const p of outline) {
+      if (p.x >= 0) break;
+      outer.push(p);
+    }
+    let capStart = 0;
+    outline.forEach((p, i) => {
+      if (p.x > 0 && p.y === 0) capStart = i;
+    });
+    const inner: Point[] = [];
+    for (const p of outline.slice(0, capStart + 1).reverse()) {
+      if (p.x <= 0) break;
+      inner.push(p);
+    }
+    return [h, { outer, inner }];
+  }),
+) as Record<Hand, { outer: Point[]; inner: Point[] }>;
+
+/**
+ * A side that leaves the body this deep or shallower is an armpit, unlined until it leaves; one that leaves at
+ * `ARMPIT.far` or deeper (round the hand) keeps shoulderFade. Between, the fade slides back, so an arm swinging down
+ * draws its line in rather than snapping it on. A hanging arm's inner side leaves the body at 42 to 49, an arm held
+ * out at 9 to 33.
+ */
+const ARMPIT = { near: 34, far: 41 } as const;
+
+function sideFade(walk: readonly Point[], place: (p: Point) => Point): Fade {
+  let deepest = 0;
+  for (const p of walk) {
+    if (!onBody(place(p))) {
+      // From here on the ink behind the body draws the line, so the top outline comes in just past this point.
+      const out = Math.max(deepest, p.y);
+      const armpit = { from: out, to: out + 2 };
+      const t = Math.min(1, Math.max(0, (deepest - ARMPIT.near) / (ARMPIT.far - ARMPIT.near)));
+      return { from: armpit.from + (shoulderFade.from - armpit.from) * t, to: armpit.to + (shoulderFade.to - armpit.to) * t };
+    }
+    // The walk can double back (an open hand's thumb), so the fade must clear the deepest point on the body so far.
+    deepest = Math.max(deepest, p.y);
+  }
+  return shoulderFade;
+}
+
+type ArmFades = { outer: Fade; inner: Fade };
+
+/** Where each side of an arm turned `deg` about `shoulder` and stretched by `s` takes up its top outline. */
+function armFades(hand: Hand, side: "left" | "right", shoulder: Point, deg: number, s: number): ArmFades {
+  const mirror = side === "right" ? -1 : 1;
+  const r = (deg * Math.PI) / 180;
+  const [cos, sin] = [Math.cos(r), Math.sin(r)];
+  // The arm's own transform: mirrored and thinned across, stretched along, turned, then set on the shoulder.
+  const place = (p: Point): Point => {
+    const x = (mirror * p.x) / Math.sqrt(s);
+    const y = p.y * s;
+    return { x: shoulder.x + x * cos - y * sin, y: shoulder.y + x * sin + y * cos };
+  };
+  return { outer: sideFade(sides[hand].outer, place), inner: sideFade(sides[hand].inner, place) };
+}
 
 /* ── Face ───────────────────────────────────────────────────────────────── */
 
@@ -461,10 +547,50 @@ function ArmLight({ id, shoulder, angle, across, stretch }: { id: string; should
   );
 }
 
+/** One side's fade as a ramp down the arm: black (hidden) above `from`, white (shown) below `to`. */
+const ramp = (f: Fade) => ({ y1: String(f.from), y2: String(f.to) });
+
+/**
+ * One arm's mask for its top outline, in the arm's own units: each half (outer x < 0, inner x > 0) fades in along its
+ * own ramp. Like ArmLight, the motion value owns the ramps after the first render, so a swing never re-renders.
+ */
+function ArmFade({ id, fades }: { id: string; fades: MotionValue<ArmFades> }) {
+  const outer = useRef<SVGLinearGradientElement>(null);
+  const inner = useRef<SVGLinearGradientElement>(null);
+  const [initial] = useState(() => fades.get());
+  useMotionValueEvent(fades, "change", (f) => {
+    for (const [el, fade] of [[outer.current, f.outer], [inner.current, f.inner]] as const) {
+      const { y1, y2 } = ramp(fade);
+      el?.setAttribute("y1", y1);
+      el?.setAttribute("y2", y2);
+    }
+  });
+  const stops = (
+    <>
+      <stop offset={0} stopColor="#000" />
+      <stop offset={1} stopColor="#fff" />
+    </>
+  );
+  return (
+    <defs>
+      <linearGradient ref={outer} id={id + "-outer"} gradientUnits="userSpaceOnUse" x1={0} x2={0} {...ramp(initial.outer)}>
+        {stops}
+      </linearGradient>
+      <linearGradient ref={inner} id={id + "-inner"} gradientUnits="userSpaceOnUse" x1={0} x2={0} {...ramp(initial.inner)}>
+        {stops}
+      </linearGradient>
+      <mask id={id} maskUnits="userSpaceOnUse" x={-40} y={-40} width={80} height={130}>
+        <rect x={-40} y={-40} width={40} height={130} fill={"url(#" + id + "-outer)"} />
+        <rect x={0} y={-40} width={40} height={130} fill={"url(#" + id + "-inner)"} />
+      </mask>
+    </defs>
+  );
+}
+
 type ArmLook = {
   /** Id for this arm's light. */
   skin: string;
-  /** The mask that fades the top outline out over the shoulder. */
+  /** Id for the mask that fades the top outline out over the shoulder and armpit. */
   fade: string;
   /**
    * A clip for the sleeve, when the outfit has one. A sleeve is a set-in piece of cloth, so it keeps its whole
@@ -498,9 +624,11 @@ function Arm({ side, pass, hand, reduce, angle, stretch, rest, look, children }:
   const handShift = useTransform(stretch, (s) => (s - 1) * arm.hand.y);
   const limb = { transform: side === "right" ? "scale(-1 1)" : undefined, style: { ...at({ x: 0, y: 0 }), scaleX: across, scaleY: stretch } };
   const paint = "url(#" + look.skin + ")";
+  const fades = useTransform(() => armFades(hand, side, shoulder, angle.get(), stretch.get()));
   return (
     <motion.g transform={rot(rest, shoulder)} style={{ ...at(shoulder), rotate: angle }}>
       {pass === "fill" && <ArmLight id={look.skin} shoulder={shoulder} angle={angle} across={across} stretch={stretch} />}
+      {pass === "fill" && !look.sleeve && <ArmFade id={look.fade} fades={fades} />}
       <g transform={`translate(${shoulder.x} ${shoulder.y})`}>
         {/* The right arm is the left one mirrored, so its thumb also faces the body */}
         <motion.g {...limb}>
@@ -508,7 +636,7 @@ function Arm({ side, pass, hand, reduce, angle, stretch, rest, look, children }:
             <motion.path {...outline} fill={C.ink} stroke={C.ink} strokeWidth={LINE * 2} strokeLinejoin="round" />
           ) : (
             <>
-              <motion.path {...outline} fill="none" stroke={C.ink} strokeWidth={LINE * 2} strokeLinejoin="round" mask={look.sleeve ? undefined : look.fade} />
+              <motion.path {...outline} fill="none" stroke={C.ink} strokeWidth={LINE * 2} strokeLinejoin="round" mask={look.sleeve ? undefined : "url(#" + look.fade + ")"} />
               <motion.path {...outline} fill={paint} />
               <path d={arm.shine} fill="none" stroke={C.white} strokeOpacity={0.5} strokeWidth={3.4} strokeLinecap="round" />
               {look.sleeve && (
@@ -641,7 +769,7 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
   const swell = useTransform(breath, (b) => 1 + 0.014 * b);
 
   const skin = paint("skin");
-  const armLook = (side: "left" | "right"): ArmLook => ({ skin: id("skin-" + side), fade: paint("fade"), sleeve: outfitHasSleeves(outfit) ? paint("sleeve") : null });
+  const armLook = (side: "left" | "right"): ArmLook => ({ skin: id("skin-" + side), fade: id("fade-" + side), sleeve: outfitHasSleeves(outfit) ? paint("sleeve") : null });
   const arms = (pass: ArmPass) => (
     <>
       <Arm side="left" pass={pass} hand={pose.hands[0]} reduce={reduce} angle={leftArm} stretch={leftFlesh} rest={leftTarget} look={armLook("left")} />
@@ -671,14 +799,14 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
         <radialGradient id={id("skin")} gradientUnits="userSpaceOnUse" {...light}>
           <SkinStops />
         </radialGradient>
-        {/* In each arm's own coordinates: hides the top outline over the shoulder, shows it below */}
-        <linearGradient id={id("fadeRamp")} gradientUnits="userSpaceOnUse" x1={0} y1={shoulderFade.from} x2={0} y2={shoulderFade.to}>
-          <stop offset={0} stopColor="#000" />
-          <stop offset={1} stopColor="#fff" />
-        </linearGradient>
-        <mask id={id("fade")} maskUnits="userSpaceOnUse" x={-40} y={-40} width={80} height={130}>
-          <rect x={-40} y={-40} width={80} height={130} fill={paint("fadeRamp")} />
-        </mask>
+        <clipPath id={id("headShape")} clipPathUnits="userSpaceOnUse">
+          <path d={headShape} />
+        </clipPath>
+        {/* The head and body together, the head turned as it is: what goes over the shoulders turns away at the outline */}
+        <clipPath id={id("figure")} clipPathUnits="userSpaceOnUse">
+          <motion.path d={headShape} transform={rot(pose.tilt, joints.neck)} style={{ ...at(joints.neck), rotate: tilt }} animate={{ y: mood === "sad" ? 3 : 0 }} transition={playful} />
+          <path d={body} />
+        </clipPath>
         {/* In each arm's own coordinates, like the fade: the arm above the cuff */}
         <clipPath id={id("sleeve")} clipPathUnits="userSpaceOnUse">
           <path d={`M-40 -40 H40 V${SLEEVE} H-40Z`} />
@@ -705,6 +833,8 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
           animate={cheering ? { y: [0, -16, 0] } : swimming ? { y: [0, -5, 0] } : { y: 0 }}
           transition={cheering ? hop : swimming ? swimBody : playful}
         >
+          <OutfitBack outfit={outfit} />
+
           <motion.g
             style={at(joints.tail)}
             animate={!live ? { rotate: 0 } : swimming ? { rotate: [-4, 8, -4] } : cheering ? { rotate: [0, 9, 0] } : { rotate: [0, 6, 0] }}
@@ -714,8 +844,6 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
             <path d="M170 251 C188 251 202 248 212 244 C204 249 188 254 172 254.5Z" fill={C.white} />
             <path d="M214 200 C219 195 224 192 229 191" fill="none" stroke={C.white} strokeOpacity={0.6} strokeWidth={3} strokeLinecap="round" />
           </motion.g>
-
-          <OutfitBack outfit={outfit} />
 
           <motion.g style={{ y: chestRise }}>{arms("ink")}</motion.g>
 
@@ -741,7 +869,8 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
                 </motion.g>
               </motion.g>
               <path d={headShape} fill={skin} />
-              <path d={faceWhite} fill={C.white} />
+              {/* Clipped to the head, so the chin ends on the jaw's curve, not on the white's own flat foot */}
+              <path d={faceWhite} fill={C.white} clipPath={paint("headShape")} />
               <path d="M20 128 C18 100 34 72 62 56" fill="none" stroke={C.rim} strokeWidth={5} strokeLinecap="round" opacity={0.85} />
               <path d={headEdge} {...inked} />
               <ellipse cx={80} cy={62} rx={20} ry={7} fill={C.white} fillOpacity={0.6} transform="rotate(-14 80 62)" />
@@ -762,6 +891,7 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
             </motion.g>
 
             {arms("fill")}
+            <OutfitStraps outfit={outfit} clip={paint("figure")} />
           </motion.g>
 
           {pose.burst && (
