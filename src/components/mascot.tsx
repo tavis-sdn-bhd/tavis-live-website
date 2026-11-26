@@ -1,6 +1,6 @@
 "use client";
 
-import { animate, motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform, useVelocity, type MotionValue, type SpringOptions } from "motion/react";
+import { animate, motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform, useVelocity, type Easing, type MotionValue, type SpringOptions } from "motion/react";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import { OutfitBack, OutfitBody, OutfitHead, Prop, outfitHasProp, type Outfit } from "./mascot-outfits";
 import { C, LINE, inked, logo, outlined } from "./mascot-palette";
@@ -439,21 +439,39 @@ function Arm({ side, pass, hand, reduce, angle, stretch, rest, paint, fade, chil
   );
 }
 
-type Loop = { keyframes: number[]; duration: number; repeatDelay?: number } | null;
+type Loop = { keyframes: number[]; duration: number; repeatDelay?: number; times?: readonly number[]; ease?: readonly Easing[] } | null;
 
 /** A looping offset, as a motion value that every layer can read. `null` settles it back to 0. */
 function useLoop(loop: Loop) {
   const value = useMotionValue(0);
-  const key = loop ? `${loop.keyframes.join()}/${loop.duration}/${loop.repeatDelay ?? 0}` : "";
+  const key = loop ? `${loop.keyframes.join()}/${loop.duration}/${loop.repeatDelay ?? 0}/${loop.times?.join() ?? ""}` : "";
   useEffect(() => {
     const controls = loop
-      ? animate(value, loop.keyframes, { duration: loop.duration, repeat: Infinity, repeatDelay: loop.repeatDelay ?? 0, ease: "easeInOut" })
+      ? animate(value, loop.keyframes, {
+          duration: loop.duration,
+          repeat: Infinity,
+          repeatDelay: loop.repeatDelay ?? 0,
+          times: loop.times ? [...loop.times] : undefined,
+          ease: loop.ease ? [...loop.ease] : "easeInOut",
+        })
       : animate(value, 0, playful);
     return () => controls.stop();
     // `key` stands for `loop`: a new object each render with the same numbers is the same loop.
   }, [key, value]);
   return value;
 }
+
+/** Swimming is one stroke on a slow clock: a quick pull, then a long glide while the arms drift back out. It takes
+    3.5 s, half a leg of the scenes' 7 s float, so Tavi strokes twice per drift and keeps time with the cast around
+    it. The body and tail ride the same clock a beat behind the arms, as thrust follows the pull. */
+const stroke = {
+  duration: 3.5,
+  /** The pull ends 22% in; the glide takes the rest. */
+  times: [0, 0.22, 1],
+  ease: [[0.3, 0, 0.2, 1], "easeInOut"],
+  lag: [0, 0.34, 1],
+} as const satisfies { duration: number; times: readonly number[]; ease: readonly Easing[]; lag: readonly number[] };
+const swimLoop = (amp: number): Loop => ({ keyframes: [0, amp, 0], duration: stroke.duration, times: stroke.times, ease: stroke.ease });
 
 /* ── Tavi ───────────────────────────────────────────────────────────────── */
 
@@ -486,17 +504,20 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
   const live = !still && !reduce;
   const cheering = live && mood === "cheer";
   const hop = { duration: 0.62, repeat: Infinity, repeatDelay: 0.22, ease: "easeOut" } as const;
+  const swimming = live && mood === "swim";
+  const swimBody = { duration: stroke.duration, repeat: Infinity, times: [...stroke.lag], ease: [...stroke.ease] };
 
   // Poses ride springs; loops ride on top. Every layer of a part reads the same values.
   const leftPose = useSprung(leftTarget, armSpring, reduce);
   const rightPose = useSprung(rightTarget, armSpring, reduce);
-  // Cheer and swim keep their timing, which the hop and the stroke set; only the free wave swings at the arm's own rate.
+  // Cheer keeps the hop's timing and swim the stroke's; only the free wave swings at the arm's own rate. A pull sweeps
+  // the arms down toward the body.
   // A thumbs-up nudges the thumb at the viewer now and then; "let's go" punches both fists in short beats.
   const leftSwing = useLoop(
     !live ? null
     : mood === "wave" ? { keyframes: [0, -14 * ARC, 0], duration: 0.75 / Math.sqrt(ARC) }
     : mood === "cheer" ? { keyframes: [0, 10 * ARC, 0], duration: 0.62, repeatDelay: 0.22 }
-    : mood === "swim" ? { keyframes: [0, 16 * ARC, 0], duration: 0.55 }
+    : mood === "swim" ? swimLoop(-12 * ARC)
     : mood === "thumbs" ? { keyframes: [0, 5 * ARC, 0], duration: 0.5, repeatDelay: 1.4 }
     : mood === "go" ? { keyframes: [0, 9 * ARC, 0], duration: 0.42, repeatDelay: 0.18 }
     : null,
@@ -504,7 +525,7 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
   const rightSwing = useLoop(
     !live ? null
     : mood === "cheer" ? { keyframes: [0, -10 * ARC, 0], duration: 0.62, repeatDelay: 0.22 }
-    : mood === "swim" ? { keyframes: [0, -16 * ARC, 0], duration: 0.55 }
+    : mood === "swim" ? swimLoop(12 * ARC)
     : mood === "go" ? { keyframes: [0, 6 * ARC, 0], duration: 0.42, repeatDelay: 0.18 }
     : null,
   );
@@ -583,13 +604,13 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
 
         {/* Every loop needs a resting target: an empty `animate` would leave a repeating animation running. */}
         <motion.g
-          animate={cheering ? { y: [0, -16, 0] } : mood === "swim" && live ? { y: [0, -4, 0] } : { y: 0 }}
-          transition={cheering ? hop : mood === "swim" && live ? { duration: 0.55, repeat: Infinity, ease: "easeInOut" } : playful}
+          animate={cheering ? { y: [0, -16, 0] } : swimming ? { y: [0, -5, 0] } : { y: 0 }}
+          transition={cheering ? hop : swimming ? swimBody : playful}
         >
           <motion.g
             style={at(joints.tail)}
-            animate={!live ? { rotate: 0 } : mood === "swim" ? { rotate: [-9, 12, -9] } : cheering ? { rotate: [0, 9, 0] } : { rotate: [0, 6, 0] }}
-            transition={!live ? playful : mood === "swim" ? { duration: 0.55, repeat: Infinity, ease: "easeInOut" } : cheering ? hop : { duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            animate={!live ? { rotate: 0 } : swimming ? { rotate: [-4, 8, -4] } : cheering ? { rotate: [0, 9, 0] } : { rotate: [0, 6, 0] }}
+            transition={!live ? playful : swimming ? swimBody : cheering ? hop : { duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
           >
             <path d={tail} fill={skin} {...outlined} />
             <path d="M170 251 C188 251 202 248 212 244 C204 249 188 254 172 254.5Z" fill={C.white} />
