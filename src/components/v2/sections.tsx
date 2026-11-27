@@ -72,7 +72,7 @@ export function TutorFaces({ count, credentials, night, className }: { count?: n
               </Fragment>
             ))}
           </span>
-          {credentials && <span className="mx-auto mt-1 block max-w-[11rem] text-caption font-semibold leading-snug text-muted">{t.credential}</span>}
+          {credentials && <span className="mx-auto mt-1 block max-w-[11rem] text-balance text-caption font-semibold leading-snug text-muted">{t.credential}</span>}
         </li>
       ))}
     </ul>

@@ -15,6 +15,12 @@ import { C, LINE, outlined, sprout } from "./mascot-palette";
 export type Outfit = "none" | "school" | "science" | "math" | "history" | "english" | "graduate";
 
 export const outfitHasProp = (o: Outfit) => o === "science" || o === "math" || o === "history" || o === "english" || o === "graduate";
+/**
+ * Most props stay upright whatever the arm does: the flask keeps its liquid level, and the pencil, map and book face
+ * the viewer. The diploma is a roll gripped across the fist, so it turns with the hand. Kept upright on a raised arm,
+ * it ran along the forearm and its end lay on the arm.
+ */
+export const propTurnsWithHand = (o: Outfit) => o === "graduate";
 /** The lab coat has sleeves, which the arms draw over themselves down to the cuff. */
 export const outfitHasSleeves = (o: Outfit) => o === "science";
 
@@ -189,7 +195,7 @@ function Bubbles() {
 
 /**
  * Held item, drawn around the grip point (0,0), where the fingers close over it: the flask by its neck, the map and
- * the book by their lower edge, the pencil near its point and the diploma beside its ribbon. `still`: Tavi is
+ * the book by their lower edge, the pencil near its point and the diploma at its middle. `still`: Tavi is
  * resting or off screen, so the flask stops bubbling.
  */
 export function Prop({ outfit, still }: { outfit: Outfit; still: boolean }) {
@@ -235,13 +241,13 @@ export function Prop({ outfit, still }: { outfit: Outfit; still: boolean }) {
       );
     case "graduate":
       return (
-        <g transform="rotate(-35)">
-          <rect x={-27} y={-8} width={54} height={16} rx={8} fill={C.paper} {...thin} />
-          <ellipse cx={-23} cy={0} rx={4} ry={7} fill={C.paperShade} />
-          <g transform="translate(-14 0)">
-            <rect x={-4} y={-8.6} width={8} height={17.2} fill={C.forest} {...thin} strokeWidth={1.4} />
-            <path d="M0 -9 C-10 -22 -14 -6 0 -9Z M0 -9 C10 -22 14 -6 0 -9Z" fill={C.forest} {...thin} strokeWidth={1.4} />
-          </g>
+        // Across the fist, which spans x −18 to 20.5 here, with the fingers over the middle. The end toward the body
+        // (−x) stands out 5, so on a hanging arm it stays off the belly logo; the outer end stands out 16.5 and
+        // carries the ribbon, and the inner end shows the rolled paper's spiral.
+        <g transform="translate(0 1)">
+          <rect x={-23} y={-7} width={60} height={14} rx={7} fill={C.paper} {...thin} />
+          <ellipse cx={-19.5} cy={0} rx={3} ry={6} fill={C.paperShade} />
+          <rect x={25} y={-7.4} width={7} height={14.8} fill={C.forest} {...thin} strokeWidth={1.4} />
         </g>
       );
     default:

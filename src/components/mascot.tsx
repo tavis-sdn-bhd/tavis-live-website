@@ -2,7 +2,7 @@
 
 import { animate, motion, useInView, useMotionValue, useMotionValueEvent, useReducedMotion, useSpring, useTransform, useVelocity, type Easing, type MotionValue, type SpringOptions } from "motion/react";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
-import { OutfitBack, OutfitBody, OutfitHead, OutfitStraps, Prop, outfitHasProp, outfitHasSleeves, type Outfit } from "./mascot-outfits";
+import { OutfitBack, OutfitBody, OutfitHead, OutfitStraps, Prop, outfitHasProp, outfitHasSleeves, propTurnsWithHand, type Outfit } from "./mascot-outfits";
 import { C, LINE, inked, logo, outlined } from "./mascot-palette";
 import { contains, points, type Point } from "./mascot-silhouette";
 import { cx } from "./ui";
@@ -19,7 +19,7 @@ export type { Outfit } from "./mascot-outfits";
  * the jaw, and changing mood swings it there on a spring. The arm's outline is drawn twice: once behind the body,
  * so its outer edge runs on into the body's outline at any angle, and once on top, fading out toward the shoulder,
  * so the arm reads against the face and belly while the joint itself shows no line (as in the sheets). A held prop
- * rides in the hand and stays upright. The head tilts about the neck, the fin follows a beat late, the tail sways,
+ * rides in the hand and stays upright (the diploma, a roll through the fist, turns with it). The head tilts about the neck, the fin follows a beat late, the tail sways,
  * and the body breathes with the feet planted. One light source shades every mint part, so parts that move over
  * each other match.
  */
@@ -367,9 +367,24 @@ const shoulderFade: Fade = { from: 2, to: 9 };
  * and keeps its line.
  */
 
-/** The body and head, the parts an arm's root lies on. */
-const silhouette = [points(body), points(headShape)];
-const onBody = (p: Point) => silhouette.some((shape) => contains(shape, p));
+/**
+ * The body and head, the parts an arm's root lies on. Eight samples per curve keep them within a fraction of a unit
+ * of the drawn outline, at half the cost of the default, since every arm tests against them on every frame it moves.
+ */
+const bodyOutline = points(body, 8);
+const headOutline = points(headShape, 8);
+
+/** The head as it is drawn: turned `tilt` degrees about the neck, then dropped `drop` (Tavi's head sinks when sad). */
+type HeadPose = { tilt: number; drop: number };
+
+function onBody(p: Point, head: HeadPose): boolean {
+  if (contains(bodyOutline, p)) return true;
+  // Carry the point back through the head's drop and turn, into the head's own drawing.
+  const r = (-head.tilt * Math.PI) / 180;
+  const dx = p.x - joints.neck.x;
+  const dy = p.y - head.drop - joints.neck.y;
+  return contains(headOutline, { x: joints.neck.x + dx * Math.cos(r) - dy * Math.sin(r), y: joints.neck.y + dx * Math.sin(r) + dy * Math.cos(r) });
+}
 
 /**
  * Each hand's outline, both sides walked down from the shoulder, in the arm's own units: `outer` (x < 0) is the side
@@ -405,10 +420,10 @@ const sides = Object.fromEntries(
  */
 const ARMPIT = { near: 34, far: 41 } as const;
 
-function sideFade(walk: readonly Point[], place: (p: Point) => Point): Fade {
+function sideFade(walk: readonly Point[], place: (p: Point) => Point, head: HeadPose): Fade {
   let deepest = 0;
   for (const p of walk) {
-    if (!onBody(place(p))) {
+    if (!onBody(place(p), head)) {
       // From here on the ink behind the body draws the line, so the top outline comes in just past this point.
       const out = Math.max(deepest, p.y);
       const armpit = { from: out, to: out + 2 };
@@ -424,7 +439,7 @@ function sideFade(walk: readonly Point[], place: (p: Point) => Point): Fade {
 type ArmFades = { outer: Fade; inner: Fade };
 
 /** Where each side of an arm turned `deg` about `shoulder` and stretched by `s` takes up its top outline. */
-function armFades(hand: Hand, side: "left" | "right", shoulder: Point, deg: number, s: number): ArmFades {
+function armFades(hand: Hand, side: "left" | "right", shoulder: Point, deg: number, s: number, head: HeadPose): ArmFades {
   const mirror = side === "right" ? -1 : 1;
   const r = (deg * Math.PI) / 180;
   const [cos, sin] = [Math.cos(r), Math.sin(r)];
@@ -434,7 +449,7 @@ function armFades(hand: Hand, side: "left" | "right", shoulder: Point, deg: numb
     const y = p.y * s;
     return { x: shoulder.x + x * cos - y * sin, y: shoulder.y + x * sin + y * cos };
   };
-  return { outer: sideFade(sides[hand].outer, place), inner: sideFade(sides[hand].inner, place) };
+  return { outer: sideFade(sides[hand].outer, place, head), inner: sideFade(sides[hand].inner, place, head) };
 }
 
 /* ── Face ───────────────────────────────────────────────────────────────── */
@@ -607,7 +622,7 @@ type ArmLook = {
  * shoulder is mint and the arm is lit as the body is: the root melts into the side. A held prop (`children`) rides
  * in the hand with the fingers closed over it.
  */
-function Arm({ side, pass, hand, reduce, angle, stretch, rest, look, children }: { side: "left" | "right"; pass: ArmPass; hand: Hand; reduce: boolean | null; angle: MotionValue<number>; stretch: MotionValue<number>; rest: number; look: ArmLook; children?: ReactNode }) {
+function Arm({ side, pass, hand, reduce, angle, stretch, rest, look, headTilt, headDrop, children }: { side: "left" | "right"; pass: ArmPass; hand: Hand; reduce: boolean | null; angle: MotionValue<number>; stretch: MotionValue<number>; rest: number; look: ArmLook; headTilt: MotionValue<number>; headDrop: number; children?: ReactNode }) {
   const outline = { initial: false, animate: { d: hands[hand].outline }, transition: reduce ? { duration: 0 } : handMorph } as const;
   // A hand's creases only fit its own outline, so they wait out the morph rather than hang outside the hand.
   const [settled, setSettled] = useState(hand);
@@ -624,7 +639,7 @@ function Arm({ side, pass, hand, reduce, angle, stretch, rest, look, children }:
   const handShift = useTransform(stretch, (s) => (s - 1) * arm.hand.y);
   const limb = { transform: side === "right" ? "scale(-1 1)" : undefined, style: { ...at({ x: 0, y: 0 }), scaleX: across, scaleY: stretch } };
   const paint = "url(#" + look.skin + ")";
-  const fades = useTransform(() => armFades(hand, side, shoulder, angle.get(), stretch.get()));
+  const fades = useTransform(() => armFades(hand, side, shoulder, angle.get(), stretch.get(), { tilt: headTilt.get(), drop: headDrop }));
   return (
     <motion.g transform={rot(rest, shoulder)} style={{ ...at(shoulder), rotate: angle }}>
       {pass === "fill" && <ArmLight id={look.skin} shoulder={shoulder} angle={angle} across={across} stretch={stretch} />}
@@ -759,9 +774,11 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
   const rightArm = useTransform(() => rightPose.get() + rightSwing.get());
   const leftFlesh = useFlesh(leftArm, reduce);
   const rightFlesh = useFlesh(rightArm, reduce);
-  // The prop counter-turns against the arm, so it stays upright in the hand at any angle.
+  // A prop counter-turns against the arm, so it stays upright in the hand at any angle (the diploma turns with it).
   const propTurn = useTransform(() => -rightArm.get());
   const tilt = useSprung(pose.tilt, headSpring, reduce);
+  // The head sinks a little when sad.
+  const headDrop = mood === "sad" ? 3 : 0;
   const finTurn = useSprung(finTarget, finSpring, reduce);
   // Breathing: the body swells from the feet while everything above it rises with the chest.
   const breath = useLoop(live && mood !== "cheer" && mood !== "swim" ? { keyframes: [0, 1, 0], duration: 3.2 } : null);
@@ -770,17 +787,24 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
 
   const skin = paint("skin");
   const armLook = (side: "left" | "right"): ArmLook => ({ skin: id("skin-" + side), fade: id("fade-" + side), sleeve: outfitHasSleeves(outfit) ? paint("sleeve") : null });
+  const held = (
+    <g transform={`translate(${grip.x} ${grip.y + 2})`}>
+      <Prop outfit={outfit} still={still} />
+    </g>
+  );
   const arms = (pass: ArmPass) => (
     <>
-      <Arm side="left" pass={pass} hand={pose.hands[0]} reduce={reduce} angle={leftArm} stretch={leftFlesh} rest={leftTarget} look={armLook("left")} />
-      <Arm side="right" pass={pass} hand={hasProp ? "fist" : pose.hands[1]} reduce={reduce} angle={rightArm} stretch={rightFlesh} rest={rightTarget} look={armLook("right")}>
-        {pass === "fill" && hasProp && (
-          <motion.g transform={rot(-rightTarget, grip)} style={{ ...at(grip), rotate: propTurn }}>
-            <g transform={`translate(${grip.x} ${grip.y + 2})`}>
-              <Prop outfit={outfit} still={still} />
-            </g>
-          </motion.g>
-        )}
+      <Arm side="left" pass={pass} hand={pose.hands[0]} reduce={reduce} angle={leftArm} stretch={leftFlesh} rest={leftTarget} look={armLook("left")} headTilt={tilt} headDrop={headDrop} />
+      <Arm side="right" pass={pass} hand={hasProp ? "fist" : pose.hands[1]} reduce={reduce} angle={rightArm} stretch={rightFlesh} rest={rightTarget} look={armLook("right")} headTilt={tilt} headDrop={headDrop}>
+        {pass === "fill" &&
+          hasProp &&
+          (propTurnsWithHand(outfit) ? (
+            held
+          ) : (
+            <motion.g transform={rot(-rightTarget, grip)} style={{ ...at(grip), rotate: propTurn }}>
+              {held}
+            </motion.g>
+          ))}
       </Arm>
     </>
   );
@@ -804,7 +828,7 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
         </clipPath>
         {/* The head and body together, the head turned as it is: what goes over the shoulders turns away at the outline */}
         <clipPath id={id("figure")} clipPathUnits="userSpaceOnUse">
-          <motion.path d={headShape} transform={rot(pose.tilt, joints.neck)} style={{ ...at(joints.neck), rotate: tilt }} animate={{ y: mood === "sad" ? 3 : 0 }} transition={playful} />
+          <motion.path d={headShape} transform={rot(pose.tilt, joints.neck)} style={{ ...at(joints.neck), rotate: tilt }} animate={{ y: headDrop }} transition={playful} />
           <path d={body} />
         </clipPath>
         {/* In each arm's own coordinates, like the fade: the arm above the cuff */}
@@ -861,7 +885,7 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
           </motion.g>
 
           <motion.g style={{ y: chestRise }}>
-            <motion.g transform={rot(pose.tilt, joints.neck)} style={{ ...at(joints.neck), rotate: tilt }} animate={{ y: mood === "sad" ? 3 : 0 }} transition={playful}>
+            <motion.g transform={rot(pose.tilt, joints.neck)} style={{ ...at(joints.neck), rotate: tilt }} animate={{ y: headDrop }} transition={playful}>
               <motion.g transform={rot(finTarget, joints.fin)} style={{ ...at(joints.fin), rotate: finTurn }}>
                 <motion.g style={at(joints.fin)} animate={cheering ? { rotate: [0, -7, 3, 0] } : { rotate: 0 }} transition={cheering ? hop : playful}>
                   <path d={fin} fill={C.fin} {...outlined} />

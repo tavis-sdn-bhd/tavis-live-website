@@ -170,10 +170,14 @@ export const RocketLaunch = (p: IconProps) => (
   </Icon>
 );
 
-/** The "T" from the Tavis logo tile on its own, cut from public/assets/tavis-logo.svg, for a watermark. */
+/** The "T" cut out of the Tavis logo tile, in public/assets/tavis-logo.svg's coordinates (the tile is 193.57 square). */
+export const tavisT =
+  "M111.06 165.14H82.54v-81a60.66 60.66 0 0 1 13.93 21.48c.08.23.29.88.29.9l0 .09s.22-.73.32-1a60.85 60.85 0 0 1 14-21.52ZM164.73 54.91h-30.6c-16.92 0-31.34 17.18-37 32.35-.1.3-.21.61-.32.91 0 0-.21-.61-.31-.91-5.69-15.17-20.1-32.35-37-32.35H28.84V28.43H59.45c17 0 31.39 14.75 37.06 31.56l.29.92.27-.93c5.68-16.82 20.11-31.55 37.06-31.55h30.6Z";
+
+/** The "T" from the Tavis logo tile on its own, for a watermark. */
 export const TavisMark = (p: IconProps) => (
   <svg viewBox="28 28 137.5 137.5" fill="currentColor" aria-hidden="true" focusable="false" {...p}>
-    <path d="M111.06 165.14H82.54v-81a60.66 60.66 0 0 1 13.93 21.48c.08.23.29.88.29.9l0 .09s.22-.73.32-1a60.85 60.85 0 0 1 14-21.52ZM164.73 54.91h-30.6c-16.92 0-31.34 17.18-37 32.35-.1.3-.21.61-.32.91 0 0-.21-.61-.31-.91-5.69-15.17-20.1-32.35-37-32.35H28.84V28.43H59.45c17 0 31.39 14.75 37.06 31.56l.29.92.27-.93c5.68-16.82 20.11-31.55 37.06-31.55h30.6Z" />
+    <path d={tavisT} />
   </svg>
 );
 

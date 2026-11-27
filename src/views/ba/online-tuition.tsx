@@ -196,7 +196,8 @@ function OnlineTuitionPage() {
       <Section id={tutors.id}>
         <div className="shell">
           <Centered title={[tutors.title, tutors.accent]} body={tutors.body} />
-          <TutorFaces count={6} credentials className="mx-auto mt-14 max-w-[40rem]" />
+          {/* Six faces sit in one row from lg, across the full shell, instead of a narrow 3×2 block. */}
+          <TutorFaces count={6} credentials className="mx-auto mt-14 max-w-[40rem] lg:max-w-none lg:grid-cols-6" />
           <Actions className="mt-12">
             <Button href="/tutors" tone="white" size="lg">
               {ba.tutors.cta}

@@ -7,7 +7,7 @@ export type Point = { x: number; y: number };
  * curve, which is plenty for shapes a few hundred units across.
  */
 export function points(d: string, steps = 16): Point[] {
-  const tokens = d.match(/[MLCZ]|-?\d*\.?\d+/g) ?? [];
+  const tokens = d.match(/[A-Za-z]|-?\d*\.?\d+/g) ?? [];
   const out: Point[] = [];
   let i = 0;
   let cmd = "M";
@@ -16,9 +16,14 @@ export function points(d: string, steps = 16): Point[] {
   const pt = (): Point => ({ x: Number(tokens[i++]), y: Number(tokens[i++]) });
   while (i < tokens.length) {
     const token = tokens[i] ?? "";
-    if (/[MLCZ]/.test(token)) {
+    if (/[A-Za-z]/.test(token)) {
+      // Anything else (H, V, S, Q, A, or a relative command) would be read as the last command and quietly bend the
+      // shape, so it fails here instead.
+      if (!/^[MLCZ]$/.test(token)) throw new Error(`points: unsupported path command "${token}"`);
       cmd = token;
       i++;
+    } else if (cmd === "Z") {
+      throw new Error("points: numbers after Z with no command");
     }
     if (cmd === "M") {
       cur = start = pt();
