@@ -22,7 +22,7 @@ function Belief({ text, highlight }: { text: string; highlight: string }) {
   return (
     <div className="relative overflow-hidden rounded-3xl border-b-[5px] border-brand-ledge bg-brand px-6 py-6 text-forest-deep sm:px-8">
       <TavisMark className="pointer-events-none absolute right-5 top-1/2 size-16 -translate-y-1/2 text-white/40 sm:right-7 sm:size-24" />
-      <p className="relative pr-16 text-[clamp(1.25rem,1.1rem+0.6vw,1.5rem)] font-extrabold leading-snug text-balance sm:pr-28">
+      <p className="relative pr-16 text-[clamp(1.25rem,1.1rem+0.6vw,1.5rem)] font-extrabold leading-[1.4] text-pretty sm:pr-28">
         {at < 0 ? (
           text
         ) : (

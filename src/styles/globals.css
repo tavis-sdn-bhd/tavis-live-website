@@ -354,8 +354,8 @@ html[data-visitor="idle"] :is(.animate-float, .animate-spin-slow, .animate-bounc
   }
 
   html {
-    /* Cal Sans ships one weight; never let the browser fake a bold. */
-    font-synthesis: none;
+    /* Cal Sans ships one weight; never let the browser fake a bold. Italic and small caps may still be synthesized. */
+    font-synthesis-weight: none;
     scroll-behavior: smooth;
     scroll-padding-top: calc(5.5rem + env(safe-area-inset-top, 0px));
     /* Keeps focused controls clear of the chat button at the bottom. */

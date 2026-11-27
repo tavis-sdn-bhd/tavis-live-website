@@ -43,7 +43,7 @@ function Compare() {
   // Each row kind has its own vertical padding, and no cell takes two: `cx` joins classes, it does not merge them.
   const pad = { head: "py-2.5 sm:py-3", row: "py-2.5 sm:py-2", foot: "py-2.5 sm:py-3.5" };
   const cell = "px-1 text-center align-middle sm:px-4";
-  const label = "px-4 font-extrabold leading-snug text-pretty text-forest sm:px-7 sm:text-[1.0625rem]";
+  const label = "px-4 font-extrabold leading-[1.4] text-pretty text-forest sm:px-7 sm:text-[1.0625rem]";
   const column = "font-display text-caption uppercase leading-tight tracking-[0.05em] sm:text-body-sm";
   return (
     <Section id={compare.id} cta>

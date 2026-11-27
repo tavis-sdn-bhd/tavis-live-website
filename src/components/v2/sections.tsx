@@ -213,7 +213,7 @@ export function Voices() {
                   “
                 </span>
                 {/* Quoted in English on the Malay site too, so a screen reader reads it as English. */}
-                <blockquote lang="en" className="mt-3 flex-1 text-[1.125rem] font-bold leading-snug text-forest">
+                <blockquote lang="en" className="mt-3 flex-1 text-[1.125rem] font-bold leading-normal text-forest">
                   <p>{t.quote}</p>
                 </blockquote>
                 <figcaption className="mt-7 flex items-center gap-3">
@@ -247,7 +247,7 @@ export function Testimonials() {
           {testimonials.items.map((t, i) => (
             <li key={t.name} className="w-[min(85%,22rem)] shrink-0 snap-start lg:w-auto">
               <figure className="flex h-full flex-col">
-                <blockquote className={cx(chunky, "relative flex-1 p-7 text-[1.125rem] font-bold leading-snug text-forest")}>
+                <blockquote className={cx(chunky, "relative flex-1 p-7 text-[1.125rem] font-bold leading-normal text-forest")}>
                   <p>“{t.quote}”</p>
                   <span aria-hidden="true" className="absolute -bottom-[11px] left-10 size-5 rotate-45 border-b-4 border-r-2 border-line bg-paper" />
                 </blockquote>
