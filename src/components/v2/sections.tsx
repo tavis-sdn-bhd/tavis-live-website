@@ -51,7 +51,7 @@ export function TutorFaces({ count, credentials, night, className }: { count?: n
   return (
     <ul className={cx("grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 sm:gap-y-6", className)}>
       {tuitionPage.tutors.list.slice(0, count).map((t) => (
-        <li key={t.name} className="text-center">
+        <li key={t.name} data-chat-avoid className="text-center">
           <span className="mx-auto block aspect-square w-full max-w-[7.5rem] overflow-hidden rounded-full bg-mint p-1">
             <Image src={t.src} alt={t.name} width={t.w} height={t.h} sizes="120px" className="size-full rounded-full bg-cream object-cover object-top" />
           </span>

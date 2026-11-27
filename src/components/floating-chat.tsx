@@ -22,16 +22,17 @@ const faces: Record<Look, { face: string; disc: string; label: string }> = {
     disc: "grid size-10 place-items-center rounded-full bg-forest text-brand",
     label: "max-sm:sr-only",
   },
+  // Square until xl: a 254px pill at a tablet's edge sits on the right column's copy.
   ledge: {
-    face: buttonClass({ size: "lg", className: "gap-2.5 max-sm:size-14 max-sm:p-0 sm:pl-3" }),
+    face: buttonClass({ size: "lg", className: "gap-2.5 max-xl:size-14 max-xl:p-0 max-xl:sm:px-0 xl:pl-3" }),
     disc: "grid size-9 place-items-center rounded-xl bg-forest text-brand",
-    label: "max-sm:sr-only",
+    label: "max-xl:sr-only",
   },
 };
 
-/** What the button must never sit on: a control, or a picture marked `data-chat-avoid` (the practice demo's phone),
-    which it would hide part of. */
-const control = "a, button, summary, input, textarea, select, label, [role=button], [role=tab], [data-chat-avoid]";
+/** What the button must never sit on: a control, a heading, or what is marked `data-chat-avoid` (the practice demo's
+    phone, the tutors' names), which it would hide part of. */
+const control = "a, button, summary, input, textarea, select, label, h1, h2, h3, [role=button], [role=tab], [data-chat-avoid]";
 
 /**
  * True while a control is under the button's spot. `spot` is an invisible copy of the button, always in place, so the

@@ -237,11 +237,9 @@ export function Header({ design }: { design: DesignId }) {
                 })}
               </ul>
             </nav>
-            <div className="sticky bottom-0 border-t-2 border-line bg-paper pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
-              <div className="shell mx-auto grid max-w-[36rem] gap-3 sm:max-w-[40rem] sm:grid-cols-2">
-                <GetButton webApp={design === "ba"} size="lg" className="w-full">
-                  {home.cta}
-                </GetButton>
+            {/* Sign in only: Get Tavis stays in the bar above, and from sm the bar has Sign in too. */}
+            <div className="sticky bottom-0 border-t-2 border-line bg-paper pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 sm:hidden">
+              <div className="shell mx-auto max-w-[36rem]">
                 <Button href={links.signIn} tone="white" size="lg" target="_blank" rel="noopener noreferrer" className="w-full">
                   Sign in
                   <NewTab />

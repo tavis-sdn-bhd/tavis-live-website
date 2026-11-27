@@ -49,21 +49,23 @@ export function Bacteriophage({ className, draw = false, delay = 0 }: { classNam
 
       <g className={fade} style={d(delay + 900)}>
         <g fill="none" stroke="currentColor" strokeOpacity="0.45" strokeWidth="1">
-          <path d="M56 46H82" />
-          <path d="M131 120H176" />
-          <path d="M129 160H176" />
-          <path d="M60 226 36 206" />
-          <path d="M120 206V246" />
+          <path d="M68 46H82" />
+          <path d="M131 120H180" />
+          <path d="M129 160H180" />
+          <path d="M60 226 42 210" />
+          <path d="M120 206V284" />
         </g>
-        <g fill="currentColor" fontFamily="var(--font-mono)" fontSize="8.5" letterSpacing="0.04em">
-          <text x="4" y="40">HEAD</text>
-          <text x="4" y="51">(CAPSID)</text>
-          <text x="180" y="123">COLLAR</text>
-          <text x="180" y="158">TAIL</text>
-          <text x="180" y="169">SHEATH</text>
-          <text x="4" y="196">TAIL</text>
-          <text x="4" y="207">FIBERS</text>
-          <text x="120" y="258" textAnchor="middle">BASE PLATE</text>
+        {/* As large as the margins allow: the card draws the diagram about 150px wide, so 12 units is about 7.5px. "BASE
+            PLATE" sits under the tail fibers, the only place wide enough for it. */}
+        <g fill="currentColor" fontFamily="var(--font-mono)" fontSize="12" letterSpacing="0.02em">
+          <text x="2" y="36">HEAD</text>
+          <text x="2" y="50">(CAPSID)</text>
+          <text x="184" y="124">COLLAR</text>
+          <text x="184" y="158">TAIL</text>
+          <text x="184" y="172">SHEATH</text>
+          <text x="2" y="190">TAIL</text>
+          <text x="2" y="204">FIBERS</text>
+          <text x="120" y="298" textAnchor="middle">BASE PLATE</text>
         </g>
       </g>
     </svg>

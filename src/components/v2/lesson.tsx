@@ -88,7 +88,7 @@ export function Lesson({ className }: { className?: string }) {
 
         <div className="mt-4 grid grid-cols-[minmax(0,0.75fr)_minmax(0,1fr)] gap-4">
           <div className="grid place-items-center rounded-2xl border-2 border-line">
-            <Bacteriophage draw delay={500} className="h-auto w-full max-w-[9rem] p-2" />
+            <Bacteriophage draw delay={500} className="h-auto w-full p-2" />
           </div>
           <div role="group" aria-label="Answer options" aria-describedby={statusId} className="grid content-start gap-2">
             {question.options.map((option, i) => {
