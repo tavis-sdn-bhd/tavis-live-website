@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { tavisT } from "../icons";
 
 /* Variant B's cast: Malaysian secondary students, Form 1 to 5, drawn for Tavis in Duolingo's character grammar.
    Rounded blobs and capsule limbs, flat fills with one darker side, no outlines. Teen proportions set them apart
@@ -355,12 +356,12 @@ export function CoinArt({ className, style }: ArtProps) {
   );
 }
 
-/** The Tavis mark drawn: a green tile, the T's arms curling down into its stem. */
+/** The Tavis app icon: the logo's green tile with its T, as in public/assets/tavis-logo.svg. */
 export function TavisMark({ className, style }: ArtProps) {
   return (
-    <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false" className={className} style={style}>
-      <rect width="64" height="64" rx="15" fill="var(--color-brand)" />
-      <path d="M10 14H54V20.5C47 20.5 41.5 23.5 38.2 29L35 34.5V52H29V34.5L25.8 29C22.5 23.5 17 20.5 10 20.5Z" fill="#fff" />
+    <svg viewBox="0 0 193.57 193.57" aria-hidden="true" focusable="false" className={className} style={style}>
+      <rect width="193.57" height="193.57" rx="31.18" fill="var(--color-brand)" />
+      <path d={tavisT} fill="#fff" />
     </svg>
   );
 }

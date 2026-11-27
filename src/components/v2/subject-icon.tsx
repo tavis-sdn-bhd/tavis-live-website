@@ -20,9 +20,10 @@ const bubble = "M5 4.5h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-8l-4.5 3.5v-3.5H5a2 2 0
 
 const glyphs: Record<string, ReactNode> = {
   Sains: (
+    // A DNA double helix: two strands crossing twice, joined by rungs where they sit apart.
     <>
-      <path d="M9.5 3h5M10.5 3v5.5L5.4 17.6A2 2 0 0 0 7.1 20.6h9.8a2 2 0 0 0 1.7-3L13.5 8.5V3" {...line} />
-      <path d="M7.6 15.2h8.8l1.9 3.4a1 1 0 0 1-.9 1.4H6.6a1 1 0 0 1-.9-1.4Z" fill="#fff" />
+      <path d="M8 3c0 4.5 8 4.5 8 9s-8 4.5-8 9M16 3c0 4.5-8 4.5-8 9s8 4.5 8 9" {...line} />
+      <path d="M10 4.8h4M10 10.2h4M10 13.8h4M10 19.2h4" {...line} strokeWidth={1.6} />
     </>
   ),
   Matematik: <path d="M7 3.5v7M3.5 7h7M13.5 7h7M4.5 14.5l5 5M9.5 14.5l-5 5M13.5 15.5h7M13.5 18.5h7" {...line} />,
@@ -46,24 +47,27 @@ const glyphs: Record<string, ReactNode> = {
     </>
   ),
   Biologi: (
+    // A bone: a shaft with two knuckles at each end.
     <>
-      <path d="M4.5 19.5C4.5 10.5 10 4.5 20 4c-.5 10-6.5 15.5-15.5 15.5Z" fill="#fff" />
-      <path d="M4.5 19.5 14 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M7.2 16.8 16.8 7.2" stroke="#fff" strokeWidth="3.6" strokeLinecap="round" />
+      <circle cx="5.6" cy="16" r="2.4" fill="#fff" />
+      <circle cx="8" cy="18.4" r="2.4" fill="#fff" />
+      <circle cx="16" cy="5.6" r="2.4" fill="#fff" />
+      <circle cx="18.4" cy="8" r="2.4" fill="#fff" />
     </>
   ),
   Kimia: (
-    <>
-      <path d="M12 3.2 19.6 7.6v8.8L12 20.8l-7.6-4.4V7.6Z" {...line} />
-      <circle cx="12" cy="12" r="3.4" {...line} />
-    </>
-  ),
-  Fizik: (
+    // An atom: three electron orbits around a nucleus.
     <>
       <ellipse cx="12" cy="12" rx="9.5" ry="3.8" {...line} strokeWidth={1.7} />
       <ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(60 12 12)" {...line} strokeWidth={1.7} />
       <ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(-60 12 12)" {...line} strokeWidth={1.7} />
       <circle cx="12" cy="12" r="2.2" fill="#fff" />
     </>
+  ),
+  Fizik: (
+    // A sound wave, as a waveform's bars.
+    <path d="M3.5 10.5v3M7.5 7.5v9M12 3.5v17M16.5 6.5v11M20.5 9.5v5" {...line} strokeWidth={2.2} />
   ),
   "Matematik Tambahan": (
     <>
