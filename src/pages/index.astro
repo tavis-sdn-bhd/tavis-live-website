@@ -1,11 +1,15 @@
 ---
 // Built once at deploy and served as a static file: the page doesn't change per request, so it never wakes the Worker.
+// The timetable is read from EmDash then, for the live class card, as on /online-tuition (README, Editing).
 export const prerender = true;
 import { routePath } from "@/lib/pathname";
+import { loadTimetable } from "@/lib/timetable-data";
 import Layout from "@/layouts/Ba.astro";
-import Page from "@/views/ba/home";
+import Page from "@/views/ba/home-timetable";
+
+const timetable = await loadTimetable();
 ---
 
 <Layout path="/">
-  <Page client:idle path={routePath(Astro.url)} />
+  <Page client:idle path={routePath(Astro.url)} timetable={timetable} />
 </Layout>

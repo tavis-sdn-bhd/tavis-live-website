@@ -458,12 +458,16 @@ const joinSteps = [
     reads wrongly above four plans. */
 const baPriceTitle = ["All subjects", "for your form."] as const;
 
+/** The lowest monthly rate as a price: "From RM70 a month". */
+const tuitionFrom = { from: "From", amount: ringgit(lowestRate), per: "a month" } as const;
+
 export const baHome = {
   /** Leads with SPM revision, one of the searches Tavis named in the brief. */
   title: ["Free SPM revision", `for ${allForms}.`],
   promo: {
     title: baPriceTitle,
-    body: `Live classes, from ${ringgit(lowestRate)} a month.`,
+    body: tuitionPage.tutors.body,
+    price: tuitionFrom,
   },
 } as const;
 
@@ -540,7 +544,7 @@ export const baTuition = {
       { feature: "Points for attending classes", free: false, tuition: true },
       { feature: "A weekly progress report emailed to parents", free: false, tuition: true },
     ],
-    price: { free: "Free", tuition: { from: "From", amount: ringgit(lowestRate), per: "a month" } },
+    price: { free: "Free", tuition: tuitionFrom },
   },
   pricing: {
     title: baPriceTitle,

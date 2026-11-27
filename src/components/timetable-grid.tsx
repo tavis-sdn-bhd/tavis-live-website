@@ -2,12 +2,11 @@
 
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { createContext, useContext, useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
-import { timetable, timetable2027, type Slot, type Timetable } from "@/lib/pages";
+import { timetable, timetable2027, type Form, type Slot, type Timetable } from "@/lib/pages";
 import { easeOutExpo } from "./motion";
 import { subjectDot, subjectKey, subjectLang } from "./subject";
 import { cx } from "./ui";
 
-type Form = 1 | 2 | 3 | 4 | 5;
 const forms: readonly Form[] = [1, 2, 3, 4, 5];
 
 /** The timetable the grid draws: the transcribed 2027 one, unless a page provides another, as the CMS-backed site does. */
@@ -34,6 +33,53 @@ function weekdayToday() {
   return day >= 1 && day <= 5 ? day - 1 : null;
 }
 
+/** Form 1–5 as tabs on a sliding pill, arrow keys moving between them. Each tab controls `${id}-panel`. */
+export function FormTabs({ id, form, onChange }: { id: string; form: Form; onChange: (form: Form) => void }) {
+  function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const last = forms.length - 1;
+    const keys: Record<string, (i: number) => number> = {
+      ArrowRight: (i) => (i + 1) % forms.length,
+      ArrowLeft: (i) => (i + last) % forms.length,
+      Home: () => 0,
+      End: () => last,
+    };
+    const move = keys[event.key];
+    if (!move) return;
+    event.preventDefault();
+    const next = forms[move(forms.indexOf(form))] ?? 1;
+    onChange(next);
+    document.getElementById(`${id}-tab-${next}`)?.focus();
+  }
+
+  return (
+    <LayoutGroup id={id}>
+      <div role="tablist" aria-label="Choose your form" onKeyDown={onKeyDown} className="flex gap-1 rounded-control bg-cream p-1 max-sm:grid max-sm:w-full max-sm:grid-cols-5">
+        {forms.map((f) => {
+          const selected = f === form;
+          return (
+            <button
+              key={f}
+              id={`${id}-tab-${f}`}
+              role="tab"
+              type="button"
+              aria-selected={selected}
+              aria-controls={`${id}-panel`}
+              tabIndex={selected ? 0 : -1}
+              onClick={() => onChange(f)}
+              className={cx("tap relative grid h-11 min-w-11 place-items-center rounded-[0.625rem] px-3 font-display text-body-sm max-sm:w-full", selected ? "text-on-forest" : "text-forest hover:bg-paper")}
+            >
+              {selected && (
+                <motion.span layoutId="form-pill" className="absolute inset-0 rounded-[0.625rem] bg-forest shadow-ledge-dark" transition={{ type: "spring", stiffness: 500, damping: 38 }} />
+              )}
+              <span className="relative">F{f}</span>
+            </button>
+          );
+        })}
+      </div>
+    </LayoutGroup>
+  );
+}
+
 /**
  * The 2027 class timetable as real data instead of a picture: pick a form,
  * see the week. Weekly public holidays sit under the day they fall on.
@@ -58,53 +104,13 @@ export function TimetableGrid() {
     row.scrollLeft = day.getBoundingClientRect().left - row.getBoundingClientRect().left + row.scrollLeft - parseFloat(getComputedStyle(row).scrollPaddingLeft || "0");
   }, []);
 
-  function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    const last = forms.length - 1;
-    const keys: Record<string, (i: number) => number> = {
-      ArrowRight: (i) => (i + 1) % forms.length,
-      ArrowLeft: (i) => (i + last) % forms.length,
-      Home: () => 0,
-      End: () => last,
-    };
-    const move = keys[event.key];
-    if (!move) return;
-    event.preventDefault();
-    const next = forms[move(forms.indexOf(form))] ?? 1;
-    setForm(next);
-    document.getElementById(`${id}-tab-${next}`)?.focus();
-  }
-
   return (
     <div data-reflows className="card p-3 sm:p-4">
       <div className="flex flex-wrap items-center justify-between gap-3 px-2 pt-1 sm:px-3">
         <p className="label text-muted">
           <span lang="ms">Tingkatan</span> <span>/ Form</span>
         </p>
-        <LayoutGroup id={id}>
-          <div role="tablist" aria-label="Choose your form" onKeyDown={onKeyDown} className="flex gap-1 rounded-control bg-cream p-1 max-sm:grid max-sm:w-full max-sm:grid-cols-5">
-            {forms.map((f) => {
-              const selected = f === form;
-              return (
-                <button
-                  key={f}
-                  id={`${id}-tab-${f}`}
-                  role="tab"
-                  type="button"
-                  aria-selected={selected}
-                  aria-controls={`${id}-panel`}
-                  tabIndex={selected ? 0 : -1}
-                  onClick={() => setForm(f)}
-                  className={cx("tap relative grid h-11 min-w-11 place-items-center rounded-[0.625rem] px-3 font-display text-body-sm max-sm:w-full", selected ? "text-on-forest" : "text-forest hover:bg-paper")}
-                >
-                  {selected && (
-                    <motion.span layoutId="form-pill" className="absolute inset-0 rounded-[0.625rem] bg-forest shadow-ledge-dark" transition={{ type: "spring", stiffness: 500, damping: 38 }} />
-                  )}
-                  <span className="relative">F{f}</span>
-                </button>
-              );
-            })}
-          </div>
-        </LayoutGroup>
+        <FormTabs id={id} form={form} onChange={setForm} />
       </div>
 
       <motion.div

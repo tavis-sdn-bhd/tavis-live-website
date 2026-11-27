@@ -3,8 +3,10 @@ import type { ReactNode } from "react";
 import { Classroom, Podium } from "@/components/v2/art";
 import { GetTavis } from "@/components/v2/get-button";
 import { HomeHero } from "@/components/v2/hero";
-import { Faq, PressRow, TuitionPromo, TutorFaces, Voices } from "@/components/v2/sections";
-import { Button, Feature } from "@/components/v2/ui";
+import { Faq, PressRow, Voices } from "@/components/v2/sections";
+import { Tonight } from "@/components/v2/tonight";
+import { Actions, Button, Feature, Headline, Section, halfColumnHeadline, lede } from "@/components/v2/ui";
+import { cx } from "@/components/ui";
 import { DesignLink } from "@/components/design-link";
 import { AppShot } from "@/components/app-demos/app-stage";
 import { Mascot } from "@/components/mascot";
@@ -21,6 +23,33 @@ function More({ href, children }: { href: string; children: ReactNode }) {
       {children}
       <span aria-hidden="true">→</span>
     </DesignLink>
+  );
+}
+
+/** The paid tier on the mint band: what it covers and who teaches it, the lowest price, then tonight's class from the
+    real timetable. Words first on phones, so the card has its heading. */
+function Tuition() {
+  const { title, body, price } = baHome.promo;
+  return (
+    <Section id="tuition" band="mint">
+      <div className="shell grid items-center gap-14 md:grid-cols-[2fr_3fr] md:gap-16 lg:gap-24">
+        <div className="text-center md:text-left">
+          <Headline band="mint" title={title} className={halfColumnHeadline} />
+          <p className={cx("mx-auto mt-6 max-w-[26rem] text-muted md:mx-0", lede)}>{body}</p>
+          <p className="mt-8 flex items-baseline justify-center gap-2 text-forest md:justify-start">
+            <span className="font-bold text-muted">{price.from}</span>
+            <span className="text-[3rem] font-black leading-none tabular-nums">{price.amount}</span>
+            <span className="font-bold text-muted">{price.per}</span>
+          </p>
+          <Actions className="mt-8 md:justify-start">
+            <Button href="/online-tuition" size="lg">
+              {tuition.cta}
+            </Button>
+          </Actions>
+        </div>
+        <Tonight className="mx-auto w-full max-w-[36rem]" />
+      </div>
+    </Section>
   );
 }
 
@@ -81,11 +110,7 @@ function Home() {
         <More href="/tutors">Meet the tutors</More>
       </Feature>
 
-      <TuitionPromo flip title={baHome.promo.title} body={baHome.promo.body} art={<TutorFaces count={6} night className="mx-auto max-w-[26rem]" />}>
-        <Button href="/online-tuition" size="lg">
-          {tuition.cta}
-        </Button>
-      </TuitionPromo>
+      <Tuition />
 
       <Voices />
       <Faq set={baParentsFaq} />
