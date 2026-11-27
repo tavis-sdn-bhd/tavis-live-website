@@ -3,11 +3,11 @@ import { Check } from "@/components/icons";
 import { TimetableGrid } from "@/components/timetable-grid";
 import { cx } from "@/components/ui";
 import { Mascot } from "@/components/mascot";
-import { BurstStage, Classroom, Crown, Floaters, Star, type Piece } from "@/components/v2/art";
+import { BurstStage, Classroom, Crown, Star, type Piece } from "@/components/v2/art";
 import { CoinArt } from "@/components/v2/cast";
 import { SplitHero } from "@/components/v2/hero";
 import { ClosingCta, Faq, Steps, TutorFaces } from "@/components/v2/sections";
-import { Actions, Button, Centered, Section, Shout, chunky } from "@/components/v2/ui";
+import { Actions, Button, Centered, Section, chunky } from "@/components/v2/ui";
 import { links } from "@/lib/content";
 import { baTuition as ba, ringgit, signUpFor, tuitionPage as page } from "@/lib/pages";
 
@@ -105,6 +105,61 @@ function Compare() {
   );
 }
 
+/** The four plans on the pale brand band, the full year raised and in brand green as the one to pick. From sm each plan
+    is a column (name, price, what it costs in all, the button); on a phone it is a row with the price on the right. */
+function Pricing() {
+  const { pricing } = page;
+  return (
+    <Section id={pricing.id} band="mint" cta>
+      <div className="shell">
+        <Centered band="mint" title={ba.pricing.title} body={ba.pricing.body} />
+        <ul className="mx-auto mt-12 grid max-w-[72rem] gap-4 sm:mt-16 sm:grid-cols-2 sm:items-end sm:gap-5 lg:grid-cols-4">
+          {pricing.plans.map((plan) => (
+            <li key={plan.name} className={cx(plan.featured && "max-sm:mt-3")}>
+              <article
+                className={cx(
+                  "relative grid grid-cols-[1fr_auto] items-center gap-x-4 rounded-3xl border-2 border-b-4 bg-paper p-5 sm:flex sm:flex-col sm:p-6 sm:text-center",
+                  plan.featured
+                    ? "border-brand border-b-brand-ledge pt-7 shadow-[0_24px_48px_-28px_color-mix(in_srgb,var(--color-brand-ledge)_70%,transparent)] sm:pt-10"
+                    : "border-mint-deep",
+                )}
+              >
+                {plan.featured && (
+                  <span className="absolute -top-3.5 left-5 whitespace-nowrap rounded-full bg-brand px-3 py-1 font-display text-[0.75rem] uppercase tracking-[0.06em] text-forest sm:left-1/2 sm:-translate-x-1/2">
+                    {pricing.badge}
+                  </span>
+                )}
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 sm:justify-center">
+                  <h3 className="text-[1.25rem] leading-tight">{plan.name}</h3>
+                  {plan.saving > 0 && (
+                    <span className={cx("whitespace-nowrap rounded-full px-2.5 py-0.5 text-caption font-extrabold", plan.featured ? "bg-brand text-forest" : "bg-mint text-brand-text")}>
+                      Save {plan.saving}%
+                    </span>
+                  )}
+                </div>
+                <p className="row-span-2 flex items-baseline gap-0.5 text-forest sm:mt-5 sm:justify-center">
+                  <span className="text-[1rem] font-extrabold">RM</span>
+                  <span className="text-[2.5rem] font-black leading-none tabular-nums sm:text-[3.25rem]">{plan.perMonth}</span>
+                  <span className="font-bold text-muted">/mo</span>
+                </p>
+                <p className="mt-1 text-body-sm font-semibold text-muted sm:mt-2">
+                  {ringgit(plan.total)} for {plan.term}
+                </p>
+                <div className="col-span-2 mt-5 sm:mt-7 sm:w-full">
+                  <Button href={signUpFor(plan)} tone={plan.featured ? "green" : "white"} className="w-full">
+                    Sign up<span className="sr-only"> for the {plan.name} plan on WhatsApp</span>
+                  </Button>
+                </div>
+              </article>
+            </li>
+          ))}
+        </ul>
+        <p className="mx-auto mt-10 max-w-[40rem] text-center text-small font-semibold text-muted">{pricing.footnote}</p>
+      </div>
+    </Section>
+  );
+}
+
 /** BA's online tuition, on Duolingo's Super and Family pages: the class in the hero, free against paid, the prices,
     how joining works, the tutors, the week, the questions, then WhatsApp once more. */
 function OnlineTuitionPage() {
@@ -130,61 +185,7 @@ function OnlineTuitionPage() {
 
       <Compare />
 
-      <Section id={pricing.id} band="night" cta>
-        <Floaters
-          spots={[
-            { node: <Star fill="var(--color-brand)" className="w-12" />, className: "left-[5%] top-[8%] -rotate-12 max-md:hidden" },
-            { node: <Crown className="w-14" />, className: "right-[6%] top-[6%] rotate-12 max-md:hidden" },
-          ]}
-        />
-        <div className="shell relative">
-          <div className="mx-auto max-w-[48rem] text-center">
-            <Shout title={ba.pricing.title} body={ba.pricing.body} />
-          </div>
-          <ul className="mt-12 grid gap-4 sm:mt-16 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
-            {pricing.plans.map((plan) => (
-              <li key={plan.name} className={cx("h-full", plan.featured && "max-sm:mt-4")}>
-                <article className={cx(chunky, "relative flex h-full flex-col p-6 text-center max-sm:grid max-sm:grid-cols-[1fr_auto] max-sm:items-center max-sm:gap-x-4 max-sm:p-5 max-sm:text-left", plan.featured && "border-mint shadow-[0_0_0_4px_var(--color-mint)] max-sm:pt-7")}>
-                  {plan.featured && (
-                    <span className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-xl bg-mint px-3 py-1.5 font-display text-[0.75rem] uppercase tracking-[0.06em] text-forest">
-                      {pricing.badge}
-                    </span>
-                  )}
-                  <h3 className="mt-2 text-[1.375rem] max-sm:col-start-1 max-sm:row-start-1 max-sm:mt-0 max-sm:text-[1.25rem]">{plan.name}</h3>
-                  <p className="mt-5 flex items-baseline justify-center gap-1 text-forest max-sm:col-start-2 max-sm:row-start-1 max-sm:mt-0 max-sm:justify-end">
-                    <span className="text-[1.125rem] font-extrabold">RM</span>
-                    <span className="text-[3.5rem] font-black leading-none tabular-nums max-sm:text-[2.5rem]">{plan.perMonth}</span>
-                    <span className="font-bold text-muted">/mo</span>
-                  </p>
-                  <p
-                    aria-hidden={plan.saving === 0}
-                    className={cx(
-                      "mt-3 self-center whitespace-nowrap rounded-full bg-attention px-3 py-1 text-body-sm font-extrabold text-forest max-sm:col-start-2 max-sm:row-start-2 max-sm:mt-1 max-sm:self-start max-sm:justify-self-end",
-                      plan.saving === 0 && "invisible max-sm:hidden",
-                    )}
-                  >
-                    Save {plan.saving}%
-                  </p>
-                  <p className="mt-3 text-body-sm font-semibold text-muted max-sm:col-start-1 max-sm:row-start-2 max-sm:mt-1">
-                    <span className="block">{plan.term}</span>
-                    <span className="block">{ringgit(plan.total)} total</span>
-                  </p>
-                  <div className="mt-auto pt-7 max-sm:col-span-2 max-sm:row-start-3 max-sm:pt-5">
-                    <Button
-                      href={signUpFor(plan)}
-                      tone={plan.featured ? "sky" : "white"}
-                      className="w-full"
-                    >
-                      Sign up<span className="sr-only"> for the {plan.name} plan on WhatsApp</span>
-                    </Button>
-                  </div>
-                </article>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-8 text-center text-small font-semibold text-on-forest-muted">{pricing.footnote}</p>
-        </div>
-      </Section>
+      <Pricing />
 
       <Section id={ba.steps.id} band="sky">
         <div className="shell">

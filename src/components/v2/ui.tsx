@@ -44,12 +44,13 @@ export function Button({ href, tone, size, className, children, ...props }: Butt
   );
 }
 
-/** Full-bleed backgrounds. White is the page; sky is Duolingo's pale feature band; night is the dark band (the paid tier, and Rewards' avatar section); green is the brand at full volume. */
-type Band = "white" | "sky" | "night" | "green";
+/** Full-bleed backgrounds. White is the page; sky is Duolingo's pale feature band; mint is the pale brand band (the tuition prices); night is the dark band (the paid tier, and Rewards' avatar section); green is the brand at full volume. */
+type Band = "white" | "sky" | "mint" | "night" | "green";
 
 const bands: Record<Band, string> = {
   white: "",
   sky: "bg-sky-soft",
+  mint: "bg-mint",
   night: "bg-night text-on-forest",
   green: "bg-brand",
 };
@@ -57,6 +58,7 @@ const bands: Record<Band, string> = {
 const headlineTone: Record<Band, string> = {
   white: "text-brand-ink",
   sky: "text-brand-ink",
+  mint: "text-brand-ink",
   night: "text-brand",
   green: "text-night",
 };
@@ -64,6 +66,7 @@ const headlineTone: Record<Band, string> = {
 const bodyTone: Record<Band, string> = {
   white: "text-muted",
   sky: "text-forest/75",
+  mint: "text-muted",
   night: "text-on-forest-muted",
   green: "text-brand-deep",
 };
