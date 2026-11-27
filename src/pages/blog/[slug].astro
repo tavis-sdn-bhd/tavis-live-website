@@ -5,7 +5,8 @@ import { getSeoMeta } from "emdash";
 import Layout from "@/layouts/Ba.astro";
 import BlogPost from "@/views/ba/blog/BlogPost.astro";
 import { postPages, postSlug, publishedPosts } from "@/lib/blog";
-import { siteName } from "@/lib/site";
+import { siteName, siteUrl } from "@/lib/site";
+import { routePath } from "@/lib/pathname";
 
 // One page for each post published when the site is built (README, Blog).
 export const prerender = true;
@@ -15,7 +16,8 @@ export const getStaticPaths = (async () => postPages(await publishedPosts()).map
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
 const { post, newer, older } = Astro.props;
-const seo = getSeoMeta(post, { siteTitle: siteName, titleSeparator: " — " });
+const path = routePath(Astro.url);
+const seo = getSeoMeta(post, { siteTitle: siteName, titleSeparator: " — ", siteUrl, path });
 const cover = post.data.cover;
 const storageKey = typeof cover?.meta?.storageKey === "string" ? cover.meta.storageKey : null;
 
@@ -44,9 +46,40 @@ const meta = {
   description: seo.description ?? post.data.excerpt ?? "",
   image: cover && storageKey && cover.width && cover.height ? await shareImage(storageKey, { width: cover.width, height: cover.height }) : undefined,
   article: post.data.publishedAt ? { publishedTime: post.data.publishedAt.toISOString() } : undefined,
+  canonical: seo.canonical ?? siteUrl + path,
 };
+
+/** The post for search engines: an article by Tavis, and where it sits (Home › Blog › the post), which results show
+    in place of the address. No dateModified: the posts were imported, so their edit times are the import's. */
+const structured = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": `${meta.canonical}#article`,
+      headline: post.data.title,
+      description: meta.description || undefined,
+      image: meta.image ? new URL(meta.image.url, siteUrl).href : undefined,
+      datePublished: meta.article?.publishedTime,
+      inLanguage: "en-MY",
+      mainEntityOfPage: meta.canonical,
+      author: { "@id": `${siteUrl}/#organization` },
+      publisher: { "@id": `${siteUrl}/#organization` },
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: `${siteUrl}/` },
+        { "@type": "ListItem", position: 2, name: "Blog", item: `${siteUrl}/blog` },
+        { "@type": "ListItem", position: 3, name: post.data.title },
+      ],
+    },
+  ],
+};
+const structuredJson = JSON.stringify(structured).replace(/</g, "\\u003c");
 ---
 
 <Layout path="/blog" meta={meta}>
+  <script type="application/ld+json" set:html={structuredJson} />
   <BlogPost post={post} newer={newer} older={older} />
 </Layout>

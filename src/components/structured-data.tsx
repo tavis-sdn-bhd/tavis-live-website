@@ -41,7 +41,16 @@ const app = {
   offers: { "@type": "Offer", price: "0", priceCurrency: "MYR" },
 };
 
-const json = JSON.stringify({ "@context": "https://schema.org", "@graph": [organization, app] }).replace(/</g, "\\u003c");
+/** The site itself, so search results name it "Tavis" rather than its address. */
+const website = {
+  "@type": "WebSite",
+  "@id": `${siteUrl}/#website`,
+  name: siteName,
+  url: `${siteUrl}/`,
+  publisher: { "@id": organization["@id"] },
+};
+
+const json = JSON.stringify({ "@context": "https://schema.org", "@graph": [organization, website, app] }).replace(/</g, "\\u003c");
 
 export function StructuredData() {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: json }} />;

@@ -16,6 +16,8 @@ export type OwnMeta = {
   /** Its own share image; without one it shares its deck page's card. */
   image?: { url: string; width: number; height: number; alt: string };
   article?: { publishedTime: string };
+  /** Where search engines should credit the page, when an editor set it in the post's SEO panel. */
+  canonical?: string;
 };
 
 /** A page of the site, or the 404, which shares the home page's card. A page under a deck page (a post under /blog)
@@ -33,6 +35,8 @@ const androidPackage = "com.tavis.tavisapp.v26";
 const route = routePath(Astro.url);
 // A page with a twin in the other language names both, so search engines show each reader theirs.
 const twins = Astro.props.notFound || !hasTwin(page) ? null : { en: siteUrl + pathIn("en", route), ms: siteUrl + pathIn("ms", route) };
+// Always the live address, so a copy on workers.dev, an apex or a tracking query credits www.tavis.live. A 404 has none.
+const canonical = Astro.props.notFound ? null : (own?.canonical ?? siteUrl + route);
 ---
 
 <!doctype html>
@@ -44,9 +48,13 @@ const twins = Astro.props.notFound || !hasTwin(page) ? null : { en: siteUrl + pa
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="robots" content="noindex, nofollow" />
+    {/* Kept out of search after launch too: /get only forwards phones to their store. */}
+    {page === "/get" && <meta name="robots" content="noindex, follow" />}
+    {canonical && <link rel="canonical" href={canonical} />}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:site_name" content={siteName} />
+    {canonical && <meta property="og:url" content={canonical} />}
     <meta property="og:locale" content={ogLocale[locale]} />
     {twins && <meta property="og:locale:alternate" content={ogLocale[locale === "en" ? "ms" : "en"]} />}
     <meta property="og:type" content={own?.article ? "article" : "website"} />
