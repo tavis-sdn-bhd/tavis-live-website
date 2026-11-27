@@ -9,7 +9,7 @@ import { links } from "@/lib/content";
 import { ogAlt, ogImagePath, ogSize } from "@/og/cards";
 import { type PagePath, pageMeta, siteName, siteUrl } from "@/lib/site";
 import { hasTwin, htmlLang, locale, ogLocale, pathIn } from "@/lib/locale";
-import { BaChat, BaFooter, BaHeader } from "@/views/ba/chrome";
+import { BaChat, BaFooter, BaHeader, BaScrollCue } from "@/views/ba/chrome";
 
 /** What a page with its own content (a blog post) says about itself, in place of its deck page's title and card. */
 export type OwnMeta = {
@@ -96,6 +96,7 @@ const canonical = Astro.props.notFound ? null : (own?.canonical ?? siteUrl + rou
     <BaHeader client:load path={route} />
     <main id="main"><slot /></main>
     <BaFooter client:visible path={route} />
+    <BaScrollCue client:load path={route} />
     <BaChat client:idle path={route} />
   </body>
 </html>
