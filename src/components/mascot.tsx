@@ -3,7 +3,7 @@
 import { animate, motion, useInView, useMotionValue, useMotionValueEvent, useSpring, useTransform, useVelocity, type Easing, type MotionValue, type SpringOptions } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
-import { OutfitBack, OutfitBody, OutfitHead, OutfitStraps, Prop, outfitHasProp, outfitHasSleeves, propTurnsWithHand, type Outfit } from "./mascot-outfits";
+import { OutfitBack, OutfitBody, OutfitHead, OutfitStraps, Prop, StrapBand, outfitHasProp, outfitHasSleeves, outfitHasStraps, propTurnsWithHand, type Outfit } from "./mascot-outfits";
 import { C, LINE, inked, logo, outlined } from "./mascot-palette";
 import { contains, points, type Point } from "./mascot-silhouette";
 import { cx } from "./ui";
@@ -72,7 +72,9 @@ type Pose = {
  */
 const poses: Record<Mood, Pose> = {
   idle: { eyes: ["open", "open"], mouth: "smile", tilt: 0, arms: [18, -18], hands: ["mitt", "mitt"], burst: false },
-  wave: { eyes: ["open", "wink"], mouth: "grin", tilt: 4, arms: [162, -18], hands: ["open", "mitt"], burst: true },
+  // Raised beside the head, as in the sheets. Further over (162°) the arm crossed the face and its root ended, unlined,
+  // on the white chin.
+  wave: { eyes: ["open", "wink"], mouth: "grin", tilt: 4, arms: [136, -18], hands: ["open", "mitt"], burst: true },
   cheer: { eyes: ["happy", "happy"], mouth: "grin", tilt: 0, arms: [146, -146], hands: ["open", "open"], burst: true },
   sad: { eyes: ["sad", "sad"], mouth: "frown", tilt: -4, arms: [4, -4], hands: ["mitt", "mitt"], burst: false },
   // Hand to the cheek: "hmm".
@@ -123,6 +125,9 @@ const joints = {
   rightShoulder: { x: 182, y: 177 },
   feet: { x: 115, y: 288 },
 } satisfies Record<string, Point>;
+
+/** How far round each shoulder a strap lies over the arm: past the arm's half-width (17), short of the hand (35 down). */
+const SHOULDER = 21;
 
 /** A CSS transform pivot in drawing units: it resolves in the part's own coordinates (checked in Chrome). */
 const at = (p: Point) => ({ originX: `${p.x}px`, originY: `${p.y}px`, transformBox: "view-box" }) as const;
@@ -303,9 +308,19 @@ const tail =
  */
 const arm = {
   shine: "M-12 11 C-13 18 -13.2 24 -12.4 30",
+  /** The shine on a raised arm, on the side that then faces up and out, toward the light. */
+  raisedShine: "M12 11 C13 18 13.2 24 12.4 30",
   /** The mitt's centre: a held prop is drawn here. */
   hand: { x: 3.5, y: 35 },
 };
+
+/**
+ * How raised an arm lifted `lift` degrees outward from hanging is: 0 to 80°, 1 from 105°, so a waving arm (136°,
+ * swinging down to about 114°) stays raised through the whole wave. On a raised arm the light falls on the side
+ * that was the inner one, and the hanging arm's shine, left on the side toward the face, ran beside the outline as a
+ * second stripe.
+ */
+const raisedBy = (lift: number) => Math.min(1, Math.max(0, (lift - 80) / 25));
 
 /**
  * The whole limb's outline for each hand. Every outline runs the same commands (the outer side, five segments
@@ -522,7 +537,11 @@ function Mouth({ shape }: { shape: MouthShape }) {
 
 /* ── Limbs ──────────────────────────────────────────────────────────────── */
 
-type ArmPass = "ink" | "fill";
+/**
+ * `edge` redraws the arm with its whole outline, for where it lies over a strap: there the arm is in front of
+ * something, so its root shows its edge instead of melting into the body.
+ */
+type ArmPass = "ink" | "fill" | "edge";
 
 /**
  * The arm's transform, inverted, as a `gradientTransform`: a gradient in the arm's own units then lands where the
@@ -642,6 +661,11 @@ function Arm({ side, pass, hand, reduce, angle, stretch, rest, look, headTilt, h
   const limb = { transform: side === "right" ? "scale(-1 1)" : undefined, style: { ...at({ x: 0, y: 0 }), scaleX: across, scaleY: stretch } };
   const paint = "url(#" + look.skin + ")";
   const fades = useTransform(() => armFades(hand, side, shoulder, angle.get(), stretch.get(), { tilt: headTilt.get(), drop: headDrop }));
+  // The right arm lifts outward through negative angles. `rest` sets the attributes for renders that can't run Motion.
+  const raisedAt = (deg: number) => raisedBy(side === "left" ? deg : -deg);
+  const raised = useTransform(angle, raisedAt);
+  const lowered = useTransform(raised, (r) => 1 - r);
+  const restRaised = raisedAt(rest);
   return (
     <motion.g transform={rot(rest, shoulder)} style={{ ...at(shoulder), rotate: angle }}>
       {pass === "fill" && <ArmLight id={look.skin} shoulder={shoulder} angle={angle} across={across} stretch={stretch} />}
@@ -653,9 +677,10 @@ function Arm({ side, pass, hand, reduce, angle, stretch, rest, look, headTilt, h
             <motion.path {...outline} fill={C.ink} stroke={C.ink} strokeWidth={LINE * 2} strokeLinejoin="round" />
           ) : (
             <>
-              <motion.path {...outline} fill="none" stroke={C.ink} strokeWidth={LINE * 2} strokeLinejoin="round" mask={look.sleeve ? undefined : "url(#" + look.fade + ")"} />
+              <motion.path {...outline} fill="none" stroke={C.ink} strokeWidth={LINE * 2} strokeLinejoin="round" mask={look.sleeve || pass === "edge" ? undefined : "url(#" + look.fade + ")"} />
               <motion.path {...outline} fill={paint} />
-              <path d={arm.shine} fill="none" stroke={C.white} strokeOpacity={0.5} strokeWidth={3.4} strokeLinecap="round" />
+              <motion.path d={arm.shine} fill="none" stroke={C.white} strokeOpacity={0.5} strokeWidth={3.4} strokeLinecap="round" opacity={1 - restRaised} style={{ opacity: lowered }} />
+              <motion.path d={arm.raisedShine} fill="none" stroke={C.white} strokeOpacity={0.5} strokeWidth={3.4} strokeLinecap="round" opacity={restRaised} style={{ opacity: raised }} />
               {look.sleeve && (
                 <>
                   <g clipPath={look.sleeve}>
@@ -776,6 +801,9 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
   const rightArm = useTransform(() => rightPose.get() + rightSwing.get());
   const leftFlesh = useFlesh(leftArm, reduce);
   const rightFlesh = useFlesh(rightArm, reduce);
+  // How much of each strap lies over its arm's root: all of it on a hanging arm, none on a raised one.
+  const nearStrapOver = useTransform(leftArm, (deg) => 1 - raisedBy(deg));
+  const farStrapOver = useTransform(rightArm, (deg) => 1 - raisedBy(-deg));
   // A prop counter-turns against the arm, so it stays upright in the hand at any angle (the diploma turns with it).
   const propTurn = useTransform(() => -rightArm.get());
   const tilt = useSprung(pose.tilt, headSpring, reduce);
@@ -833,6 +861,16 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
           <motion.path d={headShape} transform={rot(pose.tilt, joints.neck)} style={{ ...at(joints.neck), rotate: tilt }} animate={{ y: headDrop }} transition={playful} />
           <path d={body} />
         </clipPath>
+        {/* Round each shoulder, out to the arm's root but short of a hand swung across the chest: where a strap lies over the arm */}
+        <clipPath id={id("shoulder-left")} clipPathUnits="userSpaceOnUse">
+          <circle cx={joints.leftShoulder.x} cy={joints.leftShoulder.y} r={SHOULDER} />
+        </clipPath>
+        <clipPath id={id("shoulder-right")} clipPathUnits="userSpaceOnUse">
+          <circle cx={joints.rightShoulder.x} cy={joints.rightShoulder.y} r={SHOULDER} />
+        </clipPath>
+        <mask id={id("strapBand")} maskUnits="userSpaceOnUse" x={-60} y={-60} width={400} height={420}>
+          <StrapBand outfit={outfit} />
+        </mask>
         {/* In each arm's own coordinates, like the fade: the arm above the cuff */}
         <clipPath id={id("sleeve")} clipPathUnits="userSpaceOnUse">
           <path d={`M-40 -40 H40 V${SLEEVE} H-40Z`} />
@@ -916,8 +954,17 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
               <OutfitHead outfit={outfit} />
             </motion.g>
 
+            <OutfitStraps outfit={outfit} figure={paint("figure")} />
             {arms("fill")}
-            <OutfitStraps outfit={outfit} clip={paint("figure")} />
+            {outfitHasStraps(outfit) && <g mask={paint("strapBand")}>{arms("edge")}</g>}
+            <OutfitStraps
+              outfit={outfit}
+              figure={paint("figure")}
+              over={[
+                { clip: paint("shoulder-left"), rest: 1 - raisedBy(leftTarget), live: nearStrapOver },
+                { clip: paint("shoulder-right"), rest: 1 - raisedBy(-rightTarget), live: farStrapOver },
+              ]}
+            />
           </motion.g>
 
           {pose.burst && (

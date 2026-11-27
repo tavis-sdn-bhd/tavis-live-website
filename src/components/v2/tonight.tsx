@@ -58,7 +58,7 @@ const wash = (subject: string) => ({ backgroundColor: `color-mix(in srgb, var(--
 
 function Cutout({ tutor }: { tutor: string }) {
   const photo = photos.get(tutor);
-  if (!photo) return <Mascot mood="wave" outfit="school" decorative className="absolute bottom-2 right-1 w-[78%]" />;
+  if (!photo) return <Mascot mood="wave" outfit="school" follow decorative className="absolute bottom-2 right-1 w-[78%]" />;
   return <Image src={photo.src} alt="" width={photo.w} height={photo.h} sizes="240px" className="absolute bottom-0 right-[4%] h-[112%] w-auto max-w-none" />;
 }
 

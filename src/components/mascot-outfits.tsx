@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion, type MotionValue } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { C, LINE, outlined, sprout } from "./mascot-palette";
 
@@ -24,6 +24,8 @@ export const outfitHasProp = (o: Outfit) => o === "science" || o === "math" || o
 export const propTurnsWithHand = (o: Outfit) => o === "graduate";
 /** The lab coat has sleeves, which the arms draw over themselves down to the cuff. */
 export const outfitHasSleeves = (o: Outfit) => o === "science";
+/** The school backpack has straps, which the arms are drawn over and outlined against. */
+export const outfitHasStraps = (o: Outfit) => o === "school";
 
 /** Gear outlines: the same ink, a touch lighter than the body's. */
 const gear = { ...outlined, strokeWidth: LINE * 1.6 } as const;
@@ -77,30 +79,63 @@ export function OutfitBody({ outfit }: { outfit: Outfit }) {
   }
 }
 
-/** The straps' centre lines. Each is drawn as an even band, outlined like the body. */
-const straps = {
-  // Over the near shoulder from the head's outline, hugging the top of the arm, and away to the back under it.
-  near: "M6 147 C19 155 27 166 30 180 C32 190 30 199 20 208",
-  // Over the far shoulder from the head's outline, hugging the top of the arm, and away to the back under it.
-  far: "M210 147 C196 153 186 162 181 175 C177 186 178 196 194 207",
-};
+/**
+ * The straps' centre lines. Each comes from the bag over its shoulder, runs down the chest just inside the arm and
+ * tucks under the armpit to the back. The near one tucks under before it reaches the belly logo.
+ */
+const straps = [
+  "M10 150 C26 156 40 166 46 178 C47.6 182 48.4 186 48 190 C47.6 194 46 204 42 214 C39 222 34 230 28 236",
+  "M204 150 C188 156 172 164 166 176 C161 186 160 200 162 212 C164 224 170 232 186 238",
+];
 const strapWidth = 10;
 
-/**
- * The backpack's shoulder straps, as in the sheets: an even band over each shoulder, hugging the top of the arm, with
- * nothing across the chest. Tavi has no neck, so the shoulders are the lower sides of the head. The straps are drawn
- * over the arms, as a strap lies over the top of the shoulder, and stay out of the hands' reach. `clip` is the head
- * (turned as it is) and body together, so each strap turns away to the back exactly at the outline.
- */
-export function OutfitStraps({ outfit, clip }: { outfit: Outfit; clip: string }) {
-  if (outfit !== "school") return null;
+/** A strap's copy over an arm: where (round its shoulder) and how much of it shows, `rest` for the pose's own angle. */
+export type StrapOver = { clip: string; rest: number; live: MotionValue<number> };
+
+function Strap({ d }: { d: string }) {
   return (
-    <g clipPath={clip} fill="none">
-      {[straps.near, straps.far].map((d) => (
-        <g key={d}>
-          <path d={d} stroke={C.ink} strokeWidth={strapWidth + 2 * LINE} />
-          <path d={d} stroke={C.forest} strokeWidth={strapWidth} />
-        </g>
+    <>
+      <path d={d} stroke={C.ink} strokeWidth={strapWidth + 2 * LINE} />
+      <path d={d} stroke={C.forest} strokeWidth={strapWidth} />
+    </>
+  );
+}
+
+/**
+ * The backpack's shoulder straps, as in the sheets: an even band over each shoulder and down the chest, with nothing
+ * across it. Tavi has no neck, so the shoulders are the lower sides of the head. Drawn twice round the arms: the whole
+ * strap below them, then, given `over` (near strap first), again above them round each shoulder, so a strap lies on
+ * top of a hanging arm's root while a hand swung across the chest passes in front of it. A raised arm lifts in front
+ * of its strap, so `over` fades out as the arm rises. `figure` is the head (turned as it is) and body together, so
+ * each strap turns away to the back exactly at the outline.
+ */
+export function OutfitStraps({ outfit, figure, over }: { outfit: Outfit; figure: string; over?: readonly [StrapOver, StrapOver] }) {
+  if (!outfitHasStraps(outfit)) return null;
+  return (
+    <g clipPath={figure} fill="none">
+      {straps.map((d, i) => {
+        const side = over?.[i];
+        return side ? (
+          <motion.g key={d} clipPath={side.clip} opacity={side.rest} style={{ opacity: side.live }}>
+            <Strap d={d} />
+          </motion.g>
+        ) : (
+          <g key={d}>
+            <Strap d={d} />
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+/** Where the straps lie, as a mask: an arm is outlined in full over them, so a strap goes behind its edge. */
+export function StrapBand({ outfit }: { outfit: Outfit }) {
+  if (!outfitHasStraps(outfit)) return null;
+  return (
+    <g fill="none" stroke="#fff" strokeWidth={strapWidth + 2 * LINE}>
+      {straps.map((d) => (
+        <path key={d} d={d} />
       ))}
     </g>
   );
