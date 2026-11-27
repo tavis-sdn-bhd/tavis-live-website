@@ -55,7 +55,6 @@ const untranslated = [
   "components/phone-app/",
   "components/stageshow/",
   "components/app-demos/",
-  "components/v2/lesson.tsx",
   "components/bacteriophage.tsx",
   "lib/questions.ts",
   // The blog is English-only; its views are mirrored only because the twin is mirrored whole.

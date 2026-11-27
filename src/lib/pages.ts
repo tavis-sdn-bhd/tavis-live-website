@@ -532,7 +532,7 @@ export const baTuition = {
   compare: {
     id: "compare",
     title: "Free app or online tuition?",
-    body: "Practice is free for everyone. Tuition adds live classes with expert tutors.",
+    body: "Practice for free. Upgrade to Tuition for live classes with expert tutors.",
     columns: { free: "Free app", tuition: "Online tuition" },
     rows: [
       { feature: "Unlimited practice questions, with explanations", free: true, tuition: true },

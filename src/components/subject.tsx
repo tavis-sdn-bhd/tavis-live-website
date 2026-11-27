@@ -7,7 +7,8 @@ const families: Record<SubjectKey, readonly string[]> = {
   sci: ["Sains", "Science", "Biologi", "Biology", "Kimia", "Chemistry", "Fizik", "Physics"],
   math: ["Matematik", "Mathematics", "Matematik Tambahan", "Additional Mathematics"],
   bm: ["Bahasa Melayu"],
-  en: ["English"],
+  // The Malay site names English "Bahasa Inggeris", as its timetable is in Malay.
+  en: ["English", "Bahasa Inggeris"],
   hist: ["Sejarah"],
   acc: ["Perniagaan", "Prinsip Perakaunan"],
 };
