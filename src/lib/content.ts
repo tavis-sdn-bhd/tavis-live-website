@@ -48,8 +48,20 @@ export const company = {
   region: "Wilayah Persekutuan Kuala Lumpur",
 } as const;
 
-/** A screen of the app shown in a phone mockup: the scene the coded app opens at, and what it shows. */
-export type Screen = { readonly scene: Scene; readonly alt: string };
+/** Screenshots of the real app, the client's own, cleaned up with ChatGPT image generation. The originals are in
+    assets-src/app-screens-clean. */
+export const appShots = {
+  question: "/assets/app-question.webp",
+  "select-subject": "/assets/app-select-subject.webp",
+  "learning-card": "/assets/app-learning-card.webp",
+  "avatar-hijab": "/assets/app-avatar-hijab.webp",
+  "avatar-character": "/assets/app-avatar-character.webp",
+} as const;
+
+/** A screen of the app shown in a phone mockup, and what it shows: a screenshot of the real app, or, for a screen with
+    no screenshot yet, the coded app opened at a scene. */
+export type ShotScreen = { readonly shot: keyof typeof appShots; readonly alt: string };
+export type Screen = ShotScreen | { readonly scene: Scene; readonly alt: string };
 
 export const screens = {
   home: {
@@ -57,8 +69,12 @@ export const screens = {
     alt: "Tavis app home showing Question Universe, online classes, rewards and learning materials",
   },
   avatar: {
-    scene: "me",
-    alt: "Tavis avatar screen with the student's outfit, a choice of looks and shoes to unlock with points",
+    shot: "avatar-character",
+    alt: "Tavis avatar editor: a student in a pink sweater and black joggers, with more characters to unlock with points",
+  },
+  outfit: {
+    shot: "avatar-hijab",
+    alt: "Tavis avatar editor: a student in a green tudung and baju kurung, with more outfits to unlock with points",
   },
 } as const satisfies Record<string, Screen>;
 

@@ -6,10 +6,10 @@ import { HomeHero } from "@/components/v2/hero";
 import { Faq, PressRow, TuitionPromo, TutorFaces, Voices } from "@/components/v2/sections";
 import { Button, Feature } from "@/components/v2/ui";
 import { DesignLink } from "@/components/design-link";
-import { AvatarDemo } from "@/components/app-demos/avatar-demo";
-import { PracticeDemo } from "@/components/app-demos/practice-demo";
-import { hero, practice, rewards, tuition } from "@/lib/content";
-import { baHome, baParentsFaq, rewardsPage, tuitionPage } from "@/lib/pages";
+import { AppShot } from "@/components/app-demos/app-stage";
+import { Mascot } from "@/components/mascot";
+import { hero, practice, rewards, screens, tuition } from "@/lib/content";
+import { baHome, baParentsFaq, questionUniverse, rewardsPage, tuitionPage } from "@/lib/pages";
 
 
 const heroTitle = [...baHome.title, hero.accent];
@@ -59,12 +59,17 @@ function Home() {
         title={practice.title}
         body={practice.body}
         flip
-        visual={<PracticeDemo />}
+        visual={
+          <AppShot
+            screen={questionUniverse.explanations.screen}
+            beside={<Mascot mood="cheer" outfit="science" follow decorative className="pointer-events-none absolute -bottom-3 right-full -mr-12 w-[190px] max-lg:hidden" />}
+          />
+        }
       >
         <More href="/question-universe">{practice.cta}</More>
       </Feature>
 
-      <Feature id="rewards" title={rewards.title} body={rewards.body} visual={<AvatarDemo />}>
+      <Feature id="rewards" title={rewards.title} body={rewards.body} visual={<AppShot screen={screens.outfit} />}>
         <More href="/rewards">{rewards.cta}</More>
       </Feature>
 

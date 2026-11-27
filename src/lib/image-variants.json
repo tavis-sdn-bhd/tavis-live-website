@@ -1,4 +1,59 @@
 {
+  "/assets/app-avatar-character.webp": {
+    "base": "/variants/app-avatar-character.9011a2ab",
+    "widths": [
+      256,
+      384,
+      512,
+      640,
+      828
+    ],
+    "full": 851
+  },
+  "/assets/app-avatar-hijab.webp": {
+    "base": "/variants/app-avatar-hijab.104254af",
+    "widths": [
+      256,
+      384,
+      512,
+      640,
+      828
+    ],
+    "full": 851
+  },
+  "/assets/app-learning-card.webp": {
+    "base": "/variants/app-learning-card.fedf066a",
+    "widths": [
+      256,
+      384,
+      512,
+      640,
+      828
+    ],
+    "full": 851
+  },
+  "/assets/app-question.webp": {
+    "base": "/variants/app-question.047097b1",
+    "widths": [
+      256,
+      384,
+      512,
+      640,
+      828
+    ],
+    "full": 851
+  },
+  "/assets/app-select-subject.webp": {
+    "base": "/variants/app-select-subject.5adcefab",
+    "widths": [
+      256,
+      384,
+      512,
+      640,
+      828
+    ],
+    "full": 851
+  },
   "/assets/badge-class-achiever-transparent.webp": {
     "base": "/variants/badge-class-achiever-transparent.888b5d88",
     "widths": [
@@ -256,8 +311,8 @@
     ],
     "full": 1040
   },
-  "/assets/voucher-kfc.webp": {
-    "base": "/variants/voucher-kfc.37a7dce5",
+  "/assets/voucher-foodpanda.webp": {
+    "base": "/variants/voucher-foodpanda.772399dd",
     "widths": [
       256,
       384,

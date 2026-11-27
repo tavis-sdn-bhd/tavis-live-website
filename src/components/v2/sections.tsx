@@ -399,7 +399,7 @@ export function DownloadBand() {
         ]}
       />
       <TiltedPhone screen={screens.home} tilt={-12} className="absolute -left-10 top-1/2 hidden w-[15rem] -translate-y-1/2 xl:block" />
-      <TiltedPhone screen={questionUniverse.universe.screen} tilt={10} className="absolute -right-10 top-1/2 hidden w-[15rem] -translate-y-1/2 xl:block" />
+      <TiltedPhone screen={questionUniverse.explanations.screen} tilt={10} className="absolute -right-10 top-1/2 hidden w-[15rem] -translate-y-1/2 xl:block" />
       <div className="shell relative">
         <Mascot mood="cheer" outfit="graduate" decorative className="mx-auto w-[min(60%,16rem)]" />
         <Headline closing band="sky" title={download.title} className="mx-auto mt-8 max-w-[44rem]" />

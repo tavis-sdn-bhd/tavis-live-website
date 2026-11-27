@@ -18,14 +18,14 @@ export const questionUniverse = {
       { title: "Optional timer", body: "Practise at your own pace or switch on a timer for a timed session." },
       { title: "Unlimited free practice", body: `Keep building your knowledge with free questions across ${allForms} core subjects.` },
     ],
-    screen: { scene: "question", alt: "Question Universe showing a bilingual Science question and answer options" },
+    screen: { shot: "select-subject", alt: "Question Universe with Form 5 picked and its subjects to choose from" },
   },
   explanations: {
     id: "explanations",
     title: ["Understand the answer.", "Learn from every mistake."],
     body: "See why an answer is right or wrong, then try again.",
     cta: "Get Tavis free",
-    screen: { scene: "explanation", alt: "An incorrect answer explained clearly, followed by the correct answer" },
+    screen: { shot: "question", alt: "A bilingual Science question with a wrong answer and the right one, each with its explanation" },
   },
   cards: {
     id: "learning-cards",
@@ -36,7 +36,7 @@ export const questionUniverse = {
       { title: "Refresh your memory", body: "Revisit key facts and concepts as part of your revision." },
       { title: "Make revision count", body: "Use a quick study session to strengthen your recall." },
     ],
-    screen: { scene: "cards", alt: "Tavis Science Learning Card on normal flora, with a diagram of where they live in the body" },
+    screen: { shot: "learning-card", alt: "Tavis Science Learning Card on normal flora, with a diagram of where they live in the body" },
   },
   gamification: {
     id: "points-ranking",

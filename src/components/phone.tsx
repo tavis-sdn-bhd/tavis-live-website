@@ -1,19 +1,20 @@
 "use client";
 
+import { Image } from "@/components/image";
 import { useLayoutEffect, useRef, useState } from "react";
-import type { Screen } from "@/lib/content";
-import { DEVICE } from "./phone-app/device";
+import { appShots, type Screen } from "@/lib/content";
+import { DEVICE, Device } from "./phone-app/device";
 import { AppScene } from "./phone-app/tavis-app";
 import { cx } from "./ui";
 
 /**
  * A moment of the Tavis app on a real-proportioned iPhone, scaled to its
- * column. The screen is the coded app frozen at `screen.scene`, so it is
- * sharp at any size and never drifts from the live phone. The device is
- * drawn at true size and zoomed to the measured width; the box keeps the
- * phone's ratio, so nothing moves when the zoom lands. Resizing only
- * updates a CSS variable, so the scene never re-renders, and a box with no
- * width (hidden at this breakpoint) never mounts the scene at all.
+ * column. The screen is a screenshot of the real app, or, where there is none
+ * yet, the coded app frozen at `screen.scene`. The device is drawn at true
+ * size and zoomed to the measured width; the box keeps the phone's ratio, so
+ * nothing moves when the zoom lands. Resizing only updates a CSS variable, so
+ * the screen never re-renders, and a box with no width (hidden at this
+ * breakpoint) never mounts it at all.
  */
 export function Phone({ screen, className }: { screen: Screen; className?: string }) {
   const box = useRef<HTMLDivElement>(null);
@@ -37,7 +38,13 @@ export function Phone({ screen, className }: { screen: Screen; className?: strin
     <div ref={box} role="img" aria-label={screen.alt} className={cx("relative select-none", className)} style={{ aspectRatio: `${DEVICE.w} / ${DEVICE.h}` }}>
       {sized && (
         <div inert className="absolute left-0 top-0" style={{ zoom: "var(--zoom)" }}>
-          <AppScene scene={screen.scene} />
+          {"shot" in screen ? (
+            <Device status={false}>
+              <Image src={appShots[screen.shot]} alt="" width={851} height={1847} sizes="(min-width: 640px) 20rem, 60vw" className="absolute inset-0 size-full object-cover" />
+            </Device>
+          ) : (
+            <AppScene scene={screen.scene} />
+          )}
         </div>
       )}
     </div>

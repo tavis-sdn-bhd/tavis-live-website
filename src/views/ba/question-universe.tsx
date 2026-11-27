@@ -1,7 +1,5 @@
 import { island } from "@/components/island";
-import { CardDemo } from "@/components/app-demos/card-demo";
-import { ExplanationDemo } from "@/components/app-demos/explanation-demo";
-import { UniverseDemo } from "@/components/app-demos/universe-demo";
+import { AppShot } from "@/components/app-demos/app-stage";
 import { GetTavis } from "@/components/v2/get-button";
 import { SplitHero } from "@/components/v2/hero";
 import { Lesson } from "@/components/v2/lesson";
@@ -26,9 +24,9 @@ function QuestionUniversePage() {
         art={<Lesson className="w-full" />}
       />
 
-      <Feature id={practice.id} band="sky" title={practice.title} body={practice.body} visual={<UniverseDemo />} />
-      <Feature id={explanations.id} flip title={explanations.title} body={explanations.body} visual={<ExplanationDemo />} />
-      <Feature id={cards.id} band="sky" title={cards.title} body={cards.body} visual={<CardDemo />} />
+      <Feature id={practice.id} band="sky" title={practice.title} body={practice.body} visual={<AppShot screen={qu.universe.screen} />} />
+      <Feature id={explanations.id} flip title={explanations.title} body={explanations.body} visual={<AppShot screen={explanations.screen} />} />
+      <Feature id={cards.id} band="sky" title={cards.title} body={cards.body} visual={<AppShot screen={cards.screen} />} />
 
       <Section id={subjects.id}>
         <div className="shell">

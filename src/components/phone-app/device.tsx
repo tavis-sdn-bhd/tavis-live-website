@@ -19,7 +19,7 @@ function StatusBar() {
       className="pointer-events-none absolute inset-x-0 top-0 z-40 flex h-[54px] items-center justify-between px-[34px] pt-[6px]"
       style={{ color: "var(--status-ink)", fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif" }}
     >
-      <span className="w-[60px] text-center text-[17px] font-semibold tracking-[-0.02em]">10:19</span>
+      <span className="w-[60px] text-center text-[17px] font-semibold tracking-[-0.02em]">9:41</span>
       <span className="flex items-center gap-[6px]">
         <svg width="19" height="12" viewBox="0 0 19 12" fill="currentColor">
           <rect x="0" y="8" width="3.2" height="4" rx="1" />
@@ -41,7 +41,8 @@ function StatusBar() {
   );
 }
 
-export function Device({ children }: { children: ReactNode }) {
+/** `status` off leaves the status bar to the screen itself, as a screenshot carries its own. */
+export function Device({ children, status = true }: { children: ReactNode; status?: boolean }) {
   return (
     <div className="relative" style={{ width: DEVICE.w, height: DEVICE.h }}>
       {/* Side buttons */}
@@ -59,7 +60,7 @@ export function Device({ children }: { children: ReactNode }) {
             style={{ isolation: "isolate" }}
           >
             {children}
-            <StatusBar />
+            {status && <StatusBar />}
             {/* Dynamic Island */}
             <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-[11px] z-50 h-[37px] w-[125px] -translate-x-1/2 rounded-full bg-black" />
             {/* Home indicator */}
