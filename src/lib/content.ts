@@ -88,7 +88,7 @@ export const rewards = {
     { name: "Foodpanda", listing: "Foodpanda Cash voucher", cost: 10000 },
     { name: "KFC", listing: "KFC Digital E-Voucher", cost: 10000 },
     { name: "Watsons", listing: "Watsons Cash Voucher", cost: 10000 },
-    { name: "Roblox", listing: "Roblox Digital Gift Card", cost: 50000 },
+    { name: "Decathlon", listing: "Decathlon Gift Card", cost: 50000 },
   ],
   cta: "See the rewards",
 } as const;

@@ -27,7 +27,7 @@ const brands = {
   Foodpanda: { logo: "/assets/brands/foodpanda.svg", w: 500, h: 105, field: "#d60e64", art: "/assets/voucher-foodpanda.webp" },
   KFC: { logo: "/assets/brands/kfc.svg", w: 1000, h: 928, field: "#f5002b", art: "/assets/voucher-kfc.webp" },
   Watsons: { logo: "/assets/brands/watsons.svg", w: 4800, h: 1055, field: "#00a0a0", art: "/assets/voucher-watsons.webp" },
-  Roblox: { logo: "/assets/brands/roblox.svg", w: 800, h: 148, field: "#232527", art: "/assets/voucher-roblox.webp" },
+  Decathlon: { logo: "/assets/brands/decathlon.svg", w: 1848, h: 279, field: "#3643ba", art: "/assets/voucher-decathlon.webp" },
   "Touch ’n Go": { logo: "/assets/brands/touch-n-go.svg", w: 100, h: 100, field: "#0d60a8", art: "/assets/voucher-touch-n-go.webp" },
   Tavis: { logo: "/assets/tavis-logo.svg", w: 749, h: 194, field: "#65cd7d", art: "/assets/voucher-tavis.webp" },
 } as const satisfies Record<string, Brand>;

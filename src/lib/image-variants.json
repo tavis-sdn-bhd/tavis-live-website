@@ -245,8 +245,8 @@
     ],
     "full": 982
   },
-  "/assets/voucher-foodpanda.webp": {
-    "base": "/variants/voucher-foodpanda.772399dd",
+  "/assets/voucher-decathlon.webp": {
+    "base": "/variants/voucher-decathlon.d0ad4482",
     "widths": [
       256,
       384,
@@ -267,8 +267,8 @@
     ],
     "full": 1040
   },
-  "/assets/voucher-roblox.webp": {
-    "base": "/variants/voucher-roblox.f5db5d98",
+  "/assets/voucher-kfc.webp": {
+    "base": "/variants/voucher-kfc.37a7dce5",
     "widths": [
       256,
       384,

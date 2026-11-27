@@ -101,7 +101,7 @@ export const rewardsPage = {
       { name: "Foodpanda", cost: costOf("Foodpanda") },
       { name: "KFC", cost: costOf("KFC") },
       { name: "Touch ’n Go" },
-      { name: "Roblox", cost: costOf("Roblox") },
+      { name: "Decathlon", cost: costOf("Decathlon") },
       // The client's artwork (tavis-cash-voucher.png) prints "Cash voucher RM20"; its catalogue name is the tuition voucher.
       { name: "Tavis", title: "Tuition voucher", value: "RM20" },
     ],
@@ -506,11 +506,11 @@ export const baRewards = {
       { q: "Does earning points cost anything?", a: "No. Practice in Question Universe is free, and every correct answer earns points." },
       {
         q: "What can I swap points for?",
-        a: "Vouchers such as Foodpanda, KFC, Watsons and Roblox, and new looks for your avatar.",
+        a: "Vouchers such as Foodpanda, KFC, Watsons and Decathlon, and new looks for your avatar.",
       },
       {
         q: "How many points is a voucher?",
-        a: `Foodpanda, KFC and Watsons vouchers are ${pointsFor("Foodpanda")} each. A Roblox gift card is ${pointsFor("Roblox")}.`,
+        a: `Foodpanda, KFC and Watsons vouchers are ${pointsFor("Foodpanda")} each. A Decathlon gift card is ${pointsFor("Decathlon")}.`,
       },
       { q: "Where do I redeem my points?", a: "In the Tavis app, under Rewards." },
       { q: "How do the rankings work?", a: "See how you rank with other students, and represent your school." },
