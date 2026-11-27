@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { C, LINE, outlined, sprout } from "./mascot-palette";
 
 /**
@@ -175,8 +176,9 @@ export function OutfitHead({ outfit }: { outfit: Outfit }) {
 }
 
 function Bubbles() {
-  const reduce = useReducedMotion();
-  if (reduce) return null;
+  const reduce = usePrefersReducedMotion();
+  // The same circles render either way, so the markup matches the server's while hydrating; with reduced motion they
+  // stay at their transparent start instead of rising.
   return (
     <g fill={C.liquid} stroke={C.ink} strokeWidth={1}>
       {[0, 0.6, 1.2].map((delay, i) => (
@@ -185,8 +187,8 @@ function Bubbles() {
           cx={i === 1 ? 4 : -3}
           r={i === 1 ? 3.4 : 2.6}
           initial={{ cy: -30, opacity: 0 }}
-          animate={{ cy: [-30, -54], opacity: [0, 1, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, delay, ease: "easeOut" }}
+          animate={reduce ? { cy: -30, opacity: 0 } : { cy: [-30, -54], opacity: [0, 1, 0] }}
+          transition={reduce ? { duration: 0 } : { duration: 1.8, repeat: Infinity, delay, ease: "easeOut" }}
         />
       ))}
     </g>

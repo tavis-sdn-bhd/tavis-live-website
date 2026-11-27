@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { standard } from "./motion";
 import { cx } from "./ui";
 
@@ -16,7 +17,7 @@ export function DigitRoll({ value, className, format = (n: number) => n.toLocale
   className?: string;
   format?: (n: number) => string;
 }) {
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
   const text = format(value);
 
   return (

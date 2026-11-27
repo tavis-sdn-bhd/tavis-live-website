@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducedMotion } from "motion/react";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { useEffect, useSyncExternalStore } from "react";
 import { Pause, Play } from "./icons";
 import { cx } from "./ui";
@@ -66,7 +66,7 @@ export function useMotionPaused() {
  * interacting. One-shot feedback to something they just did may still play.
  */
 export function useAmbientStill() {
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
   const pausedNow = useMotionPaused();
   const idle = useVisitorIdle();
   return !!reduce || pausedNow || idle;

@@ -1,6 +1,7 @@
 "use client";
 
-import { animate, useInView, useReducedMotion } from "motion/react";
+import { animate, useInView } from "motion/react";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { useEffect, useRef } from "react";
 import { easeOutExpo } from "./motion";
 
@@ -15,7 +16,7 @@ const format = (n: number) => Math.round(n).toLocaleString("en-MY");
 export function CountUp({ value, suffix = "", className }: { value: number; suffix?: string; className?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.6 });
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
   const armed = useRef(false);
 
   useEffect(() => {

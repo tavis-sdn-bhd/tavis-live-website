@@ -4,7 +4,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { Image } from "@/components/image";
 import { useContext, useId, useState, useSyncExternalStore } from "react";
 import { minutes, tuitionPage, type Form, type Slot } from "@/lib/pages";
-import { malaysiaNow, nextClass } from "@/lib/tonight";
+import { everyMinute, malaysiaNow, nextClass, type ClockHost } from "@/lib/tonight";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { Mascot } from "../mascot";
 import { easeOutExpo } from "../motion";
 import { subjectDot, subjectKey, subjectLang } from "../subject";
@@ -17,11 +18,26 @@ const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] as const;
 type Photo = { readonly src: string; readonly w: number; readonly h: number };
 const photos = new Map<string, Photo>(tuitionPage.tutors.list.map((tutor) => [tutor.name, tutor]));
 
-/* The clock as minutes into the Malaysian week: a number, so React can compare snapshots, ticking every 30 seconds. */
-const subscribe = (tick: () => void) => {
-  const timer = setInterval(tick, 30_000);
-  return () => clearInterval(timer);
+const browser: ClockHost = {
+  now: () => Date.now(),
+  setTimeout: (run, ms) => window.setTimeout(run, ms),
+  clearTimeout: (timer) => window.clearTimeout(timer),
+  onReturn: (run) => {
+    const shown = () => {
+      if (document.visibilityState === "visible") run();
+    };
+    // A tab brought to the front, and a page restored from the back/forward cache, which pageshow alone reports.
+    document.addEventListener("visibilitychange", shown);
+    window.addEventListener("pageshow", run);
+    return () => {
+      document.removeEventListener("visibilitychange", shown);
+      window.removeEventListener("pageshow", run);
+    };
+  },
 };
+
+/* The clock as minutes into the Malaysian week: a number, so React can compare snapshots, read on each minute. */
+const subscribe = (tick: () => void) => everyMinute(tick, browser);
 const readClock = () => {
   const { day, minute } = malaysiaNow();
   return day * 1440 + minute;
@@ -57,6 +73,8 @@ export function Tonight({ className }: { className?: string }) {
   const [form, setForm] = useState<Form>(5);
   const [picked, setPicked] = useState<number | null>(null);
   const clock = useSyncExternalStore(subscribe, readClock, () => null);
+  // With reduced motion the class only crossfades. Leaving the offsets in for MotionConfig to strip makes them jump.
+  const travel = usePrefersReducedMotion() ? 0 : 1;
 
   const week = weeks[form];
   const now = clock === null ? null : { day: Math.floor(clock / 1440), minute: clock % 1440 };
@@ -85,14 +103,14 @@ export function Tonight({ className }: { className?: string }) {
           {lead && (
             <motion.div
               key={`${form}-${day}-${lead.subject}-${lead.start}`}
-              initial={{ opacity: 0, y: 14 }}
+              initial={{ opacity: 0, y: 14 * travel }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8, transition: { duration: 0.18 } }}
+              exit={{ opacity: 0, y: -8 * travel, transition: { duration: 0.18 } }}
               transition={{ duration: 0.5, ease: easeOutExpo }}
               style={wash(lead.subject)}
               className="relative min-h-[17rem] rounded-3xl p-5 sm:min-h-[19rem] sm:p-7"
             >
-              <motion.div initial={{ y: 28 }} animate={{ y: 0 }} transition={{ duration: 0.7, ease: easeOutExpo }} className={cx("pointer-events-none absolute inset-y-0 right-0 w-[48%]", !ready && "invisible")}>
+              <motion.div initial={{ y: 28 * travel }} animate={{ y: 0 }} transition={{ duration: 0.7, ease: easeOutExpo }} className={cx("pointer-events-none absolute inset-y-0 right-0 w-[48%]", !ready && "invisible")}>
                 <Cutout tutor={lead.tutor} />
               </motion.div>
 

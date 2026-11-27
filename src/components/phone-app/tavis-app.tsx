@@ -1,6 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion, useIsPresent, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useIsPresent } from "motion/react";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { useEffect, useRef, useState, type ComponentType, type ReactNode, type RefObject } from "react";
 import { useStoreLink } from "@/lib/use-store-link";
 import { Student } from "../student";
@@ -212,7 +213,7 @@ function useScreenFocus(root: RefObject<HTMLDivElement | null>, stack: readonly 
 /** The app's screen stack, tab bar and toasts, drawn from the `AppProvider` above it. */
 export function Shell() {
   const { stack, dir, screen } = useApp();
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
   const root = useRef<HTMLDivElement>(null);
   useScreenFocus(root, stack);
   const Current = screens[screen];

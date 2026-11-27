@@ -1,6 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { useEffect, useId, useRef, useState } from "react";
 import { optionState, q17 as question, q17Answer, type OptionKey } from "@/lib/questions";
 import { Bacteriophage } from "../bacteriophage";
@@ -18,7 +19,7 @@ type Stage = "choosing" | "checked";
    bar, the character asking in a speech bubble, tiles that turn blue when
    picked, CHECK, then a banner that slides up with the verdict. */
 export function Lesson({ className }: { className?: string }) {
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
   const [picked, setPicked] = useState<OptionKey | null>(null);
   const [stage, setStage] = useState<Stage>("choosing");
   const correct = stage === "checked" && picked === question.answer;

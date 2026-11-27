@@ -1,6 +1,7 @@
 "use client";
 
-import { animate, motion, useInView, useMotionValue, useMotionValueEvent, useReducedMotion, useSpring, useTransform, useVelocity, type Easing, type MotionValue, type SpringOptions } from "motion/react";
+import { animate, motion, useInView, useMotionValue, useMotionValueEvent, useSpring, useTransform, useVelocity, type Easing, type MotionValue, type SpringOptions } from "motion/react";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react";
 import { OutfitBack, OutfitBody, OutfitHead, OutfitStraps, Prop, outfitHasProp, outfitHasSleeves, propTurnsWithHand, type Outfit } from "./mascot-outfits";
 import { C, LINE, inked, logo, outlined } from "./mascot-palette";
@@ -155,14 +156,14 @@ const finSpring: SpringOptions = { stiffness: 120, damping: 7 };
  * How far an arm turning at `angle` is stretched by its own swing: 1 at rest, up to 1 + `flesh.maxStretch`.
  * With reduced motion it stays 1.
  */
-function useFlesh(angle: MotionValue<number>, reduce: boolean | null) {
+function useFlesh(angle: MotionValue<number>, reduce: boolean) {
   const speed = useVelocity(angle);
   const pull = useTransform(speed, (v) => (reduce ? 1 : 1 + Math.min(flesh.maxStretch, flesh.stretchPerOmega2 * ((v * Math.PI) / 180) ** 2)));
   return useSpring(pull, flesh.spring);
 }
 
 /** A spring that follows `target`; with reduced motion it jumps. */
-function useSprung(target: number, options: SpringOptions, reduce: boolean | null) {
+function useSprung(target: number, options: SpringOptions, reduce: boolean) {
   const value = useSpring(target, options);
   useEffect(() => {
     if (reduce) value.jump(target);
@@ -219,8 +220,9 @@ type Gaze = { x: MotionValue<number>; y: MotionValue<number> };
  * following the cursor never re-renders the SVG. `fixed` pins the gaze
  * (e.g. looking up while thinking).
  */
-/** `flip` is -1 when the drawing is mirrored: the eyes move in drawing units, so screen x runs backwards there. */
-function useGaze(follow: boolean, ref: RefObject<SVGSVGElement | null>, fixed: { x: number; y: number } | null, flip: 1 | -1): Gaze {
+/** `flip` is -1 when the drawing is mirrored: the eyes move in drawing units, so screen x runs backwards there. With
+    reduced motion the eyes go straight to where they look, as the arms and head jump in `useSprung`. */
+function useGaze(follow: boolean, ref: RefObject<SVGSVGElement | null>, fixed: { x: number; y: number } | null, flip: 1 | -1, reduce: boolean): Gaze {
   const tx = useMotionValue(0);
   const ty = useMotionValue(0);
   // Eyes chase a moving pointer, so they land without overshoot: a bouncy spring reads as jitter.
@@ -259,7 +261,7 @@ function useGaze(follow: boolean, ref: RefObject<SVGSVGElement | null>, fixed: {
     };
   }, [follow, ref, fixed?.x, fixed?.y, flip, tx, ty]);
 
-  return { x, y };
+  return reduce ? { x: tx, y: ty } : { x, y };
 }
 
 /* ── Shapes ─────────────────────────────────────────────────────────────── */
@@ -622,7 +624,7 @@ type ArmLook = {
  * shoulder is mint and the arm is lit as the body is: the root melts into the side. A held prop (`children`) rides
  * in the hand with the fingers closed over it.
  */
-function Arm({ side, pass, hand, reduce, angle, stretch, rest, look, headTilt, headDrop, children }: { side: "left" | "right"; pass: ArmPass; hand: Hand; reduce: boolean | null; angle: MotionValue<number>; stretch: MotionValue<number>; rest: number; look: ArmLook; headTilt: MotionValue<number>; headDrop: number; children?: ReactNode }) {
+function Arm({ side, pass, hand, reduce, angle, stretch, rest, look, headTilt, headDrop, children }: { side: "left" | "right"; pass: ArmPass; hand: Hand; reduce: boolean; angle: MotionValue<number>; stretch: MotionValue<number>; rest: number; look: ArmLook; headTilt: MotionValue<number>; headDrop: number; children?: ReactNode }) {
   const outline = { initial: false, animate: { d: hands[hand].outline }, transition: reduce ? { duration: 0 } : handMorph } as const;
   // A hand's creases only fit its own outline, so they wait out the morph rather than hang outside the hand.
   const [settled, setSettled] = useState(hand);
@@ -717,7 +719,7 @@ const swimLoop = (amp: number): Loop => ({ keyframes: [0, amp, 0], duration: str
 /* ── Tavi ───────────────────────────────────────────────────────────────── */
 
 export function Mascot({ mood = "idle", follow = false, className, title = "Tavi, the Tavis dolphin", decorative = false, outfit = "none", look, roaming = false, facing = "left" }: Props) {
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
   const ref = useRef<SVGSVGElement>(null);
   const titleId = useId();
   const uid = useId().replace(/[^\w-]/g, "");
@@ -733,7 +735,7 @@ export function Mascot({ mood = "idle", follow = false, className, title = "Tavi
   const still = ambientStill || !inView;
   const blink = useBlink(!reduce && !paused && inView && mood !== "cheer");
   const mirrored = facing === "right";
-  const gaze = useGaze(follow && !still, ref, look ?? (mood === "think" ? THINK_GAZE : null), mirrored ? -1 : 1);
+  const gaze = useGaze(follow && !still, ref, look ?? (mood === "think" ? THINK_GAZE : null), mirrored ? -1 : 1, reduce);
   useEffect(() => (roaming || !inView ? undefined : enterStage()), [roaming, inView]);
 
   const hasProp = outfitHasProp(outfit);

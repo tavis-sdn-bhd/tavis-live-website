@@ -32,3 +32,41 @@ export function malaysiaNow(date = new Date()): Moment {
   const local = new Date(date.getTime() + malaysiaOffset);
   return { day: (local.getUTCDay() + 6) % 7, minute: local.getUTCHours() * 60 + local.getUTCMinutes() };
 }
+
+/** What the minute clock needs from the browser, passed in so tests can drive it. */
+export type ClockHost = {
+  now: () => number;
+  setTimeout: (run: () => void, ms: number) => number;
+  clearTimeout: (timer: number) => void;
+  /** Calls `run` whenever the page comes back into view, and returns how to stop. */
+  onReturn: (run: () => void) => () => void;
+};
+
+const minute = 60_000;
+
+/**
+ * Calls `tick` as each minute starts, so a countdown changes on the minute rather than up to a timer's period late;
+ * Kuala Lumpur's offset is whole hours, so its minutes start with UTC's. Browsers throttle timers in background tabs
+ * and freeze them on iOS, so `tick` also runs the moment the page returns, and the schedule restarts from then.
+ * Returns how to stop.
+ */
+export function everyMinute(tick: () => void, host: ClockHost): () => void {
+  let timer = 0;
+  const schedule = () => {
+    timer = host.setTimeout(() => {
+      tick();
+      schedule();
+    }, minute - (host.now() % minute));
+  };
+  const resync = () => {
+    host.clearTimeout(timer);
+    tick();
+    schedule();
+  };
+  schedule();
+  const stopWatching = host.onReturn(resync);
+  return () => {
+    host.clearTimeout(timer);
+    stopWatching();
+  };
+}

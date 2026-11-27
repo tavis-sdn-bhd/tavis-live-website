@@ -1,7 +1,8 @@
 "use client";
 
 import { Image } from "@/components/image";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type Ref } from "react";
 import { rewards } from "@/lib/content";
 import { useClientValue } from "@/lib/use-client-value";
@@ -492,7 +493,7 @@ export function QuestionScreen() {
   const scroller = useRef<HTMLDivElement>(null);
   const drawer = useRef<HTMLDivElement>(null);
   const options = useRef<Partial<Record<OptionKey, HTMLButtonElement | null>>>({});
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
   const mounted = useRef(false);
   const fade = useScrolled();
   // Answering disables the focused option, so hand focus to the drawer's next step.
@@ -1050,7 +1051,7 @@ export function LeaderboardScreen() {
  */
 export function ExplanationScreen() {
   const { back, points, pencils, q6: pick, pickQ6, next } = useApp();
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
   const wrong = pick === q6.wrong.key;
   const fade = useScrolled();
   const scroller = useRef<HTMLDivElement>(null);
